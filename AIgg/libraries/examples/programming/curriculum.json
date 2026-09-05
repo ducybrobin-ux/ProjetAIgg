@@ -1,0 +1,19 @@
+{
+  "stages": [
+    {
+      "level": 1,
+      "title": "Niveau 1 — bases",
+      "topics": ["variables", "conditions", "boucles"]
+    },
+    {
+      "level": 2,
+      "title": "Niveau 2 — structures",
+      "topics": ["fonctions", "modules", "fichiers"]
+    },
+    {
+      "level": 3,
+      "title": "Niveau 3 — qualité",
+      "topics": ["objets", "tests", "architecture"]
+    }
+  ]
+}

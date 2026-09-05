@@ -44,7 +44,11 @@ d'autres tuteurs.
 - **Demandes** : AIgg peut demander de l'aide au tuteur.
 - **Apparence** contrôlée et journalisée.
 - **Migration** portable avec continuité strict de l'AIgg_ID.
-- Console tuteur web (http://127.0.0.1:8070/) + 68 auto-diagnostics.
+- **Bibliothèques de spécialisation** : apprentissage structuré appartenant au
+  tuteur (sources, documents jamais exécutés, connaissances avec provenance,
+  compétences jamais MASTERED automatiquement, contradictions, recherche,
+  export/import) — privées par défaut.
+- Console tuteur web (http://127.0.0.1:8070/) + 93 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -54,7 +58,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (68 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (93 vérifications réelles)
 ```
 
 Premiers outils :
@@ -88,6 +92,17 @@ figurer (test automatisé inclus).
 - Conversation, besoins/demandes, apparence contrôlée, migration portable.
 - Console du tuteur web + suite d'auto-diagnostics (68 PASS).
 - Documentation pour les futurs agents (`docs/`).
+
+## Contenu de la release v0.1.1
+
+- **Bibliothèques de spécialisation** (`src/library.js`) : environnement
+  d'apprentissage structuré, privé par défaut, appartenant au tuteur —
+  sources, documents (jamais exécutés), connaissances (avec provenance),
+  compétences (jamais `MASTERED` automatiquement), curriculum, exercices,
+  contradictions, annotations, journal local, recherche niveau 1, export /
+  import `aigg-library` v1.
+- CLI `AIgg.cmd library …` + onglet web « Bibliothèques » + API `/api/libraries*`.
+- Suite de tests : **93 PASS / 0 FAIL**.
 
 ## Licence
 

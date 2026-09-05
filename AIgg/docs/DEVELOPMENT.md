@@ -21,24 +21,42 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # 68 vérifications, PASS/FAIL réels
+.\AIgg.cmd tests        # auto-diagnostics (93 vérifications, PASS/FAIL réels)
 ```
 
 Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
 <outil> revoke <outil> web-read <url> web-search <requête> notebook-add
-<question> avatar migrate <destination>`.
+<question> avatar migrate <destination> library <sous-commande>`.
+(Moteur de bibliothèque : voir `LIBRARIES.md`.)
 
 ## Architecture (résumé)
 
 - `src/` modules : `config` (chemins/versions), `util` (UUID, JSON atomique),
   `identity`, `state` (8 états), `memory` (4 familles), `journal`, `senses`,
   `capabilities`, `permissions`, `needs`, `appearance`, `talk`, `contract`,
-  `toolkit`, `backup`, `migrate`, `server` (API + console web).
+  `toolkit`, `backup`, `migrate`, `library` (bibliothèques de spécialisation),
+  `server` (API + console web).
 - `tools/<nom>/` : `manifest.json` + implémentation native.
+- `libraries/<id>/` : bibliothèques de spécialisation (privées par défaut ;
+  `examples/` seul est public). Voir `LIBRARIES.md`.
+- `templates/` : modèles JSON des bibliothèques.
 - `core/` PRIVÉ et exclu de Git : tous les fichiers d'état.
 - Données privées aussi exclues : `memory/ journal/ inbox/ outbox/ backups/
-  notebook/ senses/` + `tools/*/providers.json` + `web/public/avatar.svg`.
+  notebook/ senses/` + `tools/*/providers.json` + `web/public/avatar.svg` +
+  `libraries/*` (sauf `libraries/examples/`).
+
+## Bibliothèque de spécialisation (rappel de conception)
+
+- Une bibliothèque appartient au **tuteur**, est **privée par défaut**, et
+  n'est ni la mémoire ni le cerveau d'AIgg.
+- Ne pas confondre SOURCE / DOCUMENT / CONNAISSANCE / COMPÉTENCE ; conserver
+  la provenance de chaque connaissance.
+- **Jamais** `MASTERED` automatiquement (preuve du tuteur requise) ; **jamais**
+  d'exécution d'un document ou code importé.
+- Sections de test : le lot `TEST_LIBRARIES` couvre le cycle de vie, la
+  provenance, l'interdiction d'auto-`MASTERED`, les contradictions, l'export /
+  import, la corbeille.
 
 ## Contrat Commun
 

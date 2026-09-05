@@ -29,6 +29,8 @@ Exclus du dépôt Git (`.gitignore` racine + `AIgg/.gitignore`) :
   besoins, apparence) ;
 - `memory/`, `journal/`, `inbox/`, `outbox/`, `backups/`, `notebook/`,
   `senses/` ;
+- `libraries/*` privées du tuteur et `libraries/_trash/` (seuls
+  `libraries/examples/` sont publics — structure sans savoir pré-rempli) ;
 - `tools/*/providers.json` (clés éventuelles de recherche) ;
 - `web/public/avatar.svg` (artefact généré localement) ;
 - `.env`, clés, certificats.
@@ -48,6 +50,15 @@ Règles :
   révocables, jamais le cerveau obligatoire d'AIgg.
 - AIgg ne modifie jamais son apparence silencieusement : toute proposition
   passe par validation du tuteur puis journalisation (`APPEARANCE_*`).
+
+## Bibliothèques de spécialisation
+
+- Les bibliothèques appartiennent au tuteur et sont **privées par défaut** :
+  hors dépôt public (`libraries/*` ignorées par Git, sauf `examples/`).
+- Les documents importés et le code **ne sont jamais exécutés**
+  (`NEVER_EXECUTED`), même s'ils semblent fiables.
+- Un document n'est jamais considéré comme une « vérité » automatique ; les
+  contradictions restent signalées tant que le tuteur ne les arbitre pas.
 
 ## Démarrage sûr
 

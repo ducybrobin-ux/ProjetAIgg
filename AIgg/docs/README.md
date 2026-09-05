@@ -26,7 +26,7 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   JOURNALISER -> RETOURNER -> MEMORISER.
 - **Console tuteur web** : identité, état, capacités, sens, outils,
   permissions, mémoire, notebook, journal, sauvegardes, avatar, **conversation**,
-  **demandes** (besoins) et **apparence**.
+  **demandes** (besoins), **apparence** et **bibliothèques**.
 - **Outils disponibles** : `web` (lecture HTTP + recherche), `notebook` (carnet
   de laboratoire), `avatar` (représentation SVG déterministe).
 - **Conversation** : moteur honnête — reconnaît quelques formulations simples,
@@ -39,6 +39,12 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
   STOPPED — transitions sécurisées et journalisées.
 - **Migration** : `AIgg.cmd migrate <dest>` préserve strictement l'AIgg_ID.
+- **Bibliothèques de spécialisation** : environnement d'apprentissage
+  structuré appartenant au tuteur (`src/library.js`), privées par défaut,
+  avec sources, documents (jamais exécutés), connaissances (avec provenance),
+  compétences (jamais MASTERED automatiquement), curriculum, exercices,
+  contradictions, annotations, journal, recherche locale, export/import
+  `aigg-library` v1. Voir `LIBRARIES.md`.
 
 ## Commandes
 
@@ -63,8 +69,11 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd avatar            # générer la représentation
 .\AIgg.cmd needs             # liste des demandes d'AIgg
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
+.\AIgg.cmd library list      # bibliothèques de spécialisation
+.\AIgg.cmd library create Maths --domain=maths --private
+.\AIgg.cmd library search <q># recherche locale niveau 1
 .\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics
+.\AIgg.cmd tests             # auto-diagnostics (93 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

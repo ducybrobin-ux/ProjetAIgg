@@ -72,6 +72,7 @@ function render(data) {
 
   renderTools(data.tools);
   renderMemory();
+  renderLibraries(data.libraries);
   renderNotebook();
   renderNeeds(data.needs);
   applyAppearance(data.appearance);
@@ -269,6 +270,102 @@ function sendChat() {
   }).catch(() => appendChat('ai', 'Je n\'ai pas pu répondre : connexion coupée.'));
 }
 
+function renderLibraries(libs) {
+  const box = $('libraries-list');
+  if (!box) return;
+  box.innerHTML = '';
+  if (!libs || !libs.length) { box.textContent = 'Aucune bibliothèque. Crée-en une ci-contre.'; return; }
+  for (const l of libs) {
+    const pub = l.meta.privacy !== 'private' ? 'public' : 'privée';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      `<h3>${esc(l.meta.name)} <span class="badge">${esc(pub)}</span> <span class="badge">${esc(l.meta.status)}</span></h3>` +
+      `<p class="meta">${esc(l.meta.id)} · domaine: ${esc((l.meta.domains || []).join(', '))} · niveau: ${esc(l.meta.level)}</p>` +
+      `<p>${esc(l.meta.description || '')}</p>` +
+      `<p class="meta">sources: ${l.sources} · connaissances: ${l.knowledge} · compétences: ${l.competencies} · documents: ${l.documents} · exercices: ${l.exercises} · contradictions: ${l.contradictions}</p>` +
+      `<div class="lib-actions">` +
+        `<button data-lib-open="${esc(l.meta.id)}">Détail</button>` +
+        `<button data-lib-export="${esc(l.meta.id)}">Exporter</button>` +
+        (l.meta.status === 'active'
+          ? `<button data-lib-archive="${esc(l.meta.id)}">Archiver</button>`
+          : `<button data-lib-restore="${esc(l.meta.id)}">Restaurer</button>`) +
+        `<button data-lib-delete="${esc(l.meta.id)}" class="danger">Supprimer</button>` +
+      `</div>` +
+      `<div class="lib-detail" id="lib-detail-${esc(l.meta.id)}"></div>`;
+    box.appendChild(card);
+  }
+}
+
+async function openLibraryDetail(id) {
+  const wrap = $('lib-detail-' + id);
+  if (!wrap) return;
+  if (wrap.dataset.loaded) { wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none'; return; }
+  const d = await getJSON('/api/library?id=' + encodeURIComponent(id));
+  const kn = await getJSON('/api/library/' + encodeURIComponent(id) + '/knowledge');
+  const comp = await getJSON('/api/library/' + encodeURIComponent(id) + '/competencies');
+  const ex = await getJSON('/api/library/' + encodeURIComponent(id) + '/exercises');
+  const docs = await getJSON('/api/library/' + encodeURIComponent(id) + '/documents');
+  const cur = await getJSON('/api/library/' + encodeURIComponent(id) + '/curriculum');
+  const contr = await getJSON('/api/library/' + encodeURIComponent(id) + '/contradictions');
+  const notes = await getJSON('/api/library/' + encodeURIComponent(id) + '/annotations');
+
+  const sourceRows = (d.sources || []).map((s) =>
+    `<div class="src-row"><b>${esc(s.title)}</b> <span class="badge">${esc(s.trust_level)}</span> <span class="meta">${esc(s.type)}</span>` +
+    (s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a>` : '') +
+    `</div>`).join('') || '(aucune source)';
+  const knRows = kn.map((k) =>
+    `<div class="src-row"><span class="meta">[${esc(k.STATUS)}] conf=${k.CONFIDENCE}</span> ${esc(k.CONTENT)}` +
+    (k.PROVENANCE && k.PROVENANCE.length ? ` <span class="meta">src: ${esc(k.PROVENANCE.map(p=>p.title).join(', '))}</span>` : '') + `</div>`).join('') || '(aucune connaissance)';
+  const compRows = comp.map((c) =>
+    `<div class="src-row">${esc(c.name)} <span class="badge">${esc(c.state)}</span> ${esc(c.evidence && c.evidence.length ? '· preuve: ' + c.evidence.length : '')}</div>`).join('') || '(aucune compétence)';
+  const exRows = ex.map((e) => `<div class="src-row">[${esc(e.TYPE)}] ${esc(e.QUESTION)}</div>`).join('') || '(aucun exercice)';
+  const docRows = docs.map((e) => `<div class="src-row">[${esc(e.TYPE)}] ${esc(e.NAME)}</div>`).join('') || '(aucun document)';
+  const curRows = (cur && cur.length ? cur.map((s) => `Niveau ${s.level}: ${esc(s.topics ? s.topics.join(', ') : '')}`).join('<br>') : '(curriculum vide)');
+  const contrRows = (contr && contr.length ? contr.map((c) => `<div class="src-row">${esc(c.knowledge_a)} ⟂ ${esc(c.knowledge_b)} <span class="badge">${esc(c.status)}</span></div>`).join('') : '(aucune contradiction)');
+  const noteRows = (notes && notes.length ? notes.map((n) => `<div class="src-row"><span class="meta">${esc(n.at)} ${esc(n.by)}</span>: ${esc(n.text)}</div>`).join('') : '(aucune note)');
+
+  wrap.innerHTML =
+    `<h4>Sources (${d.sources.length})</h4>` + sourceRows +
+    `<h4>Connaissances (${kn.length})</h4>` + knRows +
+    `<h4>Compétences (${comp.length})</h4>` + compRows +
+    `<h4>Exercices (${ex.length})</h4>` + exRows +
+    `<h4>Documents (${docs.length}) — jamais exécutés</h4>` + docRows +
+    `<h4>Curriculum</h4>` + curRows +
+    `<h4>Contradictions (${(contr || []).length})</h4>` + contrRows +
+    `<h4>Notes du tuteur</h4>` + noteRows;
+  wrap.dataset.loaded = '1';
+  wrap.style.display = 'block';
+}
+
+window.addEventListener('click', async (ev) => {
+  const open = ev.target.closest('button[data-lib-open]');
+  if (open) { await openLibraryDetail(open.dataset.libOpen); return; }
+  const ex = ev.target.closest('button[data-lib-export]');
+  if (ex) {
+    const b = await getJSON('/api/libraries/export?id=' + encodeURIComponent(ex.dataset.libExport));
+    navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(b, null, 2));
+    alert('Export prêt dans le presse-papiers (format aigg-library v1).');
+    return;
+  }
+  const del = ev.target.closest('button[data-lib-delete]');
+  if (del) {
+    if (!confirm('Supprimer définitivement cette bibliothèque ? (corbeille local)')) return;
+    await fetch('/api/library', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: del.dataset.libDelete }) });
+    refresh(); return;
+  }
+  const arch = ev.target.closest('button[data-lib-archive]');
+  if (arch) {
+    await fetch('/api/library', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: arch.dataset.libArchive, patch: { status: 'archived' } }) });
+    refresh(); return;
+  }
+  const rest = ev.target.closest('button[data-lib-restore]');
+  if (rest) {
+    await fetch('/api/library', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: rest.dataset.libRestore, patch: { status: 'active' } }) });
+    refresh(); return;
+  }
+});
+
 function renderNotebook() {
   const box = $('notebook-list');
   getJSON('/api/state').then((d) => {
@@ -322,6 +419,32 @@ function init() {
       $('ap-status').textContent = (out.reason || 'Aucune proposition en attente.');
     }
     refresh();
+  };
+
+  const libBtn = $('btn-lib-create');
+  if (libBtn) libBtn.onclick = async () => {
+    const name = $('lib-name').value.trim();
+    if (!name) return;
+    const domains = $('lib-domain').value.split(',').map((s) => s.trim()).filter(Boolean);
+    const lib = await postJSON('/api/libraries', {
+      name,
+      domains: domains.length ? domains : ['general'],
+      description: $('lib-desc').value.trim(),
+      privacy: $('lib-private').checked ? 'private' : 'public',
+    });
+    $('lib-create-result').textContent = lib.id ? 'Créée : ' + lib.id : 'Erreur';
+    $('lib-name').value = ''; $('lib-domain').value = ''; $('lib-desc').value = '';
+    refresh();
+  };
+  const libSearchBtn = $('btn-lib-search');
+  if (libSearchBtn) libSearchBtn.onclick = async () => {
+    const q = $('lib-search-q').value.trim();
+    if (!q) return;
+    const res = await getJSON('/api/libraries/search?q=' + encodeURIComponent(q));
+    setPre('lib-search-result', res.length ? res.map((r) => {
+      const hits = r.hits.map((h) => `  · [${h.family}] ${esc(h.content)}`).join('\n');
+      return `${r.libraryName} (${r.libraryId})\n${hits}`;
+    }).join('\n\n') : 'Aucune correspondance.');
   };
 
   $('btn-memorize').onclick = async () => {

@@ -1,0 +1,19 @@
+{
+  "stages": [
+    {
+      "level": 1,
+      "title": "Niveau 1",
+      "topics": [
+        "sujet 1",
+        "sujet 2"
+      ]
+    },
+    {
+      "level": 2,
+      "title": "Niveau 2",
+      "topics": [
+        "sujet 1"
+      ]
+    }
+  ]
+}

@@ -32,6 +32,7 @@
     <button class="tab" data-tab="tools">Outils</button>
     <button class="tab" data-tab="permissions">Permissions</button>
     <button class="tab" data-tab="memory">Mémoire</button>
+    <button class="tab" data-tab="libraries">Bibliothèques</button>
     <button class="tab" data-tab="notebook">Notebook</button>
     <button class="tab" data-tab="journal">Journal</button>
     <button class="tab" data-tab="backups">Sauvegardes</button>
@@ -147,6 +148,29 @@
       <div class="panel">
         <h2>Répertoire complet</h2>
         <div id="memory-list">chargement…</div>
+      </div>
+    </section>
+
+    <section id="tab-libraries" class="tabpane">
+      <div class="panel">
+        <h2>Bibliothèques de spécialisation</h2>
+        <p class="hint">Environnement d'apprentissage appartenant au tuteur. Une bibliothèque privée reste privée. Les documents importés et le code ne sont jamais exécutés.</p>
+        <div id="libraries-list">chargement…</div>
+      </div>
+      <div class="panel">
+        <h2>Créer une bibliothèque</h2>
+        <input id="lib-name" placeholder="Nom (ex : Mathématiques)">
+        <input id="lib-domain" placeholder="Domaine / sous-domaines (virgules)">
+        <input id="lib-desc" placeholder="Objectif (ex : comprendre, résoudre)">
+        <label class="check"><input type="checkbox" id="lib-private" checked> Privée (hors dépôt public)</label>
+        <button id="btn-lib-create">Créer</button>
+        <span id="lib-create-result"></span>
+      </div>
+      <div class="panel">
+        <h2>Rechercher dans les bibliothèques</h2>
+        <input id="lib-search-q" placeholder="Recherche locale (niveau 1)…">
+        <button id="btn-lib-search">Rechercher</button>
+        <pre id="lib-search-result">—</pre>
       </div>
     </section>
 

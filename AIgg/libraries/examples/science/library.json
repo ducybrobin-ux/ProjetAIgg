@@ -1,0 +1,18 @@
+{
+  "id": "science-example",
+  "name": "Science (exemple public)",
+  "description": "Exemple public de structure d'une bibliothèque scientifique. Aucune connaissance n'est pré-remplie : le tuteur construit son propre contenu.",
+  "owner": "AIgg (exemple public)",
+  "created_at": "2026-09-05T00:00:00.000Z",
+  "updated_at": "2026-09-05T00:00:00.000Z",
+  "status": "active",
+  "level": "beginner",
+  "purpose": "learning",
+  "domains": ["sciences", "physique", "chimie", "biologie"],
+  "languages": ["fr"],
+  "learning_mode": "guided",
+  "privacy": "public",
+  "priorities": ["comprendre", "expliquer"],
+  "notes": [],
+  "contradictions": []
+}

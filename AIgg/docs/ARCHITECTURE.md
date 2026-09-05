@@ -39,6 +39,7 @@ Résultats de blocage honnêtes : `CAPACITY`, `PERMISSION`, `EXECUTION`,
 | `contract.js` | pipeline du Contrat Commun |
 | `toolkit.js` | registre des outils, flux d'acquisition |
 | `migrate.js` | copie portable avec continuité AIgg_ID |
+| `library.js` | bibliothèques de spécialisation (voir `LIBRARIES.md`) |
 | `server.js` | API HTTP + console web |
 
 ## États d'AIgg
@@ -77,6 +78,16 @@ BESOIN -> RECHERCHE -> PROPOSITION -> AUTORISATION -> TEST -> INSTALLATION
 - Les **outils externes** (Gmail, Drive, IA externes…) sont facultatifs,
   révocables ; ils ne sont ni le cerveau ni l'identité.
 - AIgg conserve la décision ; un outil ne décide pas du contenu.
+
+## Bibliothèques de spécialisation
+
+Sous `libraries/` : bibliothèques (privées par défaut, hors Git), corbeille
+`_trash/` et exemples publics `examples/`. Chaque bibliothèque contient
+`library.json`, `sources.json`, `curriculum.json`, `competencies.json`,
+`knowledge/`, `documents/`, `exercises/`, `journal/`. Règles non négociables :
+document/code jamais exécuté, compétence jamais `MASTERED` automatiquement,
+provenance conservée pour chaque connaissance, contradictions signalées.
+Détails : `LIBRARIES.md`, `templates/*.json`.
 
 ## Limites connues (honnêtes)
 

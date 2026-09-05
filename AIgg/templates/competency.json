@@ -1,0 +1,18 @@
+{
+  "competencies": [
+    {
+      "id": "",
+      "name": "Nom de la compétence",
+      "domain": "",
+      "state": "UNKNOWN",
+      "evidence": [],
+      "history": [
+        {
+          "at": "",
+          "state": "UNKNOWN",
+          "note": "Créée (jamais maîtrisée sans preuve)"
+        }
+      ]
+    }
+  ]
+}

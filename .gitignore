@@ -21,6 +21,12 @@ AIgg/tools/*/providers.json
 # Artefact généré localement (représentation)
 AIgg/web/public/avatar.svg
 
+# Bibliothèques de spécialisation : privées par défaut (hors dépôt)
+AIgg/libraries/*
+!AIgg/libraries/examples/
+!AIgg/libraries/examples/**
+AIgg/libraries/_trash/
+
 # Fichiers temporaires
 *.tmp
 *.log

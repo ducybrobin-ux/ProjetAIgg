@@ -1,0 +1,19 @@
+{
+  "stages": [
+    {
+      "level": 1,
+      "title": "Niveau 1 — notions",
+      "topics": ["définitions", "unités"]
+    },
+    {
+      "level": 2,
+      "title": "Niveau 2 — méthodes",
+      "topics": ["mesures", "incertitudes"]
+    },
+    {
+      "level": 3,
+      "title": "Niveau 3 — synthèse",
+      "topics": ["théories", "limites", "consensus"]
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.0 · Suite de tests : 68 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.1 · Suite de tests : 93 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -40,6 +40,25 @@ Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.0 · Suite de tests : 68
 | Tests du corpus (13 tests nommés) | IMPLEMENTED | tests/run-tests.js, 68 vérifications |
 | Licence MIT | IMPLEMENTED | LICENSE (racine) + package.json |
 
+## Bibliothèques de spécialisation — cahier appliqué (testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| Moteur `src/library.js` (100 % natif) | IMPLEMENTED | TEST_LIBRARIES |
+| Cycle de vie create / list / update / remove (→ `_trash`) | IMPLEMENTED | TEST_LIBRARIES + CLI + API |
+| Source ≠ Document ≠ Connaissance ≠ Compétence | IMPLEMENTED | TEST_LIBRARIES (provenance, NEVER_EXECUTED) |
+| Document / code jamais exécuté | IMPLEMENTED | TEST_LIBRARIES (`document_jamais_execute`) |
+| Compétence jamais `MASTERED` automatiquement | IMPLEMENTED | TEST_LIBRARIES (`competence_jamais_mastered_auto`) |
+| Contradictions signalées (OPEN → RESOLVED) | IMPLEMENTED | TEST_LIBRARIES |
+| Annotations du tuteur | IMPLEMENTED | TEST_LIBRARIES |
+| Journal local par bibliothèque | IMPLEMENTED | TEST_LIBRARIES |
+| Recherche niveau 1 (correspondance locale) | IMPLEMENTED | TEST_LIBRARIES |
+| Export / import `aigg-library` v1 (analyse pour confirmer) | IMPLEMENTED | TEST_LIBRARIES |
+| Privée par défaut (hors dépôt public) | IMPLEMENTED | `.gitignore` (libraries/* sauf examples/) |
+| Exemples publics sans savoir inventé | IMPLEMENTED | TEST_LIBRARIES (`exemples_sans_savoir_invente`) |
+| API HTTP `/api/libraries*` + onglet web « Bibliothèques » | IMPLEMENTED | smoke HTTP réel (create/source/knowledge/search/export/delete) |
+| CLI `AIgg.cmd library …` | IMPLEMENTED | testé réellement (health/list/search) |
+
 ## PARTIAL (existe, mais limité / à renforcer)
 
 | Composant | État réel |
@@ -66,7 +85,8 @@ Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.0 · Suite de tests : 68
 |---|---|---|
 | Exécution de scripts `.ps1` sur cette machine | Politique d'exécution PowerShell `Restricted` | Utiliser `AIgg.cmd` (l'`AIgg.ps1` affiche ce message) |
 | Recherche Web hors-ligne | Aucun réseau | Le test passe en `BLOCKED` (jamais `PASS` mensonger) |
-| Publication GitHub | Commande utilisateur : d'abord intégrer le Prompt Maître | En cours d'exécution après intégration |
+| Publication GitHub | Commande utilisateur : d'abord intégrer le Prompt Maître | Effectué le 2026-09-05 (repo public + release v0.1.0) |
+| Recherche bibliothèque niveau 2 (similarité, multilingue, import/export réel) | Non implémenté | Prévu dans les évolutions du cahier (§18, §24) |
 
 ## Déviations documentées par rapport à l'arborescence cible (§27)
 

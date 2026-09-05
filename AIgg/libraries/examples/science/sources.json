@@ -1,0 +1,22 @@
+{
+  "sources": [
+    {
+      "id": "example-source-science",
+      "title": "Exemple : remplacer par une source réelle (université, organisme officiel, article…)",
+      "author": "",
+      "organization": "",
+      "url": "",
+      "type": "NOTE_TUTEUR",
+      "domain": "sciences",
+      "subdomain": "",
+      "language": "fr",
+      "publication_date": "",
+      "last_checked": "2026-09-05T00:00:00.000Z",
+      "license": "",
+      "trust_level": "E",
+      "priority": 0,
+      "status": "ACTIVE",
+      "notes": "Une source de niveau A (officielle) pèse plus qu'une source communautaire (D/E). Conserver la provenance."
+    }
+  ]
+}

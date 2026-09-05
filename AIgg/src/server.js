@@ -18,6 +18,7 @@ const contract = require('./contract');
 const needs = require('./needs');
 const appearance = require('./appearance');
 const talk = require('./talk');
+const library = require('./library');
 const util = require('./util');
 
 const MIME = {
@@ -43,6 +44,7 @@ function apiData() {
     notebook: notebookListSafe(),
     needs: needs.listNeeds(),
     appearance: appearance.status(),
+    libraries: library.list(),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
   };
 }
@@ -240,6 +242,116 @@ function start() {
       }
       if (url.pathname === '/api/appearance/suggest' && req.method === 'POST') {
         sendJson(res, appearance.suggest(ident));
+        return;
+      }
+
+      // --- Bibliothèques de spécialisation (§ routes) ---
+      if (url.pathname === '/api/libraries' && req.method === 'GET') {
+        sendJson(res, library.list()); return;
+      }
+      if (url.pathname === '/api/libraries' && req.method === 'POST') {
+        const body = await readBody(req);
+        try { sendJson(res, library.create(ident, body)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/libraries/search' && req.method === 'GET') {
+        const q = url.searchParams.get('q') || '';
+        const lib = url.searchParams.get('library');
+        try { sendJson(res, library.search(q, lib)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/libraries/export' && req.method === 'GET') {
+        const id = url.searchParams.get('id');
+        try { sendJson(res, library.exportLibrary(id)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/libraries/import/analyse' && req.method === 'POST') {
+        const body = await readBody(req);
+        try { sendJson(res, library.importAnalyse(body.bundle)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/libraries/import' && req.method === 'POST') {
+        const body = await readBody(req);
+        try { sendJson(res, library.importActivate(body.bundle, ident, !!body.confirmed)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/library' && req.method === 'GET') {
+        const id = url.searchParams.get('id');
+        const detail = { meta: library.find(id).meta, sources: library.loadSources(id) };
+        sendJson(res, detail); return;
+      }
+      if (url.pathname === '/api/library' && req.method === 'PATCH') {
+        const body = await readBody(req);
+        try { sendJson(res, library.updateMeta(body.id, body.patch, ident)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      if (url.pathname === '/api/library' && req.method === 'DELETE') {
+        const body = await readBody(req);
+        try { sendJson(res, library.remove(body.id, ident)); }
+        catch (e) { sendError(res, e.message); }
+        return;
+      }
+      // sous-ressources d'une bibliothèque
+      const libSub = url.pathname.match(/^\/api\/library\/([^/]+)\/(\w+)(?:\/([^/]+))?(?:\/(\w+))?$/);
+      if (libSub) {
+        const [, lid, resource, rid, action] = libSub;
+        const body = await readBody(req);
+        try {
+          switch (resource) {
+            case 'sources':
+              if (req.method === 'POST') sendJson(res, library.addSource(lid, ident, body));
+              else if (req.method === 'PATCH') sendJson(res, library.updateSource(lid, rid, body, ident));
+              else if (req.method === 'DELETE') sendJson(res, library.removeSource(lid, rid, ident));
+              else sendJson(res, library.loadSources(lid));
+              break;
+            case 'knowledge':
+              if (req.method === 'POST') sendJson(res, library.addKnowledge(lid, ident, body));
+              else if (req.method === 'PATCH') sendJson(res, library.updateKnowledge(lid, rid, body, ident));
+              else if (req.method === 'DELETE') sendJson(res, library.removeKnowledge(lid, rid, ident));
+              else sendJson(res, library.knowledge(lid));
+              break;
+            case 'competencies':
+              if (req.method === 'POST') sendJson(res, library.addCompetency(lid, ident, body));
+              else if (req.method === 'PATCH') sendJson(res, library.updateCompetency(lid, rid, body, ident));
+              else if (req.method === 'DELETE') sendJson(res, library.removeCompetency(lid, rid, ident));
+              else sendJson(res, library.competencies(lid));
+              break;
+            case 'exercises':
+              if (req.method === 'POST') sendJson(res, library.addExercise(lid, ident, body));
+              else if (req.method === 'DELETE') sendJson(res, library.removeExercise(lid, rid, ident));
+              else sendJson(res, library.exercises(lid));
+              break;
+            case 'documents':
+              if (req.method === 'POST') sendJson(res, library.addDocument(lid, ident, body));
+              else if (req.method === 'DELETE' && rid) sendJson(res, library.removeDocument(lid, rid, ident));
+              else sendJson(res, library.documents(lid));
+              break;
+            case 'curriculum':
+              if (req.method === 'PUT') sendJson(res, library.setCurriculum(lid, body.stages || [], ident));
+              else sendJson(res, library.curriculum(lid));
+              break;
+            case 'contradictions':
+              if (req.method === 'POST') sendJson(res, library.addContradiction(lid, ident, body));
+              else if (req.method === 'PATCH') sendJson(res, library.resolveContradiction(lid, rid, body.note, ident));
+              else sendJson(res, (library.find(lid).meta.contradictions || []));
+              break;
+            case 'annotations':
+              if (req.method === 'POST') sendJson(res, library.annotate(lid, body.note, ident));
+              else sendJson(res, (library.find(lid).meta.notes || []));
+              break;
+            case 'journal':
+              sendJson(res, library.libraryJournal(lid));
+              break;
+            default:
+              sendError(res, 'Ressource inconnue: ' + resource);
+          }
+        } catch (e) { sendError(res, e.message); }
         return;
       }
 

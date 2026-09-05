@@ -14,6 +14,7 @@ const backup = require('./src/backup');
 const toolkit = require('./src/toolkit');
 const contract = require('./src/contract');
 const migrate = require('./src/migrate');
+const library = require('./src/library');
 
 const { PATHS, PORT, DEFAULT_FIRST_NAME } = config;
 
@@ -229,6 +230,160 @@ async function runAvatar(ident) {
   console.log(JSON.stringify(out, null, 2));
 }
 
+function flags(args) {
+  const fl = {};
+  const rest = [];
+  for (const a of args) {
+    const m = a.match(/^--([^=]+)=(.*)$/);
+    if (m) fl[m[1]] = m[2];
+    else rest.push(a);
+  }
+  return { flags: fl, rest };
+}
+
+function runLibrary(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0];
+
+  switch (sub) {
+    case 'list':
+      console.log(JSON.stringify(library.list(), null, 2));
+      break;
+    case 'create': {
+      const name = rest.slice(1).join(' ') || fl.name;
+      const lib = library.create(ident, {
+        name,
+        domains: fl.domain ? fl.domain.split(',') : undefined,
+        privacy: fl.private ? 'private' : fl.public ? 'public' : undefined,
+        level: fl.level,
+        description: fl.description,
+      });
+      console.log(JSON.stringify(lib, null, 2));
+      break;
+    }
+    case 'show':
+    case 'detail': {
+      const id = rest[1];
+      const d = library.find(id);
+      console.log(JSON.stringify(d, null, 2));
+      break;
+    }
+    case 'sources':
+      console.log(JSON.stringify(library.loadSources(rest[1]), null, 2));
+      break;
+    case 'knowledge':
+      console.log(JSON.stringify(library.knowledge(rest[1]), null, 2));
+      break;
+    case 'competencies':
+    case 'competences':
+      console.log(JSON.stringify(library.competencies(rest[1]), null, 2));
+      break;
+    case 'exercises':
+    case 'exercices':
+      console.log(JSON.stringify(library.exercises(rest[1]), null, 2));
+      break;
+    case 'curriculum':
+      console.log(JSON.stringify(library.curriculum(rest[1]), null, 2));
+      break;
+    case 'notes':
+      console.log(JSON.stringify((library.find(rest[1]).meta.notes || []), null, 2));
+      break;
+    case 'journal':
+      console.log(JSON.stringify(library.libraryJournal(rest[1]), null, 2));
+      break;
+    case 'search': {
+      const q = rest.slice(1).join(' ');
+      const res = library.search(q);
+      if (!res.length) console.log('Aucune correspondance.');
+      for (const r of res) {
+        console.log(`[${r.libraryName}] ${r.libraryId}`);
+        for (const h of r.hits) console.log(`  · [${h.family}] ${h.content}`);
+      }
+      break;
+    }
+    case 'export':
+      console.log(JSON.stringify(library.exportLibrary(rest[1]), null, 2));
+      break;
+    case 'source-add':
+    case 'add-source': {
+      const id = rest[1];
+      const title = rest.slice(2).join(' ');
+      console.log(JSON.stringify(library.addSource(id, ident, {
+        title, trust_level: fl.trust, type: fl.type, url: fl.url,
+      }), null, 2));
+      break;
+    }
+    case 'knowledge-add':
+    case 'add-knowledge': {
+      const id = rest[1];
+      const content = rest.slice(2).join(' ');
+      console.log(JSON.stringify(library.addKnowledge(id, ident, {
+        content, source_ids: fl.source ? [fl.source] : undefined, status: fl.status,
+      }), null, 2));
+      break;
+    }
+    case 'competence-add':
+    case 'add-competency': {
+      const id = rest[1];
+      const name = rest.slice(2).join(' ');
+      console.log(JSON.stringify(library.addCompetency(id, ident, { name }), null, 2));
+      break;
+    }
+    case 'competence-set':
+    case 'set-competency': {
+      console.log(JSON.stringify(library.updateCompetency(rest[1], rest[2], { state: rest[3] }, ident), null, 2));
+      break;
+    }
+    case 'contradiction-add':
+    case 'add-contradiction': {
+      console.log(JSON.stringify(library.addContradiction(rest[1], ident, {
+        knowledge_a: rest[2], knowledge_b: rest[3], note: fl.note,
+      }), null, 2));
+      break;
+    }
+    case 'note-add':
+    case 'add-note': {
+      console.log(JSON.stringify(library.annotate(rest[1], rest.slice(2).join(' '), ident), null, 2));
+      break;
+    }
+    case 'remove':
+    case 'delete':
+      console.log(JSON.stringify(library.remove(rest[1], ident), null, 2));
+      break;
+    case 'trash':
+      try {
+        const trash = require('fs').readdirSync(require('path').join(config.PATHS.libraries, '_trash'));
+        console.log(JSON.stringify(trash, null, 2));
+      } catch { console.log('Corbeille vide.'); }
+      break;
+    case 'restore':
+      console.log(JSON.stringify(library.restore(rest[1], ident), null, 2));
+      break;
+    case 'archive':
+      console.log(JSON.stringify(library.archive(rest[1], ident), null, 2));
+      break;
+    case 'health':
+      console.log(JSON.stringify(library.health(), null, 2));
+      break;
+    case 'import':
+      console.log('Import depuis la console web (bouton) ou via /api/libraries/import. Fichier : ' + fl.file);
+      break;
+    default:
+      console.log(
+        'Libraries — commandes :\n' +
+        '  list, health, search <requête>\n' +
+        '  create <nom> [--domain=a,b] [--private|--public] [--level=x]\n' +
+        '  show <id>, sources <id>, knowledge <id>, competencies <id>\n' +
+        '  curriculum <id>, notes <id>, journal <id>, export <id>\n' +
+        '  source-add <id> <titre> [--trust=A-E] [--type=TYPE] [--url=url]\n' +
+        '  knowledge-add <id> <contenu> [--source=<id>] [--status=ETAT]\n' +
+        '  competence-add <id> <nom>, competence-set <id> <comp> <ETAT>\n' +
+        '  contradiction-add <id> <a> <b>, note-add <id> <texte>\n' +
+        '  archive <id>, restore <id>, remove <id>, trash'
+      );
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -315,6 +470,13 @@ async function main() {
     case 'needs':
       console.log(JSON.stringify(require('./src/needs').listNeeds(), null, 2));
       break;
+    case 'library':
+    case 'libraries':
+      runLibrary(ident, args.slice(1));
+      break;
+    case 'lib':
+      runLibrary(ident, args.slice(1));
+      break;
 
     default:
       console.log(
@@ -322,7 +484,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], avatar\n' +
-        '  migrate <destination>'
+        '  library <sous-commande>, migrate <destination>'
       );
   }
 }

@@ -314,6 +314,88 @@ async function run() {
     }
   }
 
+  // 20. Bibliothèques (TEST_LIBRARIES)
+  console.log('\n20) BIBLIOTHÈQUES (TEST_LIBRARIES)');
+  if (ident) {
+    const library = require('../src/library');
+    const testLibId = 'test-lib-' + Date.now().toString(36);
+
+    try {
+      const lib = library.create(ident, { name: 'Bibliothèque de test', id: testLibId, privacy: 'private' });
+      report('librarie_creee', lib && lib.id === testLibId && lib.privacy === 'private');
+
+      report('bibliotheque_listee', library.list().some((l) => l.meta.id === testLibId));
+      report('sous_dossier_apprentissage', ['knowledge', 'documents', 'exercises', 'journal']
+        .every((d) => fs.existsSync(path.join(config.PATHS.libraries, testLibId, d))));
+
+      const src = library.addSource(testLibId, ident, { title: 'Cours de test', trust_level: 'B', type: 'COURS' });
+      report('source_ajoutee', !!src.id && src.trust_level === 'B' && src.status === 'ACTIVE');
+
+      const kn = library.addKnowledge(testLibId, ident, {
+        content: '2+2=4', source_ids: [src.id], status: 'LEARNING', confidence: 0.7,
+      });
+      report('connaissance_provenance', kn.STATUS === 'LEARNING' && kn.PROVENANCE.length === 1
+        && kn.PROVENANCE[0].title === 'Cours de test');
+
+      const comp = library.addCompetency(testLibId, ident, { name: 'Calcul' });
+      report('competence_jamais_mastered_auto', comp.state === 'UNKNOWN');
+      const forced = library.updateCompetency(testLibId, comp.id, { state: 'MASTERED', note: 'preuve tuteur' }, ident);
+      report('competence_mastered_par_tuteur', forced.state === 'MASTERED' && forced.evidence.length >= 1);
+      report('competence_historique', forced.history.length >= 2);
+
+      const ex = library.addExercise(testLibId, ident, { question: 'Combien font 2+2 ?', expected: '4' });
+      report('exercice_ajoute', !!ex.ID && ex.STATUS === 'active');
+
+      const doc = library.addDocument(testLibId, ident, {
+        name: 'cours.txt', type: 'TEXTE', content: 'code.js(); // jamais exécuté',
+      });
+      report('document_jamais_execute', doc.NEVER_EXECUTED === true);
+      report('document_liste', library.documents(testLibId).length === 1);
+      const removedDoc = library.removeDocument(testLibId, doc.ID, ident);
+      report('suppression_document', removedDoc.removed === true);
+
+      library.addContradiction(testLibId, ident, { knowledge_a: 'X', knowledge_b: 'Y', note: 'conflit' });
+      const contradictions = library.find(testLibId).meta.contradictions || [];
+      report('contradiction_signalee', contradictions.length === 1 && contradictions[0].status === 'OPEN');
+      library.resolveContradiction(testLibId, contradictions[0].id, 'résolue', ident);
+      report('contradiction_resolue', (library.find(testLibId).meta.contradictions[0].status) === 'RESOLVED');
+
+      library.annotate(testLibId, 'note du tuteur', ident);
+      report('annotation_tuteur', (library.find(testLibId).meta.notes || []).some((n) => n.text === 'note du tuteur'));
+
+      library.setCurriculum(testLibId, [{ level: 1, topics: ['addition'] }], ident);
+      report('curriculum_enregistre', library.curriculum(testLibId).length === 1);
+
+      const journalLib = library.libraryJournal(testLibId);
+      report('journal_bibliotheque', journalLib.some((e) => e.EVENT === 'LIBRARY_CREATED'));
+
+      const hits = library.search('2+2', testLibId);
+      report('recherche_n1_connaissance', hits.length === 1 && hits[0].hits.some((h) => h.family === 'knowledge'));
+
+      const bundle = library.exportLibrary(testLibId);
+      report('export_format', bundle.format === 'aigg-library' && bundle.version === 1);
+      const analyse = library.importAnalyse(bundle);
+      report('import_analyse', analyse.actionable === true && analyse.apercu.name === 'Bibliothèque de test');
+      const imported = library.importActivate(bundle, ident, true);
+      report('import_active', imported.imported === true);
+
+      library.remove(testLibId, ident);
+      report('bibliotheque_supprimee_vers_corbeille',
+        fs.existsSync(path.join(config.PATHS.libraries, '_trash', testLibId)));
+      report('bibliotheque_sortie_de_liste', !library.list().some((l) => l.meta.id === testLibId));
+
+      // Exemples publics toujours visibles (structure, PAS de savoir inventé).
+      const examples = library.list().filter((l) => l.meta.id.startsWith('science-example') || l.meta.id.startsWith('programming-example'));
+      report('exemples_publics_listes', library.list().some((l) => l.meta.id === 'science-example') && library.list().some((l) => l.meta.id === 'programming-example'));
+      report('exemples_sans_savoir_invente', examples.every((l) => l.knowledge === 0));
+    } catch (e) {
+      report('test_libraries_bloc', false, e.message);
+    } finally {
+      const candidates = library.list().filter((l) => l.meta.id.startsWith('test-lib-'));
+      for (const c of candidates) { try { library.remove(c.meta.id, ident); } catch {} }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

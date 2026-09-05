@@ -1,0 +1,18 @@
+{
+  "id": "exemple",
+  "name": "Exemple de bibliothèque",
+  "description": "Modèle de bibliothèque de spécialisation.",
+  "owner": "tuteur",
+  "created_at": "",
+  "updated_at": "",
+  "status": "active",
+  "level": "beginner",
+  "purpose": "learning",
+  "domains": ["general"],
+  "languages": ["fr"],
+  "learning_mode": "guided",
+  "privacy": "private",
+  "priorities": [],
+  "notes": [],
+  "contradictions": []
+}

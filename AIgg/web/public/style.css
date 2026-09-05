@@ -118,3 +118,8 @@ input, select, textarea {
 .chat-msg .meta { font-size: .7rem; color: var(--ap-muted); }
 .chat-msg.from-ai { background: var(--ap-accent); color: var(--ap-accent-text); }
 .chat-msg.from-tutor { background: var(--ap-panel); border: 1px solid var(--ap-accent); }
+
+.lib-actions { margin-top: .5rem; }
+.lib-detail { display: none; margin-top: .5rem; padding: .5rem; background: var(--ap-panel); border-radius: 6px; font-size: .8rem; }
+.lib-detail h4 { color: var(--ap-muted); margin: .5rem 0 .3rem; font-size: .82rem; }
+.src-row { padding: .25rem 0; border-bottom: 1px dashed var(--ap-accent); }

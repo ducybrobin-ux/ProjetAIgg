@@ -3,6 +3,54 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.1.1 — 2026-09-05 — bibliothèques de spécialisation (cahier)
+
+### Ajouts
+- Moteur `src/library.js` : environnement d'apprentissage structuré, 100 %
+  natif (JSON + fs), avec cycle de vie complet, sources, documents,
+  connaissances (avec provenance), compétences, curriculum, exercices,
+  contradictions, annotations, journal local, recherche niveau 1, import /
+  export `aigg-library` v1.
+- Distinctions absolues respectées : BIBLIOTHÈQUE ≠ MÉMOIRE ; SOURCE ≠
+  DOCUMENT ≠ CONNAISSANCE ≠ COMPÉTENCE ; document/code jamais exécuté
+  (`NEVER_EXECUTED`) ; compétence jamais `MASTERED` automatiquement (preuve du
+  tuteur requise).
+- Templates `templates/library.json`, `source.json`, `curriculum.json`,
+  `competency.json`.
+- Exemples publics de structure `libraries/examples/science/` et
+  `libraries/examples/programming/` (aucun savoir pré-rempli).
+- Privée par défaut : `libraries/*` (sauf `examples/`) et `libraries/_trash/`
+  exclus du dépôt public (`.gitignore`).
+- CLI `AIgg.cmd library …` (list, health, create, show, sources, knowledge,
+  competencies, curriculum, notes, journal, search, export, source-add,
+  knowledge-add, competence-add, competence-set, contradiction-add, note-add,
+  archive, restore, remove, trash).
+- API HTTP `/api/libraries*` (CRUD, sources, connaissances, compétences,
+  exercices, documents, curriculum, contradictions, annotations, journal,
+  recherche, export, import avec analyse/confirmation).
+- Onglet web « Bibliothèques » dans la console du tuteur (liste, détail,
+  création privée, recherche).
+- Suite de tests : **93 PASS / 0 FAIL** (+ 25 vérifications TEST_LIBRARIES).
+
+### Corrections
+- `libRoot()` résolvait seulement `libraries/<id>` ; les bibliothèques
+  imbriquées (exemples publics) étaient introuvables par `find()` → recherche
+  récursive de l'id (hors `_trash`).
+- `importActivate` posait l'id retourné par `create()` (suffixe anti-collision
+  pris en compte) ; les champs d'import en casse haute étaient ignorés
+  (connaissances/documents/exercices) → normalisation haut/bas.
+- `/api/library?id=` imbriquait `meta.meta` → renvoie désormais
+  `{ meta, sources }` directement utilisable.
+
+### Sécurité
+- Bibliothèques privées par défaut ; corbeille `_trash` exclue du dépôt.
+- Documents importés et code jamais exécutés.
+
+### Documentation
+- `docs/LIBRARIES.md` (nouveau), `docs/STATE.md`, `docs/CHANGELOG.md`,
+  `docs/DEVELOPMENT.md`, `docs/SECURITY.md`, `docs/ARCHITECTURE.md`,
+  `docs/README.md`, `README.md` racine mis à jour.
+
 ## v0.1.0 — 2026-09-05 — socle N0 + corpus du Prompt Maître
 
 ### Ajouts

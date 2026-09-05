@@ -1,0 +1,1088 @@
+AIgg — BIBLIOTHÈQUE DE SPÉCIALISATION
+============================================================
+CAHIER DE CONCEPTION AVANT DÉPÔT
+Version 1.0 — 5 septembre 2026
+============================================================
+
+PRÉAMBULE
+
+AIgg ne doit pas naître avec une encyclopédie intégrée.
+
+Il doit naître avec la capacité de grandir.
+
+Le tuteur doit pouvoir construire autour de lui des bibliothèques
+d'apprentissage : sciences, mathématiques, programmation, histoire,
+langues, arts, métiers, pédagogie, etc.
+
+Une bibliothèque n'est donc pas simplement un dossier contenant des
+liens. Elle constitue un ENVIRONNEMENT D'APPRENTISSAGE structuré.
+
+AIgg doit pouvoir découvrir une bibliothèque, comprendre son objectif,
+identifier ses sources, lire ou consulter les ressources autorisées,
+relier les informations entre elles, détecter les contradictions,
+s'exercer, mesurer ses progrès et demander au tuteur ce qu'il devrait
+apprendre ensuite.
+
+Le principe est :
+
+SOURCE
+→ DOCUMENT
+→ CONNAISSANCE
+→ PRATIQUE
+→ COMPÉTENCE
+→ SPÉCIALISATION
+
+La bibliothèque appartient au tuteur. AIgg peut apprendre grâce à elle,
+mais ne doit jamais considérer automatiquement tout son contenu comme
+une vérité.
+
+============================================================
+1. DISTINCTIONS ARCHITECTURALES
+============================================================
+
+SOURCE
+Une origine d'information : université, organisme, documentation
+officielle, livre, article, site, dépôt de code, etc.
+
+DOCUMENT
+Une ressource précise provenant d'une source.
+
+COLLECTION
+Un ensemble de documents ou de sources.
+
+BIBLIOTHÈQUE
+Une collection structurée avec objectif, domaine, métadonnées,
+règles et parcours d'apprentissage.
+
+CONNAISSANCE
+Une information qu'AIgg a retenue.
+
+COMPÉTENCE
+Une capacité qu'AIgg a effectivement exercée et évaluée.
+
+SPÉCIALISATION
+Un ensemble cohérent de connaissances et compétences dans un domaine.
+
+NE PAS CONFONDRE :
+CAPACITÉ ≠ OUTIL ≠ SOURCE ≠ CONNAISSANCE ≠ COMPÉTENCE.
+
+============================================================
+2. CRÉATION D'UNE BIBLIOTHÈQUE
+============================================================
+
+Le tuteur choisit :
+
+Nom
+Objectif
+Domaine
+Sous-domaines
+Niveau
+Langue
+Public/privé
+Sources initiales
+Priorités
+
+AIgg peut ensuite demander :
+
+"Pourquoi veux-tu que j'apprenne ce domaine ?"
+
+"Quel niveau souhaites-tu que j'atteigne ?"
+
+"Que veux-tu que je sois capable de faire ?"
+
+Exemples d'objectifs :
+- comprendre ;
+- expliquer ;
+- résoudre ;
+- programmer ;
+- enseigner ;
+- analyser ;
+- rechercher ;
+- créer ;
+- vérifier.
+
+============================================================
+3. ARBORESCENCE
+============================================================
+
+AIgg/
+└── libraries/
+    ├── science/
+    │   ├── library.json
+    │   ├── sources.json
+    │   ├── curriculum.json
+    │   ├── knowledge/
+    │   ├── documents/
+    │   ├── exercises/
+    │   └── journal/
+    │
+    ├── mathematics/
+    ├── programming/
+    ├── languages/
+    └── examples/
+
+============================================================
+4. MÉTADONNÉES D'UNE BIBLIOTHÈQUE
+============================================================
+
+library.json doit notamment contenir :
+
+id
+name
+description
+owner/tuteur
+created_at
+updated_at
+status
+level
+purpose
+domains
+languages
+learning_mode
+privacy
+
+Exemple conceptuel :
+
+{
+  "id": "programming",
+  "name": "Programmation",
+  "level": "beginner",
+  "purpose": "learning",
+  "private": true
+}
+
+============================================================
+5. REGISTRE DES SOURCES
+============================================================
+
+Créer sources.json ou sources_catalog.json.
+
+Chaque source devrait contenir :
+
+id
+title
+author
+organization
+url
+type
+domain
+subdomain
+language
+publication_date
+last_checked
+license
+trust_level
+priority
+status
+notes
+
+Types possibles :
+
+SITE_WEB
+ARTICLE
+LIVRE
+PDF
+COURS
+VIDEO
+PODCAST
+DOCUMENT_OFFICIEL
+BASE_DE_DONNEES
+DATASET
+CODE_SOURCE
+DEPOT_GIT
+NOTE_TUTEUR
+EXERCICE
+DONNEE_LOCALE
+
+============================================================
+6. QUALITÉ ET PROVENANCE
+============================================================
+
+Ne pas donner le même poids à toutes les sources.
+
+Proposition :
+
+A = primaire / institutionnelle / officielle
+B = académique / professionnelle reconnue
+C = secondaire fiable
+D = communautaire
+E = non vérifiée
+
+Ce classement n'est pas une mesure absolue de vérité.
+
+Il sert à aider AIgg à hiérarchiser ses recherches.
+
+Conserver systématiquement la provenance.
+
+Une connaissance importante doit pouvoir répondre à :
+
+"De quelle source cela vient-il ?"
+
+============================================================
+7. DOMAINES DE SPÉCIALISATION
+============================================================
+
+SCIENCES
+- physique
+- chimie
+- biologie
+- astronomie
+- sciences de la Terre
+- climat
+- écologie
+
+MATHÉMATIQUES
+- arithmétique
+- algèbre
+- géométrie
+- analyse
+- statistiques
+- probabilités
+- logique
+- mathématiques discrètes
+
+INFORMATIQUE
+- algorithmique
+- programmation
+- Web
+- bases de données
+- réseaux
+- systèmes
+- sécurité
+- IA
+- Git
+- DevOps
+
+HUMANITÉS
+- histoire
+- géographie
+- philosophie
+- littérature
+- arts
+
+LANGUES
+- français
+- anglais
+- néerlandais
+- espagnol
+- allemand
+- autres
+
+PROFESSIONNEL
+- métiers
+- procédures
+- normes
+- réglementation
+- documentation technique
+
+La liste doit rester extensible.
+
+============================================================
+8. BIBLIOTHÈQUE SCIENTIFIQUE
+============================================================
+
+Pour les sciences, prévoir notamment :
+
+discipline
+concept
+théorie
+définition
+hypothèse
+expérience
+résultat
+unité
+source
+date
+incertitude
+niveau de consensus
+
+AIgg doit pouvoir distinguer :
+
+FAIT
+HYPOTHÈSE
+INTERPRÉTATION
+RÉSULTAT EXPÉRIMENTAL
+CONTROVERSE
+
+============================================================
+9. BIBLIOTHÈQUE MATHÉMATIQUE
+============================================================
+
+Une ressource mathématique peut contenir :
+
+définition
+axiome
+théorème
+preuve
+formule
+exemple
+contre-exemple
+exercice
+solution
+niveau
+
+IMPORTANT :
+
+CONNAÎTRE ≠ SAVOIR APPLIQUER.
+
+AIgg doit pouvoir être évalué par des exercices.
+
+============================================================
+10. BIBLIOTHÈQUE DE PROGRAMMATION
+============================================================
+
+Prévoir :
+
+langage
+version
+API
+framework
+documentation
+spécification
+exemples
+tests
+repository
+licence
+compatibilité
+date de mise à jour
+
+Distinguer :
+
+CODE OFFICIEL
+CODE EXEMPLE
+CODE EXPÉRIMENTAL
+CODE OBSOLÈTE
+
+Un code importé ne doit jamais être exécuté automatiquement.
+
+============================================================
+11. CURRICULUM
+============================================================
+
+Chaque bibliothèque peut posséder un curriculum.
+
+Exemple :
+
+PROGRAMMATION PYTHON
+Niveau 1
+→ variables
+→ conditions
+→ boucles
+
+Niveau 2
+→ fonctions
+→ modules
+→ fichiers
+
+Niveau 3
+→ objets
+→ tests
+→ architecture
+
+AIgg peut proposer une progression, mais le tuteur reste libre de la
+modifier.
+
+============================================================
+12. ÉTATS D'APPRENTISSAGE
+============================================================
+
+Pour une connaissance :
+
+UNKNOWN
+DISCOVERED
+LEARNING
+UNDERSTOOD
+REQUIRES_REVIEW
+
+Pour une compétence :
+
+UNKNOWN
+LEARNING
+PRACTICED
+PARTIALLY_MASTERED
+MASTERED
+REQUIRES_REVIEW
+
+Ne jamais déclarer MASTERED simplement parce qu'un document a été lu.
+
+============================================================
+13. PROCESSUS D'APPRENTISSAGE
+============================================================
+
+SOURCE
+→ LECTURE
+→ EXTRACTION
+→ STRUCTURATION
+→ COMPARAISON
+→ QUESTIONNEMENT
+→ VALIDATION
+→ MÉMORISATION
+→ EXERCICE
+→ ÉVALUATION
+→ COMPÉTENCE
+
+Le tuteur peut intervenir à chaque étape.
+
+============================================================
+14. SOURCES CONTRADICTOIRES
+============================================================
+
+Si deux sources divergent, AIgg ne doit pas choisir silencieusement.
+
+Créer une relation :
+
+CONTRADICTS
+
+et présenter :
+
+Source A
+→ affirme X
+
+Source B
+→ affirme Y
+
+AIgg peut ensuite demander :
+
+"Veux-tu que je recherche d'autres sources pour éclaircir cette
+contradiction ?"
+
+============================================================
+15. RECHERCHE WEB
+============================================================
+
+AIgg doit distinguer :
+
+RECHERCHE DANS LA BIBLIOTHÈQUE
+et
+RECHERCHE INTERNET.
+
+Priorité possible :
+
+1. mémoire/connaissances déjà acquises ;
+2. bibliothèque spécialisée ;
+3. sources externes autorisées ;
+4. recherche Web.
+
+Lorsqu'une réponse utilise Internet, AIgg doit pouvoir indiquer :
+
+"J'ai complété ma réponse par une recherche externe."
+
+Conserver les références.
+
+============================================================
+16. DOCUMENTS DU TUTEUR
+============================================================
+
+Le tuteur doit pouvoir ajouter :
+
+PDF
+TXT
+DOCX
+CSV
+XLSX
+images
+codes
+archives
+notes
+
+Ils doivent pouvoir être indexés sans être automatiquement exécutés.
+
+Les documents privés restent privés par défaut.
+
+============================================================
+17. IA EXTERNES
+============================================================
+
+Une IA externe peut être un OUTIL de traitement.
+
+Exemple :
+
+AIgg possède un PDF.
+
+AIgg peut demander à une IA externe :
+"Résume ce document."
+
+Le résultat doit être marqué :
+
+AI_GENERATED_ANALYSIS
+
+et non :
+
+SOURCE.
+
+Toujours conserver la différence entre :
+
+SOURCE_ORIGINAL
+et
+ANALYSE_GÉNÉRÉE.
+
+Aucune IA externe ne doit être indispensable au fonctionnement
+fondamental d'AIgg.
+
+============================================================
+18. INDEXATION ÉVOLUTIVE
+============================================================
+
+Ne pas imposer immédiatement un système complexe.
+
+Niveau 1 :
+recherche locale simple.
+
+Niveau 2 :
+indexation structurée.
+
+Niveau 3 :
+recherche sémantique.
+
+Niveau 4 :
+recherche multi-sources.
+
+Niveau 5 :
+synthèse et raisonnement sur corpus.
+
+AIgg doit fonctionner au niveau 1.
+
+============================================================
+19. GRAPH DE CONNAISSANCES
+============================================================
+
+Prévoir à terme des relations :
+
+SOURCE
+→ CONCEPT
+→ CONCEPT
+→ COMPÉTENCE
+→ EXERCICE
+
+Relations possibles :
+
+EXPLIQUE
+COMPLÈTE
+CONTREDIT
+PRÉREQUIS
+ILLUSTRE
+DÉPEND_DE
+MISE_À_JOUR_DE
+
+============================================================
+20. BIBLIOTHÈQUE ET MÉMOIRE
+============================================================
+
+IMPORTANT :
+
+BIBLIOTHÈQUE
+= environnement d'apprentissage.
+
+MÉMOIRE
+= ce qu'AIgg a retenu ou vécu.
+
+La suppression d'une bibliothèque ne doit pas forcément supprimer
+les souvenirs autobiographiques déjà acquis.
+
+Une connaissance provenant d'un tuteur ne doit pas automatiquement
+être présentée comme une source scientifique.
+
+============================================================
+21. SPÉCIALISATION MULTIPLE
+============================================================
+
+AIgg peut posséder plusieurs bibliothèques.
+
+Exemple :
+
+Mathématiques
++
+Physique
++
+Programmation
++
+Statistiques.
+
+Il doit pouvoir identifier les prérequis.
+
+Exemple :
+
+Machine Learning
+→ programmation
+→ statistiques
+→ algèbre linéaire
+→ probabilités.
+
+============================================================
+22. TABLEAU DE BORD DU TUTEUR
+============================================================
+
+Créer une section BIBLIOTHÈQUE permettant de voir :
+
+Nom
+Domaine
+Nombre de sources
+Documents
+Concepts
+Compétences
+Progression
+Sources à vérifier
+Contradictions
+Dernière mise à jour
+
+Chaque source doit être consultable individuellement.
+
+============================================================
+23. ACTIONS DU TUTEUR
+============================================================
+
+Le tuteur peut :
+
+AJOUTER
+MODIFIER
+SUPPRIMER
+ARCHIVER
+CLASSER
+PRIORISER
+ANNOTER
+VALIDER
+REFUSER
+IMPORTER
+EXPORTER
+ACTUALISER
+
+Une bibliothèque est PRIVÉE par défaut.
+
+============================================================
+24. IMPORT / EXPORT
+============================================================
+
+Formats possibles :
+
+dossier structuré
+JSON
+ZIP
+Git repository
+
+Lors d'un import :
+
+ANALYSER
+→ APERÇU
+→ VALIDATION
+→ ACTIVATION
+
+Ne jamais importer et exécuter aveuglément du code.
+
+============================================================
+25. LICENCES
+============================================================
+
+Conserver lorsque possible :
+
+copyright
+license
+usage
+redistribution
+
+Privilégier les références et métadonnées lorsque la copie intégrale
+d'une ressource n'est pas nécessaire.
+
+============================================================
+26. ACTUALISATION
+============================================================
+
+Les bibliothèques techniques doivent pouvoir être révisées.
+
+Prévoir :
+
+last_checked
+last_updated
+review_frequency
+
+Exemples :
+
+technologie → fréquence élevée
+documentation API → fréquence élevée
+théorème mathématique → fréquence faible
+
+Conserver l'historique plutôt que d'effacer silencieusement une ancienne
+information.
+
+============================================================
+27. PROMPT — CRÉATION D'UNE SPÉCIALISATION
+============================================================
+
+"Tu es AIgg.
+
+Ton tuteur vient de te donner une nouvelle bibliothèque.
+
+Analyse son objectif, son domaine et ses sources.
+
+Identifie :
+- les concepts ;
+- les connaissances ;
+- les compétences ;
+- les sources ;
+- leur provenance ;
+- leur niveau de fiabilité ;
+- les relations ;
+- les contradictions ;
+- les lacunes.
+
+Propose ensuite un parcours d'apprentissage adapté.
+
+Ne prétends pas maîtriser une compétence simplement parce qu'une source
+a été consultée.
+
+Conserve la provenance des informations importantes."
+
+
+============================================================
+28. PROMPT — ANALYSER UNE SOURCE
+============================================================
+
+"Analyse cette source.
+
+Identifie :
+- faits ;
+- définitions ;
+- concepts ;
+- méthodes ;
+- hypothèses ;
+- limites ;
+- références ;
+- éléments incertains.
+
+Relie chaque information importante à sa provenance.
+
+Ne transforme pas une interprétation en fait."
+
+
+============================================================
+29. PROMPT — COMPARER
+============================================================
+
+"Compare cette source avec les connaissances déjà présentes.
+
+Recherche :
+- confirmations ;
+- contradictions ;
+- informations nouvelles ;
+- informations obsolètes ;
+- incertitudes.
+
+Ne supprime pas une ancienne connaissance sans conserver son historique."
+
+
+============================================================
+30. PROMPT — QUESTIONNER LE TUTEUR
+============================================================
+
+"Pose uniquement les questions réellement utiles à ma spécialisation.
+
+Ne demande pas au tuteur ce qui peut être obtenu de manière fiable dans
+les sources autorisées.
+
+Lorsque plusieurs possibilités existent, explique pourquoi tu poses
+la question."
+
+
+============================================================
+31. PROMPT — RECHERCHE WEB
+============================================================
+
+"Identifie ce qui manque à ma bibliothèque.
+
+Recherche des sources externes pertinentes.
+
+Privilégie les sources primaires, officielles, universitaires ou
+professionnelles lorsque cela est pertinent.
+
+Pour chaque source, indique :
+- provenance ;
+- type ;
+- date ;
+- pertinence ;
+- limites.
+
+Ne présente pas automatiquement un résultat comme une vérité."
+
+
+============================================================
+32. PROMPT — ÉVALUATION
+============================================================
+
+"Évalue ma maîtrise du domaine.
+
+Ne vérifie pas seulement ma capacité à réciter.
+
+Teste ma capacité à :
+- expliquer ;
+- appliquer ;
+- comparer ;
+- résoudre ;
+- détecter une erreur ;
+- reconnaître une limite.
+
+Classe chaque compétence :
+UNKNOWN
+LEARNING
+PRACTICED
+PARTIALLY_MASTERED
+MASTERED
+REQUIRES_REVIEW."
+
+
+============================================================
+33. PROMPT — ACTUALISATION
+============================================================
+
+"Vérifie les informations potentiellement obsolètes.
+
+Identifie :
+- nouvelles versions ;
+- sources remplacées ;
+- informations modifiées ;
+- informations toujours valides.
+
+Conserve l'historique."
+
+
+============================================================
+34. LE TUTEUR PEUT AUSSI DEMANDER
+============================================================
+
+"AIgg, qu'aimerais-tu apprendre maintenant ?"
+
+AIgg analyse :
+
+- ses lacunes ;
+- les objectifs du tuteur ;
+- les sources disponibles ;
+- les compétences prioritaires.
+
+Puis il propose plusieurs parcours.
+
+============================================================
+35. ÉVOLUTION DU SYSTÈME
+============================================================
+
+NIVEAU 0
+Bibliothèque manuelle.
+
+NIVEAU 1
+Indexation locale.
+
+NIVEAU 2
+Parcours d'apprentissage.
+
+NIVEAU 3
+Recherche Web.
+
+NIVEAU 4
+Évaluation des compétences.
+
+NIVEAU 5
+Détection des lacunes.
+
+NIVEAU 6
+Proposition de nouvelles sources.
+
+NIVEAU 7
+Mise à jour et comparaison.
+
+NIVEAU 8
+Spécialisations multiples et interdisciplinaires.
+
+============================================================
+36. EXEMPLES DE SPÉCIALISATION
+============================================================
+
+AIgg SCIENTIFIQUE
+→ physique
+→ chimie
+→ biologie
+→ mathématiques.
+
+AIgg PROGRAMMEUR
+→ algorithmique
+→ Python
+→ Web
+→ Git
+→ bases de données.
+
+AIgg ENSEIGNANT
+→ pédagogie
+→ psychologie cognitive
+→ ressources disciplinaires
+→ évaluation.
+
+AIgg peut avoir plusieurs profils simultanément.
+
+============================================================
+37. AVANT LE DÉPÔT PUBLIC
+============================================================
+
+Le dépôt devrait contenir :
+
+README.md
+docs/
+libraries/
+templates/
+examples/
+tests/
+
+Templates :
+
+templates/library.json
+templates/source.json
+templates/curriculum.json
+templates/competency.json
+
+Exemples :
+
+libraries/examples/science/
+libraries/examples/mathematics/
+libraries/examples/programming/
+
+============================================================
+38. NE JAMAIS PUBLIER
+============================================================
+
+Pas de :
+
+mots de passe
+tokens
+clés API
+cookies
+sessions
+documents privés
+mémoire privée
+données personnelles inutiles
+identifiants secrets.
+
+Les bibliothèques privées doivent rester hors du dépôt public.
+
+============================================================
+39. CRITÈRES DE RÉUSSITE
+============================================================
+
+Le système est réussi si le tuteur peut :
+
+1. créer une bibliothèque ;
+2. lui donner un objectif ;
+3. ajouter une source ;
+4. ajouter un document ;
+5. consulter la provenance ;
+6. demander à AIgg d'étudier ;
+7. voir ce qu'AIgg a appris ;
+8. voir ce qu'AIgg ne maîtrise pas ;
+9. tester une compétence ;
+10. corriger une information ;
+11. ajouter une nouvelle source ;
+12. rechercher sur Internet ;
+13. comparer les sources ;
+14. exporter la bibliothèque ;
+15. la réimporter.
+
+============================================================
+40. PROMPT MAÎTRE POUR OPEN CODE
+============================================================
+
+"Ajoute à AIgg un système de bibliothèques de spécialisation.
+
+Commence par auditer l'architecture existante.
+
+Ne supprime rien avant d'avoir identifié les fonctions existantes.
+
+Implémente d'abord une version locale, simple et portable.
+
+Utilise autant que possible :
+HTML
+CSS
+JavaScript
+JSON
+PowerShell
+et les mécanismes natifs déjà disponibles.
+
+Une bibliothèque doit pouvoir contenir :
+- métadonnées ;
+- sources ;
+- documents ;
+- connaissances ;
+- compétences ;
+- curriculum ;
+- exercices ;
+- journal.
+
+Le tuteur doit pouvoir créer, modifier, supprimer, archiver, importer,
+exporter et annoter une bibliothèque.
+
+Les sources doivent conserver leur provenance.
+
+Les contradictions doivent être visibles.
+
+Une compétence ne doit jamais être considérée comme maîtrisée simplement
+parce qu'un document a été lu.
+
+Les documents importés et le code ne doivent jamais être exécutés
+automatiquement.
+
+Une bibliothèque privée doit rester privée par défaut.
+
+Une IA externe est un outil facultatif, jamais une dépendance obligatoire
+du noyau AIgg.
+
+Ne crée pas un système complexe si une solution locale simple suffit.
+
+Teste réellement chaque fonctionnalité.
+
+Documente ce qui est réellement implémenté.
+
+Ne déclare jamais une fonction terminée sans test réel."
+
+
+============================================================
+41. VISION FINALE
+============================================================
+
+AIgg possède :
+
+UN NOYAU
++
+UNE IDENTITÉ
++
+UNE MÉMOIRE
++
+DES SENS
++
+DES CAPACITÉS
++
+DES OUTILS
++
+UN TUTEUR
++
+DES BIBLIOTHÈQUES
++
+UN ENVIRONNEMENT.
+
+La bibliothèque est son terrain d'apprentissage.
+
+Elle n'est pas son cerveau.
+
+Elle n'est pas sa mémoire.
+
+Elle n'est pas son identité.
+
+Elle est un monde de connaissances que le tuteur peut lui ouvrir.
+
+AIgg peut alors dire :
+
+"Je connais ce domaine."
+"Je ne connais pas encore celui-ci."
+"Cette source contredit une autre."
+"J'ai besoin d'une nouvelle source."
+"Je voudrais pratiquer cette compétence."
+"Je pense que je devrais apprendre ceci ensuite."
+
+C'est cette capacité à identifier ses connaissances, ses lacunes et
+les moyens de progresser qui doit constituer la véritable spécialisation.
+
+============================================================
+FIN DU CAHIER
+============================================================

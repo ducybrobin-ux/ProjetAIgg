@@ -12,6 +12,12 @@ inbox/
 outbox/
 backups/
 
+# Bibliothèques de spécialisation du tuteur : privées par défaut
+libraries/*
+!libraries/examples/
+!libraries/examples/**
+libraries/_trash/
+
 # Fichiers temp
 *.tmp
 *.log
