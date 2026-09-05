@@ -96,3 +96,35 @@ Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.1 · Suite de tests : 93
   (déjà exclu du dépôt public). Rien n'est perdu : mêmes données, autre dossier.
 - `web/` → les fichiers sont sous `web/public/` (index.html, style.css, app.js),
   équivalent direct de `web/` cible.
+
+## PROCHAIN TRAVAIL (organisé le 2026-09-05, fin de journée v0.1.1)
+
+Priorité d'ordre décroissant ; chaque item garde un critère observable.
+
+### Maîtrise de la pile web (tuteur)
+- [ ] Consulter la console web http://127.0.0.1:8070/ : onglets Conversation,
+      Demandes, Apparence, Bibliothèques (créer une bibliothèque privée, ajouter
+      une source + connaissance + compétence, vérifier la recherche) — critère :
+      aucune erreur console, données visibles après rechargement.
+- [ ] Décider de la prochaine fonctionnalité (propositions ci-dessous) et le
+      noter ici avant de commencer.
+
+### Améliorations techniques courtes (liste d'attente)
+- [ ] `tools/notebook/notebook.js` : `runTest()` et le test `NOTEBOOK RÉEL`
+      créent des entrées persistantes (`test_suite`, `test_outil_notebook`) qui
+      s'accumulent — nettoyage à l'issue du test souhaitable (le 2026-09-05 :
+      25 entrées résiduelles purgées manuellement).
+- [ ] `tests/run-tests.js` (section 4 MÉMOIRE) : l'entrée `{question:'test',
+      answer:'ok'}` n'est pas supprimée à la fin → suppression automatique
+      souhaitable (4 résidus purgés manuellement le 2026-09-05).
+- [ ] Observer si le mode `library` CLI a besoin d'une aide en français plus
+      détaillée (`AIgg.cmd library` sans argument l'affiche déjà).
+
+### Évolutions prévues par les cahiers (non commencées — ne pas prétendre le contraire)
+- [ ] Recherche bibliothèque **niveau 2** : import/export réel multi-fournisseur,
+      calcul de similarité, multilingue (§18 et §24 du cahier bibliothèque).
+- [ ] Communication externe e-mail (PHASE 4 du Prompt Maître).
+- [ ] Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
+- [ ] IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
+- [ ] Voix (synthèse + reconnaissance), vision (caméra) ; hébergement Web et
+      publication contrôlée (PHASE 6-7) ; `MOURIR` (procédure explicite requise).
