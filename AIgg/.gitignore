@@ -1,0 +1,17 @@
+# Données privées d'identité et de mémoire — jamais publier
+core/identity.json
+core/birth_certificate.json
+core/state.json
+core/capabilities.json
+core/permissions.json
+
+# Mémoire, journaux, courriers, sauvegardes
+memory/
+journal/
+inbox/
+outbox/
+backups/
+
+# Fichiers temp
+*.tmp
+*.log

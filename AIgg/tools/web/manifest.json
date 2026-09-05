@@ -1,0 +1,19 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "title": "Web",
+  "description": "Lecture de pages Web (HTTP) et recherche multi-sources.",
+  "category": "perception",
+  "capability": "RECHERCHER",
+  "need": "Accéder au monde extérieur et vérifier des informations par comparaison de sources.",
+  "interactions": ["web.read", "web.search"],
+  "needs_permissions": ["network"],
+  "risks": [
+    "Fraîcheur et fiabilité des sources",
+    "Vérité automatique interdite : comparer plusieurs sources",
+    "Lecture seule, aucune modification externe"
+  ],
+  "requires_external_ai": false,
+  "independence": true,
+  "reversibility": "révocable"
+}

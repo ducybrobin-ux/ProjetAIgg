@@ -1,0 +1,18 @@
+{
+  "name": "avatar",
+  "version": "0.1.0",
+  "title": "Avatar",
+  "description": "Représentation visuelle déterministe d'AIgg (SVG généré localement).",
+  "category": "identite",
+  "capability": "REPRESENTATION",
+  "need": "Fournir à AIgg une représentation visuelle cohérente et non imposée à la naissance.",
+  "interactions": ["avatar.generate"],
+  "needs_permissions": ["local_files"],
+  "risks": [
+    "L'avatar est une représentation, pas l'identité technique",
+    "Aucune donnée privée dans l'avatar"
+  ],
+  "requires_external_ai": false,
+  "independence": true,
+  "reversibility": "supprimable / régénérable"
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIgg — Console du tuteur</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-row">
+      <img id="avatar-img" src="/avatar.svg" alt="avatar AIgg" class="avatar">
+      <div>
+        <h1>AIgg <span id="status-badge" class="badge">…</span></h1>
+        <p id="welcome"></p>
+      </div>
+      <div class="state-actions">
+        <button id="btn-sleep">Dormir</button>
+        <button id="btn-wake">Réveiller</button>
+        <button id="btn-backup">Sauvegarder</button>
+      </div>
+    </div>
+  </header>
+
+  <nav id="tabs">
+    <button class="tab active" data-tab="identity">Identité</button>
+    <button class="tab" data-tab="conversation">Conversation</button>
+    <button class="tab" data-tab="needs">Demandes</button>
+    <button class="tab" data-tab="appearance">Apparence</button>
+    <button class="tab" data-tab="capabilities">Capacités</button>
+    <button class="tab" data-tab="senses">Sens</button>
+    <button class="tab" data-tab="tools">Outils</button>
+    <button class="tab" data-tab="permissions">Permissions</button>
+    <button class="tab" data-tab="memory">Mémoire</button>
+    <button class="tab" data-tab="notebook">Notebook</button>
+    <button class="tab" data-tab="journal">Journal</button>
+    <button class="tab" data-tab="backups">Sauvegardes</button>
+  </nav>
+
+  <main>
+    <section id="tab-identity" class="tabpane active">
+      <div class="panel"><h2>Identité</h2><pre id="identity">chargement…</pre></div>
+      <div class="panel"><h2>État</h2><pre id="status">chargement…</pre></div>
+    </section>
+
+    <section id="tab-conversation" class="tabpane">
+      <div class="panel">
+        <h2>Conversation avec AIgg</h2>
+        <p class="hint">AIgg répond honnêtement : reconnaître quelques formulations simples, apprendre par « apprends que … », sinon « Je ne sais pas encore faire cela. » Le fil est conservé pendant la session.</p>
+        <div id="chat-log" class="chat-log">…</div>
+        <div class="chat-compose">
+          <input id="chat-input" placeholder="Écris à AIgg…" autocomplete="off">
+          <button id="btn-send">Envoyer</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-needs" class="tabpane">
+      <div class="panel">
+        <h2>Demandes d'AIgg au tuteur</h2>
+        <p class="hint">C'est ici qu'AIgg demande de l'aide : une confirmation, une autorisation d'outil, une information. Un besoin n'est pas une action.</p>
+        <div id="needs-list">chargement…</div>
+      </div>
+      <div class="panel">
+        <h2>Créer une demande (le tuteur parle à AIgg)</h2>
+        <select id="need-type">
+          <option value="AIDE">Aide</option>
+          <option value="AUTORISATION">Autorisation d'outil</option>
+          <option value="INFORMATION">Information</option>
+          <option value="CONFIRMATION">Confirmation</option>
+        </select>
+        <input id="need-desc" placeholder="Description de la demande…">
+        <input id="need-tool" placeholder="Outil concerné (optionnel)">
+        <button id="btn-need-create">Enregistrer la demande</button>
+        <span id="need-result"></span>
+      </div>
+    </section>
+
+    <section id="tab-appearance" class="tabpane">
+      <div class="panel">
+        <h2>Apparence d'AIgg (le HTML est son corps visible)</h2>
+        <p class="hint">L'apparence appartient au tuteur, avec l'aide d'AIgg. Aucune modification silencieuse : toujours proposition → validation → application → journalisation.</p>
+        <div class="appearance-grid">
+          <label>Fond <input type="color" id="ap-bg"></label>
+          <label>Surfaces <input type="color" id="ap-surface"></label>
+          <label>Panneaux <input type="color" id="ap-panel"></label>
+          <label>Texte <input type="color" id="ap-text"></label>
+          <label>Discret <input type="color" id="ap-muted"></label>
+          <label>Accent <input type="color" id="ap-accent"></label>
+          <label>Texte accent <input type="color" id="ap-accent-text"></label>
+          <label>Danger <input type="color" id="ap-danger"></label>
+        </div>
+        <input id="ap-font" placeholder="Police (ex : system-ui, sans-serif)">
+        <textarea id="ap-notes" placeholder="Note du tuteur (raison de ce choix)…"></textarea>
+        <button id="btn-ap-suggest">AIgg propose</button>
+        <button id="btn-ap-propose">Enregistrer la proposition</button>
+        <button id="btn-ap-apply">Valider et appliquer</button>
+        <pre id="ap-status">—</pre>
+      </div>
+    </section>
+
+    <section id="tab-capabilities" class="tabpane">
+      <div class="panel"><h2>Capacités</h2><pre id="capabilities">chargement…</pre></div>
+    </section>
+
+    <section id="tab-senses" class="tabpane">
+      <div class="panel"><h2>Sens</h2><pre id="senses">chargement…</pre></div>
+    </section>
+
+    <section id="tab-tools" class="tabpane">
+      <div class="panel">
+        <h2>Outils découverts</h2>
+        <p class="hint">Flux : découverte → proposition → autorisation → test → installation → utilisation.</p>
+        <div id="tools-list" class="cards">chargement…</div>
+      </div>
+      <div class="panel">
+        <h2>Web — lecture d'une page</h2>
+        <input id="web-url" placeholder="https://…">
+        <button id="btn-web-read">Lire</button>
+        <pre id="web-result">—</pre>
+      </div>
+      <div class="panel">
+        <h2>Web — recherche</h2>
+        <input id="web-query" placeholder="requête…">
+        <button id="btn-web-search">Chercher</button>
+        <pre id="web-search-result">—</pre>
+      </div>
+    </section>
+
+    <section id="tab-permissions" class="tabpane">
+      <div class="panel"><h2>Permissions (moindre privilège)</h2><pre id="permissions">chargement…</pre></div>
+    </section>
+
+    <section id="tab-memory" class="tabpane">
+      <div class="panel">
+        <h2>Mémoire — composer un souvenir</h2>
+        <select id="mem-family">
+          <option value="knowledge">Connaissances</option>
+          <option value="autobiographical">Autobiographique</option>
+          <option value="relations">Relationnelle</option>
+          <option value="procedures">Procédurale</option>
+        </select>
+        <input id="mem-content" placeholder="Contenu">
+        <button id="btn-memorize">Mémoriser</button>
+        <span id="mem-result" class="ok"></span>
+      </div>
+      <div class="panel">
+        <h2>Répertoire complet</h2>
+        <div id="memory-list">chargement…</div>
+      </div>
+    </section>
+
+    <section id="tab-notebook" class="tabpane">
+      <div class="panel">
+        <h2>Carnet de laboratoire</h2>
+        <input id="nb-question" placeholder="Question">
+        <input id="nb-hypothesis" placeholder="Hypothèse">
+        <button id="btn-nb-add">Ajouter l'expérience</button>
+        <div id="notebook-list">chargement…</div>
+      </div>
+    </section>
+
+    <section id="tab-journal" class="tabpane">
+      <div class="panel"><h2>Journal</h2><pre id="journal">chargement…</pre></div>
+    </section>
+
+    <section id="tab-backups" class="tabpane">
+      <div class="panel"><h2>Sauvegardes</h2><pre id="backups">aucune</pre></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

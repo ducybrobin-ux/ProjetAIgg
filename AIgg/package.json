@@ -1,0 +1,16 @@
+{
+  "name": "aigg",
+  "version": "0.1.0",
+  "description": "AIgg - oeuf numerique minimal et evolutif. Identite, memoire, journal, permissions, conversation, besoins, apparence, migration, interface web. Sans dependance externe obligatoire.",
+  "main": "AIgg.js",
+  "scripts": {
+    "start": "node AIgg.js status",
+    "server": "node AIgg.js server",
+    "birth": "node AIgg.js birth",
+    "tests": "node AIgg.js tests",
+    "migrate": "node AIgg.js migrate",
+    "needs": "node AIgg.js needs"
+  },
+  "license": "MIT",
+  "private": true
+}

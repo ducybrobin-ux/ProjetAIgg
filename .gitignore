@@ -1,0 +1,28 @@
+# Secrets — jamais publier
+.env
+.env.*
+*.key
+*.pem
+*.crt
+id_rsa
+id_ed25519
+
+# Données privées AIgg (identité, mémoire, journal, courriers, sauvegardes, labo)
+AIgg/core/
+AIgg/memory/
+AIgg/journal/
+AIgg/inbox/
+AIgg/outbox/
+AIgg/backups/
+AIgg/notebook/
+AIgg/senses/
+AIgg/tools/*/providers.json
+
+# Artefact généré localement (représentation)
+AIgg/web/public/avatar.svg
+
+# Fichiers temporaires
+*.tmp
+*.log
+Thumbs.db
+.DS_Store

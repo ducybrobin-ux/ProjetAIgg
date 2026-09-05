@@ -1,0 +1,18 @@
+{
+  "name": "notebook",
+  "version": "0.1.0",
+  "title": "Carnet de laboratoire",
+  "description": "Expériences, hypothèses et résultats reproductibles, en local.",
+  "category": "pensee",
+  "capability": "LABORATOIRE",
+  "need": "Séparer données, hypothèses, résultats et conclusions.",
+  "interactions": ["notebook.add", "notebook.list", "notebook.get"],
+  "needs_permissions": ["local_files"],
+  "risks": [
+    "Le carnet n'est pas la mémoire autobiographique",
+    "Données potentiellement sensibles : rester local"
+  ],
+  "requires_external_ai": false,
+  "independence": true,
+  "reversibility": "révocable"
+}
