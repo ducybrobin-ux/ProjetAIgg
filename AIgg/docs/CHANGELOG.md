@@ -39,6 +39,9 @@ amélioration, sécurité, documentation.
 ### Remarque
 - Suite de tests : **122 PASS / 0 FAIL** (94 → 119 avec sens réels,
   recherche N2 et import ; → 122 avec la couverture `docs-check`).
+- Finalisation N2 : smoke CLI réel étendu de bout en bout
+  (create → source → connaissance → search → export → import → remove) —
+  l'import CLI ignore désormais un éventuel BOM UTF-8 en tête de fichier.
 
 ## v0.1.3 — 2026-09-06 — carnet : entrées révocables, autonomie des tests
 

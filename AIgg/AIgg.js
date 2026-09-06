@@ -423,7 +423,8 @@ function runLibrary(ident, args) {
         break;
       }
       const file = fl.file;
-      const bundle = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+      const raw = require('fs').readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
+      const bundle = JSON.parse(raw);
       const analysis = library.importAnalyse(bundle);
       if (fl.confirm) {
         const created = library.importActivate(bundle, ident, analysis.apercu.existing);

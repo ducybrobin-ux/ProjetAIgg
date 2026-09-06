@@ -79,7 +79,8 @@ locale, niveau 1), et surtout **`searchL2(requête, options)`** (niveau 2) :
 - **Multilingue** : une même requête retrouve les connaissances pertinentes
   rédigées en français, anglais ou espagnol ;
 - **Classement expliqué** : chaque résultat porte un score et la liste des
-  causes (`title`, `tags`, `concepts`, `content`, `provenance`, `exact`) ;
+  causes (`title`, `tags`, `concepts`, `content`, `notes`, `provenance`,
+  `exact`) ;
 - **Filtres** : `library`, `language`, `type` (connaissance/source/document),
   `status`, `tags`, `provenance`, `limit` ;
 - **Métadonnées** : les connaissances conservent `title`, `tags`, `concepts`,
@@ -106,7 +107,8 @@ compétences + connaissances + exercices + documents.
 - L'import accepte les deux dialectes : le bundle exporté par AIgg
   (`library` + champs exportés) et le format allégé `name` + `metadata`
   (fiches de corpus multilingues) ; `title/tags/concepts/language` et les ids
-  de connaissance/source sont préservés.
+  de connaissance/source sont préservés. Un BOM UTF-8 éventuel en tête de
+  fichier est ignoré (signature Windows/PowerShell).
 
 CLI :
 
