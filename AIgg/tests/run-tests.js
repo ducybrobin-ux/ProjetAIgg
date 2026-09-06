@@ -104,7 +104,38 @@ async function run() {
 
   // 7. Sens
   console.log('\n7) SENS');
-  report('sens_states', senses.detectSenses().every((s) => ['OUI', 'NON'].includes(s.DISPONIBLE)));
+  {
+    const real = senses.detectSenses({ force: true });
+    report('sens_states', real.every((s) =>
+      ['OUI', 'NON', 'UNKNOWN'].includes(s.DISPONIBLE)
+      && ['OUI', 'NON', 'UNKNOWN'].includes(s.AUTORISE)
+      && ['OUI', 'NON'].includes(s.ACTIF)));
+
+    const audio = real.filter((s) => ['MICROPHONE', 'CAMERA', 'HAUT_PARLEURS'].includes(s.sense));
+    report('sens_audio_probe', audio.length === 3 && audio.every((s) =>
+      s.probe && s.reason && /^\d{4}-\d{2}-\d{2}T/.test(s.timestamp || '')));
+    report('sens_jamais_actif', audio.every((s) => s.ACTIF === 'NON'));
+    report('sens_non_autorise_par_defaut', audio.every((s) => s.AUTORISE === 'NON'));
+    report('sens_unknown_explique', real.filter((s) => s.DISPONIBLE === 'UNKNOWN')
+      .every((s) => (s.reason || '').length >= 2));
+
+    // Détection Windows honnête (sans supposer un matériel précis).
+    const fakeWin = senses.detectSenses({ platform: 'win32', force: true, runCmd: () => ({ status: 0, stdout: 'MIC=0\nSPK=1\nCAM=0\n' }) });
+    const fw = {};
+    fakeWin.forEach((s) => { fw[s.sense] = s; });
+    report('sens_sonde_winmm_honnete', fw.MICROPHONE.DISPONIBLE === 'NON' && fw.HAUT_PARLEURS.DISPONIBLE === 'OUI' && fw.CAMERA.DISPONIBLE === 'NON');
+    report('sens_peripherique_sans_autorisation', fw.HAUT_PARLEURS.DISPONIBLE === 'OUI' && fw.HAUT_PARLEURS.AUTORISE === 'NON' && fw.HAUT_PARLEURS.ACTIF === 'NON');
+
+    // Échec de sonde → UNKNOWN (jamais un OUI hypothétique).
+    const blocked = senses.detectSenses({ platform: 'win32', force: true, runCmd: () => ({ status: 1, stdout: '' }) });
+    const b = blocked.filter((s) => ['MICROPHONE', 'CAMERA', 'HAUT_PARLEURS'].includes(s.sense));
+    report('sens_bloque_unknown', b.length === 3 && b.every((s) => s.DISPONIBLE === 'UNKNOWN' && s.reason));
+
+    // OS sans sonde → UNKNOWN, jamais NON certain.
+    const autreOs = senses.detectSenses({ platform: 'darwin', force: true });
+    const o = autreOs.filter((s) => ['MICROPHONE', 'CAMERA', 'HAUT_PARLEURS'].includes(s.sense));
+    report('sens_os_non_couvert', o.every((s) => s.DISPONIBLE === 'UNKNOWN'));
+  }
 
   // 8. Sauvegarde
   console.log('\n8) SAUVEGARDE');
@@ -374,17 +405,101 @@ async function run() {
       const hits = library.search('2+2', testLibId);
       report('recherche_n1_connaissance', hits.length === 1 && hits[0].hits.some((h) => h.family === 'knowledge'));
 
+      // P1 — recherche niveau 2 multilingue (cas du corpus Canal_)
+      const multiId = 'test-lib-multi-' + Date.now().toString(36);
+      library.create(ident, { name: 'L2 multi', id: multiId, privacy: 'private', languages: ['fr', 'en', 'es'] });
+      const sfr = library.addSource(multiId, ident, { id: 'src-fr-001', title: 'Cours de sciences — FR', language: 'fr', type: 'COURS', trust_level: 'B' });
+      library.addSource(multiId, ident, { id: 'src-en-001', title: 'Biology lessons — EN', language: 'en', type: 'COURS', trust_level: 'B' });
+      const sEsp = library.addSource(multiId, ident, { id: 'src-es-001', title: 'Lecciones de ciencias — ES', language: 'es', type: 'COURS', trust_level: 'B' });
+      report('source_id_stable_et_langue', sfr.id === 'src-fr-001' && sfr.language === 'fr' && sEsp.language === 'es');
+
+      library.addKnowledge(multiId, ident, {
+        id: 'k-fr-001', title: 'La photosynthèse transforme l’énergie',
+        tags: ['biologie', 'plantes'], concepts: ['photosynthèse', 'énergie'],
+        language: 'fr', content: 'Les plantes transforment la lumière en énergie par photosynthèse.',
+        source_ids: ['src-fr-001'], status: 'LEARNING', confidence: 0.7,
+      });
+      library.addKnowledge(multiId, ident, {
+        id: 'k-en-001', title: 'Photosynthesis and energy',
+        tags: ['biology', 'plants'], concepts: ['photosynthesis', 'energy'],
+        language: 'en', content: 'Plants convert light into energy through photosynthesis.',
+        source_ids: ['src-en-001'], status: 'LEARNING',
+      });
+      library.addKnowledge(multiId, ident, {
+        id: 'k-es-001', title: 'Fracciones equivalentes',
+        tags: ['matemáticas', 'fracciones'], concepts: ['fracciones', 'equivalencia'],
+        language: 'es', content: 'Dos fracciones son equivalentes si representan la misma cantidad.',
+        source_ids: ['src-es-001'], status: 'LEARNING',
+      });
+      report('connaissance_metadonnees_preservees',
+        library.knowledge(multiId).length === 3
+        && library.knowledge(multiId).some((k) => k.TITLE === 'La photosynthèse transforme l’énergie' && k.LANGUAGE === 'fr' && k.TAGS.length === 2 && k.CONCEPTS.length === 2));
+
+      const rFr = library.searchL2('photosynthèse', { library: multiId, language: 'fr' });
+      report('recherche_n2_fr_langue', rFr.count === 1 && rFr.results[0].language === 'fr'
+        && rFr.results[0].fields.some((f) => f.field === 'concepts' && f.score > 0));
+
+      const rX = library.searchL2('photosynthèse', { library: multiId });
+      report('recherche_n2_cross_langues', rX.count === 2 && rX.results.some((r) => r.language === 'fr') && rX.results.some((r) => r.language === 'en'));
+
+      const rEn = library.searchL2('energy', { library: multiId });
+      report('recherche_n2_en_top', rEn.count === 2 && rEn.results[0].title.startsWith('Photosynthesis')
+        && rEn.results[0].fields.some((f) => f.field === 'exact'));
+
+      const rEs = library.searchL2('fracciones equivalentes', { library: multiId, language: 'es' });
+      report('recherche_n2_es_top', rEs.count === 1 && rEs.results[0].language === 'es'
+        && rEs.results[0].fields.some((f) => f.field === 'content'));
+
+      const rSwe = library.searchL2('Énergie', { library: multiId });
+      report('recherche_n2_normalisation', rSwe.count === 2 && rSwe.results.every((r) => r.score > 0));
+
+      const rSrc = library.searchL2('biology', { library: multiId, type: 'source' });
+      report('recherche_n2_filtre_type', rSrc.count === 1 && rSrc.results.every((r) => r.type === 'source'));
+
+      const rLan = library.searchL2('energy', { library: multiId, language: 'en' });
+      report('recherche_n2_filtre_langue', rLan.count === 1 && rLan.results.every((r) => r.language === 'en'));
+
+      const rSt = library.searchL2('photosynthèse', { library: multiId, language: 'fr', status: 'LEARNING' });
+      const rSt0 = library.searchL2('photosynthèse', { library: multiId, language: 'fr', status: 'VALIDATED' });
+      report('recherche_n2_filtre_statut', rSt.count === 1 && rSt0.count === 0);
+
+      const rProv = library.searchL2('photosynthèse', { library: multiId, language: 'fr', provenance: 'src-fr-001' });
+      report('recherche_n2_filtre_provenance', rProv.count === 1);
+
+      const rTag1 = library.searchL2('photosynthèse', { library: multiId, language: 'fr', tags: 'biologie' });
+      const rTag0 = library.searchL2('photosynthèse', { library: multiId, language: 'fr', tags: 'matemáticas' });
+      report('recherche_n2_filtre_tags', rTag1.count === 1 && rTag0.count === 0);
+
+      // import au format `aigg-library` allégé (name+metadata, comme les corpus Canal_)
+      const canalBundle = {
+        format: 'aigg-library', version: 1, name: 'Canal test', language: 'fr',
+        metadata: { domain: 'sciences', owner: 'tuteur', private: true },
+        sources: [{ id: 's1', title: 'Source canal' }],
+        knowledge: [{ id: 'k1', title: 'Un titre qualitatif', language: 'fr', tags: ['x'], concepts: ['y'], content: 'contenu qualitatif', source_ids: ['s1'] }],
+      };
+      const canalA = library.importAnalyse(canalBundle);
+      report('import_canal_analyse', canalA.actionable === true && canalA.apercu.name === 'Canal test' && canalA.apercu.source_count === 1);
+      const canalImp = library.importActivate(canalBundle, ident, false);
+      const canalK = library.knowledge(canalImp.id)[0];
+      report('import_canal_preserve', canalK.TITLE === 'Un titre qualitatif' && canalK.LANGUAGE === 'fr'
+        && canalK.TAGS[0] === 'x' && canalK.CONCEPTS[0] === 'y' && canalK.ID === 'k1' && canalK.SOURCE_IDS[0] === 's1');
+      const rItTitle = library.searchL2('titre', { library: canalImp.id });
+      report('import_canal_recherche_titre', rItTitle.count === 1 && rItTitle.results[0].fields.some((f) => f.field === 'title' && f.score > 0));
+
       const bundle = library.exportLibrary(testLibId);
       report('export_format', bundle.format === 'aigg-library' && bundle.version === 1);
       const analyse = library.importAnalyse(bundle);
       report('import_analyse', analyse.actionable === true && analyse.apercu.name === 'Bibliothèque de test');
       const imported = library.importActivate(bundle, ident, true);
       report('import_active', imported.imported === true);
+      report('import_remplace_l_originale', !library.list().some((l) => l.meta.id === testLibId));
 
-      library.remove(testLibId, ident);
-      report('bibliotheque_supprimee_vers_corbeille',
-        fs.existsSync(path.join(config.PATHS.libraries, '_trash', testLibId)));
-      report('bibliotheque_sortie_de_liste', !library.list().some((l) => l.meta.id === testLibId));
+      const replaced = library.list().find((l) => l.meta.name === 'Bibliothèque de test');
+      report('import_cree_nouvelle_id', !!replaced && replaced.meta.id !== testLibId);
+      if (replaced) library.remove(replaced.meta.id, ident);
+      report('bibliotheque_supprimee_vers_corbeille', !!replaced
+        && fs.existsSync(path.join(config.PATHS.libraries, '_trash', replaced.meta.id)));
+      report('bibliotheque_sortie_de_liste', !!replaced && !library.list().some((l) => l.meta.id === replaced.meta.id));
 
       // Exemples publics toujours visibles (structure, PAS de savoir inventé).
       const examples = library.list().filter((l) => l.meta.id.startsWith('science-example') || l.meta.id.startsWith('programming-example'));
@@ -393,17 +508,35 @@ async function run() {
     } catch (e) {
       report('test_libraries_bloc', false, e.message);
     } finally {
-      const candidates = library.list().filter((l) => l.meta.id.startsWith('test-lib-'));
+      const candidates = library.list().filter((l) => l.meta.id.startsWith('test-lib-') || l.meta.name === 'Canal test' || l.meta.name === 'Bibliothèque de test');
       for (const c of candidates) { try { library.remove(c.meta.id, ident); } catch {} }
     }
+  }
+
+  // 21. P11 : docs-check (audit des documents, aucune modification)
+  console.log('\n21) DOCS CHECK');
+  {
+    const docscheck = require('../src/docscheck');
+    const stateText = fs.readFileSync(path.join(config.PATHS.docs, 'STATE.md'), 'utf8');
+    const changelogText = fs.readFileSync(path.join(config.PATHS.docs, 'CHANGELOG.md'), 'utf8');
+    const readmeText = fs.readFileSync(path.join(config.PATHS.root, '..', 'README.md'), 'utf8');
+    const r = docscheck.run({ stateText, changelogText, readmeText });
+    report('docs_check_ok', r.ok === true, `${r.checks.length} vérifications`);
+    report('docs_check_lecture_seule', r.readonly === true);
+    const rBad = docscheck.run({
+      stateText: stateText.replace(/CORE_VERSION\s+\d+\.\d+\.\d+/, 'CORE_VERSION 99.0.0'),
+      changelogText, readmeText,
+    });
+    report('docs_check_detecte_divergence', rBad.ok === false);
   }
 
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
   const blocked = results.filter((r) => r.status === 'BLOCKED').length;
+  const not_tested = results.filter((r) => r.status === 'NOT_TESTED').length;
   console.log('\n=== RÉSULTAT ===');
-  console.log(`PASS=${passed} FAIL=${failed}${blocked ? ' BLOCKED=' + blocked : ''}`);
+  console.log(`PASS=${passed} FAIL=${failed}${blocked ? ' BLOCKED=' + blocked : ''} NOT_TESTED=${not_tested}`);
   process.exitCode = failed > 0 ? 1 : 0;
 }
 

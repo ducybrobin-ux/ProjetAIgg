@@ -247,10 +247,105 @@ function flags(args) {
   for (const a of args) {
     const m = a.match(/^--([^=]+)=(.*)$/);
     if (m) fl[m[1]] = m[2];
+    else if (/^--[^=]+$/.test(a)) fl[a.slice(2)] = true;
     else rest.push(a);
   }
   return { flags: fl, rest };
 }
+
+const LIBRARY_HELP_FR = [
+  'AIgg — aide de `library` (français)',
+  '',
+  'Commande :',
+  '  AIgg.cmd library <commande> [arguments] [options]',
+  '',
+  'ALIAS :',
+  '  AIgg.cmd libraries ...',
+  '  AIgg.cmd lib ...',
+  '',
+  'DÉCOUVERTE',
+  '  list                Liste les bibliothèques.',
+  '  health              Vérifie la structure générale des bibliothèques locales.',
+  '  show <id>           Affiche le résumé d\'une bibliothèque.',
+  '  sources <id>        Liste ses sources.',
+  '  knowledge <id>      Liste ses connaissances.',
+  '  competencies <id>   Liste ses compétences. Alias : competences',
+  '  curriculum <id>     Affiche le curriculum.',
+  '  exercises <id>      Liste ses exercices. Alias : exercices',
+  '  notes <id>          Affiche les notes du tuteur.',
+  '  journal <id>        Affiche le journal local.',
+  '',
+  'CRÉATION',
+  '  create <nom> [--domain=a,b] [--private|--public] [--level=x]',
+  '  Exemple : AIgg.cmd library create Maths --domain=maths --private',
+  '  Une bibliothèque est privée par défaut dans le modèle AIgg.',
+  '',
+  'RECHERCHE',
+  '  search <requête> [--library=<id>] [--language=fr|en|es]',
+  '        [--type=connaissance|source|document] [--status=ETAT]',
+  '        [--tags=<mot>] [--provenance=<ref>] [--limit=n]',
+  '  Exemple : AIgg.cmd library search photosynthèse',
+  '  Niveau actuel : recherche niveau 2 — multilingue (FR/EN/ES), normalisation',
+  '  des accents, classement expliqué, filtres par bibliothèque/langue/type/statut.',
+  '',
+  'SOURCES',
+  '  source-add <id> <titre> [--trust=A-E] [--type=TYPE] [--url=url]',
+  '  Exemple : AIgg.cmd library source-add maths "Cours de fractions" --trust=A --type=COURS',
+  '',
+  'CONNAISSANCES',
+  '  knowledge-add <id> <contenu> [--source=<id>] [--status=ETAT]',
+  '  États de connaissance :',
+  '    UNKNOWN, DISCOVERED, LEARNING, UNDERSTOOD, REQUIRES_REVIEW',
+  '',
+  'COMPÉTENCES',
+  '  competence-add <id> <nom>',
+  '  competence-set <id> <compétence> <ETAT>',
+  '  États possibles :',
+  '    UNKNOWN, LEARNING, PRACTICED, PARTIALLY_MASTERED, MASTERED, REQUIRES_REVIEW',
+  '  Règle : lire une connaissance ou importer un document ne suffit jamais à',
+  '  déclarer automatiquement une compétence MASTERED.',
+  '',
+  'ANNOTATIONS ET CONTRADICTIONS',
+  '  note-add <id> <texte>',
+  '  contradiction-add <id> <connaissanceA> <connaissanceB>',
+  '',
+  'GESTION',
+  '  archive <id> | restore <id> | remove <id> | trash',
+  '  remove déplace la bibliothèque dans la corbeille `_trash` :',
+  '  il ne s\'agit pas d\'une suppression irréversible immédiate.',
+  '',
+  'EXPORT',
+  '  export <id>   Produit une représentation `aigg-library` destinée à l\'échange.',
+  '',
+  'IMPORT',
+  '  import --file=<fichier> [--confirm]',
+  '  Par défaut : affiche un aperçu (analyse) sans rien modifier.',
+  '  Avec --confirm : importe dans une bibliothèque locale ; remplace une',
+  '  bibliothèque existante portant le même identifiant.',
+  '',
+  'OPTIONS',
+  '  --domain=a,b | --private | --public | --level=x',
+  '  --trust=A-E | --type=TYPE | --url=url | --source=<id> | --status=ETAT',
+  '  --library=<id> | --language=xx | --tags=<mot> | --provenance=<ref> | --limit=n',
+  '',
+  'PRINCIPES DE SÉCURITÉ',
+  '  - Les bibliothèques privées ne doivent pas être publiées.',
+  '  - Les documents importés ne sont jamais exécutés.',
+  '  - Le code contenu dans un document n\'est jamais exécuté.',
+  '  - La provenance des connaissances doit rester conservée.',
+  '  - Une IA externe n\'est jamais nécessaire pour utiliser une bibliothèque.',
+  '  - Les actions destructives doivent rester révocables ou explicites.',
+  '',
+  'AIDE COURTE',
+  '  AIgg.cmd library',
+  '  AIgg.cmd library list',
+  '  AIgg.cmd library health',
+  '  AIgg.cmd library search "mot clé"',
+  '  AIgg.cmd library create Maths --domain=maths --private',
+  '  AIgg.cmd library show <id>',
+  '',
+  'Documentation longue : AIgg/docs/LIBRARIES.md',
+].join('\n');
 
 function runLibrary(ident, args) {
   const { flags: fl, rest } = flags(args);
@@ -304,11 +399,39 @@ function runLibrary(ident, args) {
       break;
     case 'search': {
       const q = rest.slice(1).join(' ');
-      const res = library.search(q);
-      if (!res.length) console.log('Aucune correspondance.');
-      for (const r of res) {
-        console.log(`[${r.libraryName}] ${r.libraryId}`);
-        for (const h of r.hits) console.log(`  · [${h.family}] ${h.content}`);
+      const res = library.searchL2(q, {
+        library: fl.library,
+        language: fl.language,
+        type: fl.type,
+        status: fl.status,
+        tags: fl.tags,
+        provenance: fl.provenance,
+        limit: fl.limit ? Number(fl.limit) : undefined,
+      });
+      if (!res.count) console.log('Aucune correspondance.');
+      for (const r of res.results) {
+        const where = `${r.libraryName} ${r.libraryId}`;
+        console.log(`[${r.score}] ${r.title} (${r.type}${r.language ? ', ' + r.language : ''} — ${where})`);
+        console.log(`    cause : ${r.fields.map((f) => `${f.field}:${f.score}`).join(' ')}`);
+      }
+      break;
+    }
+    case 'import': {
+      if (!fl.file) {
+        console.log('Usage : AIgg.cmd library import --file=<fichier.json> [--confirm]');
+        console.log('Sans --confirm : aperçu (analyse) sans modification.');
+        break;
+      }
+      const file = fl.file;
+      const bundle = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+      const analysis = library.importAnalyse(bundle);
+      if (fl.confirm) {
+        const created = library.importActivate(bundle, ident, analysis.apercu.existing);
+        console.log(`Importée : ${created.id} (« ${created.name} ») depuis ${file}`);
+      } else {
+        console.log(`Aperçu (${file}) :`);
+        console.log(JSON.stringify(analysis.apercu, null, 2));
+        console.log('Relance avec --confirm pour importer.');
       }
       break;
     }
@@ -376,22 +499,8 @@ function runLibrary(ident, args) {
     case 'health':
       console.log(JSON.stringify(library.health(), null, 2));
       break;
-    case 'import':
-      console.log('Import depuis la console web (bouton) ou via /api/libraries/import. Fichier : ' + fl.file);
-      break;
     default:
-      console.log(
-        'Libraries — commandes :\n' +
-        '  list, health, search <requête>\n' +
-        '  create <nom> [--domain=a,b] [--private|--public] [--level=x]\n' +
-        '  show <id>, sources <id>, knowledge <id>, competencies <id>\n' +
-        '  curriculum <id>, notes <id>, journal <id>, export <id>\n' +
-        '  source-add <id> <titre> [--trust=A-E] [--type=TYPE] [--url=url]\n' +
-        '  knowledge-add <id> <contenu> [--source=<id>] [--status=ETAT]\n' +
-        '  competence-add <id> <nom>, competence-set <id> <comp> <ETAT>\n' +
-        '  contradiction-add <id> <a> <b>, note-add <id> <texte>\n' +
-        '  archive <id>, restore <id>, remove <id>, trash'
-      );
+      console.log(LIBRARY_HELP_FR);
   }
 }
 
@@ -437,6 +546,9 @@ async function main() {
       break;
     case 'tests':
       require('./tests/run-tests').run();
+      break;
+    case 'docs-check':
+      require('./src/docscheck').runCli();
       break;
 
     case 'discover':
@@ -498,7 +610,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, migrate <destination>'
+        '  library <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

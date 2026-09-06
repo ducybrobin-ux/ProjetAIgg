@@ -68,13 +68,30 @@ Les contradictions entre connaissances ou sources sont **signalées et
 conservées** : `knowledge_a`, `knowledge_b`, statut `OPEN` puis `RESOLVED`
 après arbitrage du tuteur. On ne supprime jamais silencieusement un conflit.
 
-## Recherche niveau 1 (§18)
+## Recherche (§18) — niveau 2 implémenté
 
-`search(requête, [bibliothèque])` cherche par **correspondance (insensible à
-la casse)** dans les connaissances, documents et sources. C'est une recherche
-**locale** ; l'import/export réel, le calcul de similarité et la recherche
-multilingue restent du niveau 2 (non implémenté — on ne prétend pas le
-contraire).
+Le moteur expose toujours `search(requête, [bibliothèque])` (correspondance
+locale, niveau 1), et surtout **`searchL2(requête, options)`** (niveau 2) :
+
+- **Normalisation** : minuscules, accents retirés, ponctuation neutralisée,
+  mots vides FR/EN/ES filtrés, racines communes (ex. « énergie / energy /
+  energía ») ;
+- **Multilingue** : une même requête retrouve les connaissances pertinentes
+  rédigées en français, anglais ou espagnol ;
+- **Classement expliqué** : chaque résultat porte un score et la liste des
+  causes (`title`, `tags`, `concepts`, `content`, `provenance`, `exact`) ;
+- **Filtres** : `library`, `language`, `type` (connaissance/source/document),
+  `status`, `tags`, `provenance`, `limit` ;
+- **Métadonnées** : les connaissances conservent `title`, `tags`, `concepts`,
+  `language` et un `id` stable (lisible par la recherche et l'export).
+
+CLI :
+
+```
+AIgg.cmd library search "photosynthèse"
+AIgg.cmd library search "photosynthèse" --language=fr --limit=10
+AIgg.cmd library search energy --language=en --type=connaissance
+```
 
 ## Import / Export (§24)
 
@@ -86,6 +103,17 @@ compétences + connaissances + exercices + documents.
 - `importActivate(bundle, identity, confirmed)` : remplace une bibliothèque
   existante seulement avec `confirmed=true`. Les compétences importées ne
   changent d'état que si l'export l'avait déjà prouvé (jamais d'auto-`MASTERED`).
+- L'import accepte les deux dialectes : le bundle exporté par AIgg
+  (`library` + champs exportés) et le format allégé `name` + `metadata`
+  (fiches de corpus multilingues) ; `title/tags/concepts/language` et les ids
+  de connaissance/source sont préservés.
+
+CLI :
+
+```
+AIgg.cmd library import --file=Corpus_FR.json          # aperçu, sans écrire
+AIgg.cmd library import --file=Corpus_FR.json --confirm # importe / remplace
+```
 
 ## Usage
 
@@ -102,8 +130,9 @@ AIgg.cmd library competence-add <id> <nom>
 AIgg.cmd library competence-set <id> <comp> MASTERED   # exige preuve du tuteur
 AIgg.cmd library contradiction-add <id> <a> <b>
 AIgg.cmd library note-add <id> <texte>
-AIgg.cmd library search <requête>
+AIgg.cmd library search <requête> [--language=fr|en|es] [--type=connaissance|source|document]
 AIgg.cmd library export <id>
+AIgg.cmd library import --file=<fichier> [--confirm]
 AIgg.cmd library remove <id>           # → _trash (corbeille)
 ```
 

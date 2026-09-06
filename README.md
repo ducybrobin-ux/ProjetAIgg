@@ -47,7 +47,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 93 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 122 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -57,7 +57,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (93 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (122 vérifications réelles)
 ```
 
 Premiers outils :
@@ -93,6 +93,21 @@ figurer (test automatisé inclus).
 - Conversation, besoins/demandes, apparence contrôlée, migration portable.
 - Console du tuteur web + suite d'auto-diagnostics (68 PASS).
 - Documentation pour les futurs agents (`docs/`).
+
+## Contenu de la release v0.2.0
+
+- **Recherche bibliothèque niveau 2** : multilingue FR/EN/ES, normalisation des
+  accents, classement pondéré et expliqué (cause par champ), filtres
+  (bibliothèque / langue / type / statut / tags / provenance / limite).
+- **Import réel via CLI** : `AIgg.cmd library import --file=… [--confirm]`
+  (aperçu par défaut), identifiants stables préservés.
+- **Sens réels de la machine** : sondes natives (Windows WINMM/WMI, Linux
+  ALSA/V4L2) — jamais d'état inventé (sonde bloquée → `UNKNOWN`).
+- **Aide CLI `library` en français** reflétant le code réel.
+- **`AIgg.cmd docs-check`** : audit lecture seule de la cohérence
+  docs ↔ code (versions, compteurs de tests).
+- Dossier privé tuteur `InformationsProjetAIgg/` retiré du dépôt public.
+- Suite de tests : **122 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.1.1
 

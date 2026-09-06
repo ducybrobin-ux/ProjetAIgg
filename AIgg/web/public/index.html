@@ -168,8 +168,20 @@
       </div>
       <div class="panel">
         <h2>Rechercher dans les bibliothèques</h2>
-        <input id="lib-search-q" placeholder="Recherche locale (niveau 1)…">
+        <input id="lib-search-q" placeholder="Recherche locale (niveau 2, multilingue)…">
         <button id="btn-lib-search">Rechercher</button>
+        <label>Langue <select id="lib-search-lang">
+          <option value="">Toute</option>
+          <option value="fr">Français</option>
+          <option value="en">Anglais</option>
+          <option value="es">Espagnol</option>
+        </select></label>
+        <label>Type <select id="lib-search-type">
+          <option value="">Tout</option>
+          <option value="knowledge">Connaissances</option>
+          <option value="source">Sources</option>
+          <option value="document">Documents</option>
+        </select></label>
         <pre id="lib-search-result">—</pre>
       </div>
     </section>

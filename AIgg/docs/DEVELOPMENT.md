@@ -35,14 +35,15 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (94 vérifications, PASS/FAIL réels)
+.\AIgg.cmd tests        # auto-diagnostics (122 vérifications, PASS/FAIL réels)
+.\AIgg.cmd docs-check   # audit des docs (versions, compteurs) — lecture seule
 ```
 
 Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
 <outil> revoke <outil> web-read <url> web-search <requête> notebook-add
 <question> [hypothèse] notebook-del <id> avatar migrate <destination>
-library <sous-commande>`.
+library <sous-commande> docs-check`.
 (Moteur de bibliothèque : voir `LIBRARIES.md`.)
 
 ## Architecture (résumé)
@@ -104,6 +105,12 @@ correct.
 
 ## Conventions
 
+- **Français pour le projet, international pour le produit.** Le code, les
+  messages internes, la doc et l'interface restent en français ; les **données
+  du produit** — nom et identité d'une instance AIgg, noms de bibliothèques,
+  connaissances, tags, concepts, curriculum — peuvent être en toute langue
+  (international). La recherche bibliothèque est multilingue : on ne traduit
+  jamais les données, on les retrouve dans leur langue.
 - Code et messages internes en français ; sorties « library » (API, données)
   en anglais ; messages destinés à l'utilisateur en français.
 - JSON jolifié en écriture atomique (`util.writeJson` : `.tmp` + rename).

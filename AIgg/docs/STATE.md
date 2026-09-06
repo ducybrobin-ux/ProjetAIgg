@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.2.0 · Suite de tests : 122 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -18,7 +18,7 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 | Journal NDJSON (sans clé dupliquée) | IMPLEMENTED | TEST_JOURNAL |
 | Capacités (acquis / non acquis) | IMPLEMENTED | TEST_IDENTITE + registres |
 | Permissions (moindre privilège, tout bloqué) | IMPLEMENTED | TEST_PERMISSIONS |
-| Sens (DISPONIBLE/AUTORISE/ACTIF) | IMPLEMENTED | TEST_SENS |
+| Sens (DISPONIBLE/AUTORISE/ACTIF) — détection réelle | IMPLEMENTED | TEST_SENS |
 | Veille / réveil / âge | IMPLEMENTED | TEST_IDENTITE + CLI |
 | 8 états (BORN→STOPPED), transition sécurisée | IMPLEMENTED | TEST_IDENTITE (etats_8) |
 | Sauvegarde / restauration (manifeste) | IMPLEMENTED | TEST_SAUVEGARDE / TEST_RESTAURATION |
@@ -37,7 +37,7 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 | Le HTML = corps visible (variables CSS pilotées) | IMPLEMENTED | smoke (style.css / --ap-*) |
 | Migration / copie portable (continuité AIgg_ID) | IMPLEMENTED | TEST_MIGRATION |
 | Gestion d'erreurs PROBLÈME/CAUSE/SOLUTION/ÉTAT | IMPLEMENTED | CLI `AIgg.js` (web-read, migrate, catch) |
-| Tests du corpus (13 tests nommés) | IMPLEMENTED | tests/run-tests.js, 68 vérifications |
+| Tests du corpus (13 tests nommés) | IMPLEMENTED | tests/run-tests.js, 122 vérifications |
 | Licence MIT | IMPLEMENTED | LICENSE (racine) + package.json |
 
 ## Bibliothèques de spécialisation — cahier appliqué (testé réellement)
@@ -52,12 +52,21 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 | Contradictions signalées (OPEN → RESOLVED) | IMPLEMENTED | TEST_LIBRARIES |
 | Annotations du tuteur | IMPLEMENTED | TEST_LIBRARIES |
 | Journal local par bibliothèque | IMPLEMENTED | TEST_LIBRARIES |
-| Recherche niveau 1 (correspondance locale) | IMPLEMENTED | TEST_LIBRARIES |
+| Recherche niveaux 1 et 2 (multilingue FR/EN/ES, normalisation, classement expliqué) | IMPLEMENTED | TEST_LIBRARIES (recherche_n2_*) |
 | Export / import `aigg-library` v1 (analyse pour confirmer) | IMPLEMENTED | TEST_LIBRARIES |
+| Import via CLI (`import --file=… [--confirm]`) | IMPLEMENTED | CLI testé (aperçu par défaut) |
 | Privée par défaut (hors dépôt public) | IMPLEMENTED | `.gitignore` (libraries/* sauf examples/) |
 | Exemples publics sans savoir inventé | IMPLEMENTED | TEST_LIBRARIES (`exemples_sans_savoir_invente`) |
 | API HTTP `/api/libraries*` + onglet web « Bibliothèques » | IMPLEMENTED | smoke HTTP réel (create/source/knowledge/search/export/delete) |
-| CLI `AIgg.cmd library …` | IMPLEMENTED | testé réellement (health/list/search) |
+| CLI `AIgg.cmd library …` + aide française | IMPLEMENTED | testé réellement (health/list/search/create/remove/import) |
+
+## Petits travaux P9-P11 (pack du tuteur — testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| P9 — Sondes sens réelles (Windows WINMM/WMI, Linux ALSA/V4L2) | IMPLEMENTED | TEST_SENS (sens_sonde_winmm_honnete, sens_bloque_unknown) |
+| P10 — Aide CLI `library` en français reflétant le code réel | IMPLEMENTED | `AIgg.cmd library`, LIBRARIES.md, STATE/CHANGELOG |
+| P11 — `docs-check` : audit docs/versions/compteurs, lecture seule | IMPLEMENTED | TEST_DOCS_CHECK (docs_check_ok, docs_check_detecte_divergence) |
 
 ## PARTIAL (existe, mais limité / à renforcer)
 
@@ -65,7 +74,6 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 |---|---|
 | Communication e-mail (Gmail…) | PARTIAL — architecture outil prête, aucun connecteur e-mail encore. |
 | Recherche Web multi-sources | PARTIAL — DuckDuckGo sans clé implémenté ; Gmail/Drive/Maps non |
-| Sens réels de la machine | PARTIAL — détection d'écran/clavier/fichiers/horloge/réseau ; micro/caméra/voix déclarés non disponibles |
 | Web `web.search` | PARTIAL — nécessite réseau ; testée réellement (3 résultats) le 2026-09-05 |
 | Synchronisation des demandes après redémarrage | IMPLEMENTED (core/needs.json) — fil conversation limité à la session |
 
@@ -86,7 +94,6 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 | Exécution de scripts `.ps1` sur cette machine | Politique d'exécution PowerShell `Restricted` | Utiliser `AIgg.cmd` (l'`AIgg.ps1` affiche ce message) |
 | Recherche Web hors-ligne | Aucun réseau | Le test passe en `BLOCKED` (jamais `PASS` mensonger) |
 | Publication GitHub | Commande utilisateur : d'abord intégrer le Prompt Maître | Effectué le 2026-09-05 (repo public + release v0.1.0) |
-| Recherche bibliothèque niveau 2 (similarité, multilingue, import/export réel) | Non implémenté | Prévu dans les évolutions du cahier (§18, §24) |
 
 ## Déviations documentées par rapport à l'arborescence cible (§27)
 
@@ -97,7 +104,7 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94
 - `web/` → les fichiers sont sous `web/public/` (index.html, style.css, app.js),
   équivalent direct de `web/` cible.
 
-## PROCHAIN TRAVAIL (organisé le 2026-09-06 — v0.1.2 publié : naissance interactive réparée depuis la release)
+## PROCHAIN TRAVAIL (organisé le 2026-09-06 — v0.2.0 : recherche N2 + P9/P10/P11)
 
 Priorité d'ordre décroissant ; chaque item garde un critère observable.
 
@@ -117,12 +124,16 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
 - [x] `tests/run-tests.js` (section 4 MÉMOIRE) : l'entrée `{question:'test',
       answer:'ok'}` n'était pas supprimée à la fin → **réglé** (le test supprime
       déjà son entrée ; 0 résidu constaté le 2026-09-06).
-- [ ] Observer si le mode `library` CLI a besoin d'une aide en français plus
+- [x] Observer si le mode `library` CLI a besoin d'une aide en français plus
       détaillée (`AIgg.cmd library` sans argument l'affiche déjà).
+      → **fait en v0.2.0 (P10)** : aide française complète, calquée sur le code réel.
 
 ### Évolutions prévues par les cahiers (non commencées — ne pas prétendre le contraire)
-- [ ] Recherche bibliothèque **niveau 2** : import/export réel multi-fournisseur,
+- [x] Recherche bibliothèque **niveau 2** : import/export réel multi-fournisseur,
       calcul de similarité, multilingue (§18 et §24 du cahier bibliothèque).
+      → **fait en v0.2.0** : `searchL2` (normalisation, classement expliqué,
+      filtres, FR/EN/ES), import réel CLI `--file` ; relecture conjointe
+      N2 + état/documents selon « Documenter le réel » en cours de finalisation.
 - [ ] Communication externe e-mail (PHASE 4 du Prompt Maître).
 - [ ] Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
 - [ ] IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).

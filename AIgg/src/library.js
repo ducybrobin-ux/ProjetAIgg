@@ -181,7 +181,7 @@ function create(identity, fields) {
     domains: Array.isArray(fields.domains) ? fields.domains : [fields.domain || 'general'].filter(Boolean),
     languages: Array.isArray(fields.languages) ? fields.languages : ['fr'],
     learning_mode: fields.learning_mode || 'guided',
-    privacy: fields.privacy || 'private',
+    privacy: ['public', 'private'].includes(fields.privacy) ? fields.privacy : 'private',
     priorities: [],
     notes: [],
     contradictions: [],
@@ -228,11 +228,11 @@ function remove(id, identity, opts) {
   const root = libRoot(id);
   if (!fs.existsSync(root)) throw new Error('Bibliothèque introuvable : ' + id);
   const trash = path.join(PATHS.libraries, '_trash', id);
+  journal(identity, id, 'LIBRARY_DELETED', { TRASH: trash });
+  globalJournal(identity, 'LIBRARY_DELETED', { LIBRARY_ID: id });
   util.ensureDir(path.dirname(trash));
   if (fs.existsSync(trash)) fs.rmSync(trash, { recursive: true, force: true });
   fs.renameSync(root, trash);
-  journal(identity, id, 'LIBRARY_DELETED', { TRASH: trash });
-  globalJournal(identity, 'LIBRARY_DELETED', { LIBRARY_ID: id });
   return { id, status: 'deleted', trash };
 }
 
@@ -251,15 +251,15 @@ function saveSources(id, sources, identity) {
 function addSource(id, identity, fields) {
   const sources = loadSources(id);
   const source = {
-    id: util.uuid(),
+    id: pickKnown(fields, ['id']) || util.uuid(),
     title: (fields.title || '').trim(),
     author: fields.author || '',
     organization: fields.organization || '',
     url: fields.url || '',
-    type: SOURCE_TYPES.includes(fields.type) ? fields.type : 'SITE_WEB',
+    type: fields.type ? String(fields.type).toUpperCase() : 'SITE_WEB',
     domain: fields.domain || '',
     subdomain: fields.subdomain || '',
-    language: fields.language || 'fr',
+    language: fields.language || '',
     publication_date: fields.publication_date || '',
     last_checked: util.nowIso(),
     license: fields.license || '',
@@ -267,6 +267,7 @@ function addSource(id, identity, fields) {
     priority: typeof fields.priority === 'number' ? fields.priority : 0,
     status: fields.status || 'ACTIVE',
     notes: fields.notes || '',
+    provenance: fields.provenance || '',
   };
   if (!source.title) throw new Error('Titre de source requis.');
   sources.push(source);
@@ -312,6 +313,7 @@ function addDocument(id, identity, fields) {
     NAME: fields.name || fields.NAME || 'document',
     TYPE: fields.type || fields.TYPE || 'TEXTE',
     LICENSE: fields.license || fields.LICENSE || '',
+    LANGUAGE: pickKnown(fields, ['language', 'LANGUAGE']) || '',
     SOURCE_ID: fields.source_id || fields.SOURCE_ID || null,
     CONTENT: String((fields.content !== undefined ? fields.content : fields.CONTENT) || ''),
     NOTES: fields.notes || fields.NOTES || '',
@@ -347,22 +349,37 @@ function knowledge(id) {
     .sort((a, b) => (a.TIMESTAMP < b.TIMESTAMP ? 1 : -1));
 }
 
+function pickKnown(obj, keys) {
+  for (const k of keys) if (obj !== undefined && obj !== null && obj[k] !== undefined) return obj[k];
+  return undefined;
+}
+
 function addKnowledge(id, identity, fields) {
   const state = (KNOWLEDGE_STATES.includes(fields.status) ? fields.status
     : KNOWLEDGE_STATES.includes(fields.STATUS) ? fields.STATUS : 'DISCOVERED');
   const sourceIds = Array.isArray(fields.source_ids) ? fields.source_ids
-    : (Array.isArray(fields.SOURCE_IDS) ? fields.SOURCE_IDS : []);
-  const content = fields.content !== undefined ? fields.content
-    : (fields.CONTENT !== undefined ? fields.CONTENT : '');
+    : (Array.isArray(fields.SOURCE_IDS) ? fields.SOURCE_IDS
+      : (fields.source_id ? [fields.source_id]
+        : (fields.SOURCE_ID ? [fields.SOURCE_ID] : [])));
+  const content = pickKnown(fields, ['content', 'CONTENT']) || '';
   const confidence = typeof fields.confidence === 'number' ? fields.confidence
     : (typeof fields.CONFIDENCE === 'number' ? fields.CONFIDENCE : 0.5);
   const notes = Array.isArray(fields.notes) ? fields.notes
     : (Array.isArray(fields.NOTES) ? fields.NOTES : []);
+  const tags = Array.isArray(fields.tags) ? fields.tags
+    : (Array.isArray(fields.TAGS) ? fields.TAGS : []);
+  const concepts = Array.isArray(fields.concepts) ? fields.concepts
+    : (Array.isArray(fields.CONCEPTS) ? fields.CONCEPTS : []);
+  const providedId = pickKnown(fields, ['id', 'ID']);
   const entry = {
-    ID: util.uuid(),
+    ID: providedId ? String(providedId) : util.uuid(),
     TIMESTAMP: util.nowIso(),
     LIBRARY_ID: id,
     AIgg_ID: identity ? identity.AIgg_ID : null,
+    TITLE: pickKnown(fields, ['title', 'TITLE']) || '',
+    TAGS: tags,
+    CONCEPTS: concepts,
+    LANGUAGE: pickKnown(fields, ['language', 'LANGUAGE']) || '',
     CONTENT: content,
     SOURCE_IDS: sourceIds,
     PROVENANCE: sourceIds.length
@@ -373,7 +390,7 @@ function addKnowledge(id, identity, fields) {
     STATUS: state,
     NOTES: notes,
   };
-  if (!entry.CONTENT) throw new Error('Contenu de connaissance requis.');
+  if (!entry.CONTENT && !entry.TITLE) throw new Error('Contenu ou titre de connaissance requis.');
   const file = path.join(libFile(id, 'knowledge'), `${util.timestamp()}-${entry.ID}.json`);
   util.writeJson(file, entry);
   journal(identity, id, 'KNOWLEDGE_ADDED', { KNOWLEDGE_ID: entry.ID, STATUS: state });
@@ -609,6 +626,206 @@ function matchAny(needle, fields) {
   return fields.some((f) => String(f || '').toLowerCase().includes(needle));
 }
 
+// ---------- Recherche niveau 2 (multilingue, classée, explicable) ----------
+
+const SEARCH_WEIGHTS = { exact: 2, title: 5, tags: 4, concepts: 4, content: 3, notes: 3, provenance: 1 };
+
+const SEARCH_STOPWORDS = new Set([
+  // français
+  'le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'et', 'ou', 'en', 'au', 'aux',
+  'que', 'qui', 'quoi', 'dans', 'pour', 'par', 'sur', 'avec', 'dans', 'ce', 'cet', 'cette',
+  // anglais
+  'the', 'a', 'an', 'of', 'to', 'in', 'on', 'for', 'with', 'and', 'or', 'is', 'are',
+  // espagnol
+  'el', 'la', 'los', 'las', 'de', 'del', 'un', 'una', 'y', 'o', 'en', 'que', 'para', 'con',
+]);
+
+const STEM_DICT = {
+  photosynthese: 'photosynthes',
+  photosynthesis: 'photosynthes',
+  fotosintesis: 'fotosintesis',
+  energie: 'energ',
+  energy: 'energ',
+  energia: 'energ',
+  energias: 'energ',
+  energetique: 'energet',
+  energetic: 'energet',
+  renovable: 'renovab',
+  renouvelable: 'renovab',
+  renewable: 'renovab',
+  fraccion: 'fraccion',
+  fracciones: 'fraccion',
+  equivalente: 'equivalente',
+  equivalentes: 'equivalente',
+  equivalent: 'equivalen',
+};
+
+function normText(t) {
+  return String(t || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[''\u2019]/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/^\s+|\s+$/g, '');
+}
+
+function tokenize(text) {
+  const n = normText(text);
+  return n ? n.split(' ') : [];
+}
+
+function stemToken(t) {
+  if (STEM_DICT[t]) return STEM_DICT[t];
+  if (t.length > 3 && t.endsWith('s') && !t.endsWith('ss') && !t.endsWith('us') && !t.endsWith('is')) return t.slice(0, -1);
+  return t;
+}
+
+function queryVectors(raw) {
+  const toks = tokenize(raw).filter((t) => t);
+  let qTokens = toks.filter((t) => !SEARCH_STOPWORDS.has(t));
+  if (!qTokens.length) qTokens = toks;
+  return { raw: normText(raw), tokens: qTokens, stems: qTokens.map(stemToken) };
+}
+
+function fieldScore(q, text, weight) {
+  const ftoks = tokenize(text);
+  if (!ftoks.length || !q.tokens.length) return 0;
+  let hit = 0;
+  for (const fs of ftoks.map(stemToken)) if (q.stems.includes(fs)) hit++;
+  return weight * (hit / q.tokens.length);
+}
+
+function snippetOf(text, len) {
+  return String(text || '').slice(0, len || 160);
+}
+
+function typeAlias(type) {
+  return { connaissance: 'knowledge', document: 'document', source: 'source' }[String(type || '').toLowerCase()] || String(type || '').toLowerCase();
+}
+
+function matchesFilters(item, opts) {
+  if (opts.language && item.language && item.language.toLowerCase() !== String(opts.language).toLowerCase()) return false;
+  if (opts.type) {
+    const want = typeAlias(opts.type);
+    if (item.family !== want && item.family !== String(opts.type)) return false;
+  }
+  if (opts.status) {
+    const st = String(item.status || '').toUpperCase();
+    if (st && st !== String(opts.status).toUpperCase()) return false;
+  }
+  if (opts.tags && Array.isArray(item.tagsValue)) {
+    const want = String(opts.tags).toLowerCase();
+    if (!item.tagsValue.some((t) => String(t).toLowerCase().includes(want))) return false;
+  }
+  if (opts.provenance && Array.isArray(item.provenanceValue)) {
+    const want = String(opts.provenance).toLowerCase();
+    if (!item.provenanceValue.some((p) => JSON.stringify(p).toLowerCase().includes(want))) return false;
+  }
+  return true;
+}
+
+function searchL2(query, options) {
+  const opts = options || {};
+  const raw = String(query || '').trim();
+  if (!raw) return { query: raw, count: 0, results: [] };
+
+  const q = queryVectors(raw);
+  const maxResults = typeof opts.limit === 'number' ? opts.limit : 20;
+
+  let ids;
+  if (opts.library) ids = [opts.library];
+  else if (Array.isArray(opts.libraries)) ids = opts.libraries;
+  else ids = list().map((l) => l.meta.id);
+
+  const results = [];
+
+  for (const id of ids) {
+    let lib;
+    try { lib = find(id); } catch { continue; }
+    if (opts.libraryStatus && lib.meta.status && lib.meta.status !== opts.libraryStatus) continue;
+    if (Array.isArray(opts.languages) && !opts.languages.some((l) => (lib.meta.languages || []).includes(l))) continue;
+
+    const libResult = { libraryId: id, libraryName: lib.meta.name };
+
+    for (const k of knowledge(id)) {
+      const item = {
+        family: 'knowledge', type: 'connaissance',
+        id: k.ID, libraryId: id, libraryName: lib.meta.name,
+        language: k.LANGUAGE || '', status: k.STATUS,
+        title: k.TITLE || snippetOf(k.CONTENT, 60),
+        snippet: snippetOf(k.CONTENT), timestamp: k.TIMESTAMP,
+        tagsValue: k.TAGS || [], provenanceValue: k.PROVENANCE || [],
+      };
+      if (!matchesFilters(item, opts)) continue;
+
+      const fields = {
+        title: fieldScore(q, k.TITLE, SEARCH_WEIGHTS.title),
+        tags: fieldScore(q, (k.TAGS || []).join(' '), SEARCH_WEIGHTS.tags),
+        concepts: fieldScore(q, (k.CONCEPTS || []).join(' '), SEARCH_WEIGHTS.concepts),
+        content: fieldScore(q, k.CONTENT, SEARCH_WEIGHTS.content),
+        notes: fieldScore(q, (k.NOTES || []).join(' '), SEARCH_WEIGHTS.notes),
+      };
+      if ((k.SOURCE_IDS || []).length) {
+        const st = loadSources(id).filter((s) => k.SOURCE_IDS.includes(s.id)).map((s) => s.title).join(' ');
+        fields.provenance = fieldScore(q, st, SEARCH_WEIGHTS.provenance);
+      }
+      if (q.raw && (normText(k.TITLE) === q.raw || normText(k.CONTENT).includes(q.raw))) {
+        fields.exact = SEARCH_WEIGHTS.exact;
+      }
+      pushRanked(results, item, fields, libResult);
+    }
+
+    for (const d of documents(id)) {
+      const item = {
+        family: 'document', type: 'document',
+        id: d.ID, libraryId: id, libraryName: lib.meta.name,
+        language: d.LANGUAGE || '', status: 'ACTIVE',
+        title: d.NAME, snippet: snippetOf(d.CONTENT), timestamp: d.TIMESTAMP,
+        tagsValue: [], provenanceValue: d.SOURCE_ID ? [{ source: d.SOURCE_ID }] : [],
+      };
+      if (!matchesFilters(item, opts)) continue;
+      const fields = {
+        title: fieldScore(q, d.NAME, SEARCH_WEIGHTS.title),
+        content: fieldScore(q, d.CONTENT, SEARCH_WEIGHTS.content),
+        notes: fieldScore(q, d.NOTES, SEARCH_WEIGHTS.notes),
+      };
+      if (q.raw && normText(d.NAME) === q.raw) fields.exact = SEARCH_WEIGHTS.exact;
+      pushRanked(results, item, fields, libResult);
+    }
+
+    for (const s of loadSources(id)) {
+      const item = {
+        family: 'source', type: 'source',
+        id: s.id, libraryId: id, libraryName: lib.meta.name,
+        language: s.language || '', status: s.status || 'ACTIVE',
+        title: s.title, snippet: snippetOf(s.notes), timestamp: s.last_checked,
+        tagsValue: [], provenanceValue: s.provenance ? [{ provenance: s.provenance }] : [],
+      };
+      if (!matchesFilters(item, opts)) continue;
+      const fields = {
+        title: fieldScore(q, s.title, SEARCH_WEIGHTS.title),
+        tags: fieldScore(q, [s.author, s.organization].join(' '), SEARCH_WEIGHTS.tags),
+        content: fieldScore(q, s.notes, SEARCH_WEIGHTS.content),
+        provenance: fieldScore(q, s.provenance, SEARCH_WEIGHTS.provenance),
+      };
+      if (q.raw && normText(s.title) === q.raw) fields.exact = SEARCH_WEIGHTS.exact;
+      pushRanked(results, item, fields, libResult);
+    }
+  }
+
+  results.sort((a, b) => (b.score - a.score) || (a.title < b.title ? -1 : 1) || (a.id < b.id ? -1 : 1));
+  const final = results.slice(0, maxResults);
+  return { query: raw, filters: { library: opts.library || null, language: opts.language || null, type: opts.type || null, status: opts.status || null, tags: opts.tags || null, provenance: opts.provenance || null }, count: final.length, results: final };
+}
+
+function pushRanked(results, item, fields, libResult) {
+  const matched = Object.keys(fields)
+    .map((f) => ({ field: f, weight: SEARCH_WEIGHTS[f] || 0, score: Math.round(fields[f] * 100) / 100 }))
+    .filter((m) => m.score > 0);
+  const score = Math.round(matched.reduce((s, m) => s + m.score, 0) * 100) / 100;
+  if (!score) return;
+  results.push({ score, family: item.family, type: item.type, id: item.id, libraryId: item.libraryId, libraryName: item.libraryName, language: item.language, title: item.title, snippet: item.snippet, fields: matched, provenance: item.provenanceValue || [], timestamp: item.timestamp });
+}
+
 // ---------- Import / Export (§24) ----------
 
 function exportLibrary(id) {
@@ -627,8 +844,9 @@ function exportLibrary(id) {
     curriculum: curriculum(id),
     competencies: competencies(id),
     knowledge: knowledge(id).map((k) => ({
-      CONTENT: k.CONTENT, SOURCE_IDS: k.SOURCE_IDS, CONFIDENCE: k.CONFIDENCE,
-      STATUS: k.STATUS, NOTES: k.NOTES,
+      ID: k.ID, TITLE: k.TITLE, TAGS: k.TAGS, CONCEPTS: k.CONCEPTS,
+      LANGUAGE: k.LANGUAGE, CONTENT: k.CONTENT, SOURCE_IDS: k.SOURCE_IDS,
+      CONFIDENCE: k.CONFIDENCE, STATUS: k.STATUS, NOTES: k.NOTES,
     })),
     exercises: exercises(id).map((e) => ({ TYPE: e.TYPE, QUESTION: e.QUESTION, EXPECTED: e.EXPECTED, HINTS: e.HINTS })),
     documents: documents(id).map((d) => ({ NAME: d.NAME, TYPE: d.TYPE, LICENSE: d.LICENSE, CONTENT: d.CONTENT })),
@@ -636,16 +854,30 @@ function exportLibrary(id) {
   return bundle;
 }
 
+function bundleMeta(bundle) {
+  if (bundle.library && bundle.library.name) return bundle.library;
+  if (bundle.name) {
+    const meta = { ...(bundle.metadata || {}) };
+    meta.name = bundle.name;
+    meta.id = meta.id || bundle.id;
+    if (bundle.language) meta.languages = [bundle.language];
+    return meta;
+  }
+  return null;
+}
+
 function importAnalyse(bundle) {
   if (!bundle || bundle.format !== 'aigg-library') throw new Error('Format invalide (attendu: aigg-library).');
-  if (!bundle.library || !bundle.library.name) throw new Error('Bibliothèque sans nom dans le bundle.');
-  const id = bundle.library.id || slugify(bundle.library.name);
+  const meta = bundleMeta(bundle);
+  if (!meta || !meta.name) throw new Error('Bibliothèque sans nom dans le bundle.');
+  const id = meta.id || slugify(meta.name);
   const exists = fs.existsSync(libRoot(id));
   return {
     apercu: {
       id,
-      name: bundle.library.name,
+      name: meta.name,
       existing: exists,
+      language: bundle.language || (Array.isArray(meta.languages) ? meta.languages[0] : null),
       source_count: (bundle.sources || []).length,
       knowledge_count: (bundle.knowledge || []).length,
       competency_count: (bundle.competencies || []).length,
@@ -661,12 +893,13 @@ function importActivate(bundle, identity, confirmed) {
   if (analyse.apercu.existing && !confirmed) {
     throw new Error('Une bibliothèque existe déjà sous cet id. Passe confirmed=true pour remplacer.');
   }
+  const meta = bundleMeta(bundle);
   let id = analyse.apercu.id;
   if (analyse.apercu.existing) {
     remove(id, identity, {});
-    id = slugify(bundle.library.name);
+    id = slugify(meta.name);
   }
-  const created = create(identity, { ...bundle.library, id });
+  const created = create(identity, { ...meta, id });
   id = created.id;
   for (const s of bundle.sources || []) addSource(id, identity, s);
   for (const d of bundle.documents || []) addDocument(id, identity, d);
@@ -734,6 +967,7 @@ module.exports = {
   resolveContradiction,
   annotate,
   search,
+  searchL2,
   exportLibrary,
   importAnalyse,
   importActivate,

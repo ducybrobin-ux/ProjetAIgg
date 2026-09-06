@@ -3,6 +3,43 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.2.0 — 2026-09-06 — recherche niveau 2 + sens réels + aide CLI + docs-check
+
+### Ajouts / améliorations
+- **Recherche bibliothèque niveau 2 (N2)** : `searchL2(query, options)` dans
+  `src/library.js` — normalisation accents/casse/ponctuation, arrêts FR/EN/ES,
+  racinisation, classement pondéré et expliqué (cause par champ), filtres
+  bibliothèque/langue/type/statut/tags/provenance/limit, résultats multilingues.
+- Import réel via CLI : `AIgg.cmd library import --file=… [--confirm]` (aperçu
+  par défaut, remplacement d'une bibliothèque existante de même id).
+- `addKnowledge` / `addSource` / `addDocument` enrichis (`ID` stable via `id`,
+  `TITLE`, `TAGS`, `CONCEPTS`, `LANGUAGE`), export/import `aigg-library` v1
+  acceptant les deux dialectes (`bundle` ou `name`+`metadata`).
+- **P9 — sens réels de la machine** : sondes sans prérequis (Windows
+  WINMM/WMI, Linux ALSA/V4L2), états DISPONIBLE/AUTORISE/ACTIF jamais
+  inventés (sonde bloquée → `UNKNOWN`), cache 30 s, injectables pour les tests.
+  Détection réelle Windows : MICROPHONE OUI, CAMERA NON, HAUT_PARLEURS OUI.
+- **P10 — aide CLI `library` en français** : `AIgg.cmd library` sans argument
+  affiche la documentation complète reflétant le code réel (recherche niveau 2,
+  import, états, principes de sécurité).
+- **P11 — `docs-check`** : `AIgg.cmd docs-check` (lecture seule) vérifie la
+  cohérence version + compteurs de tests entre STATE / CHANGELOG / README et le
+  code ; ne modifie rien ; sortie « AIgg DOCS CHECK ». Roadmap externe et wiki
+  laissés en `MANUAL_CHECK`.
+- Web (onglet Bibliothèques) : recherche niveau 2 avec sélecteurs Langue/Type
+  et affichage du score + cause ; onglet Sens : raison affichée par capteur.
+- Dépôt public : dossier privé `InformationsProjetAIgg/` retiré de GitHub
+  (untrack + `.gitignore`), documents de conception échangés hors dépôt.
+
+### Corrections
+- `library.remove()` : le journal était recréé avant le déplacement vers
+  `_trash` (coquille vide) → journalisation après `renameSync` ; 35 coquilles
+  résiduelles purgées.
+
+### Remarque
+- Suite de tests : **122 PASS / 0 FAIL** (94 → 119 avec sens réels,
+  recherche N2 et import ; → 122 avec la couverture `docs-check`).
+
 ## v0.1.3 — 2026-09-06 — carnet : entrées révocables, autonomie des tests
 
 ### Ajouts / améliorations

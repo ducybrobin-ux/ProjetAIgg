@@ -257,8 +257,16 @@ function start() {
       }
       if (url.pathname === '/api/libraries/search' && req.method === 'GET') {
         const q = url.searchParams.get('q') || '';
-        const lib = url.searchParams.get('library');
-        try { sendJson(res, library.search(q, lib)); }
+        const options = {
+          library: url.searchParams.get('library') || undefined,
+          language: url.searchParams.get('language') || undefined,
+          type: url.searchParams.get('type') || undefined,
+          status: url.searchParams.get('status') || undefined,
+          tags: url.searchParams.get('tags') || undefined,
+          provenance: url.searchParams.get('provenance') || undefined,
+        };
+        if (url.searchParams.get('limit')) options.limit = Number(url.searchParams.get('limit'));
+        try { sendJson(res, library.searchL2(q, options)); }
         catch (e) { sendError(res, e.message); }
         return;
       }

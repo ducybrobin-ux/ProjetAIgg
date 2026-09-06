@@ -13,7 +13,8 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   procédurale) dans `memory/`, avec répertoire complet, recherche, correction,
   suppression.
 - Journal d'événements : `journal/events.ndjson`.
-- Sens avec états DISPONIBLE / AUTORISE / ACTIF.
+- **Sens avec états DISPONIBLE / AUTORISE / ACTIF** : détection réelle de la
+  machine (micro, caméra, haut-parleurs) sans matériel supposé.
 - Capacités acquises (organes) et rétractées, permissions (moindre privilège).
 - Veille / réveil, âge calculé depuis la naissance.
 - Sauvegardes et restauration dans `backups/` (avec manifeste).
@@ -43,8 +44,9 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   structuré appartenant au tuteur (`src/library.js`), privées par défaut,
   avec sources, documents (jamais exécutés), connaissances (avec provenance),
   compétences (jamais MASTERED automatiquement), curriculum, exercices,
-  contradictions, annotations, journal, recherche locale, export/import
-  `aigg-library` v1. Voir `LIBRARIES.md`.
+  contradictions, annotations, journal, **recherche niveau 2 multilingue**
+  (FR/EN/ES, classement expliqué, filtres), export/import
+  `aigg-library` v1 via CLI. Voir `LIBRARIES.md`.
 
 ## Commandes
 
@@ -72,9 +74,11 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
-.\AIgg.cmd library search <q># recherche locale niveau 1
+.\AIgg.cmd library search <q># recherche niveau 2 (multilingue FR/EN/ES)
+.\AIgg.cmd library import --file=<fichier> --confirm
+.\AIgg.cmd docs-check      # audit READ SEUL des docs (versions, compteurs)
 .\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (93 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (122 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

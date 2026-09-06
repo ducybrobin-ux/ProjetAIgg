@@ -47,7 +47,11 @@ function render(data) {
   setPre('capabilities',
     data.capabilities.map((c) => `[${c.acquired ? 'OUI' : 'NON'}] ${c.name} — ${c.description}${c.tool ? ' (via ' + c.tool + ')' : ''}`).join('\n'));
   setPre('senses',
-    data.senses.map((s) => `${s.label} : D=${s.DISPONIBLE} A=${s.AUTORISE} ACT=${s.ACTIF}`).join('\n'));
+    data.senses.map((s) => {
+      const audio = ['MICROPHONE', 'CAMERA', 'HAUT_PARLEURS'].includes(s.sense);
+      const extra = audio && s.reason ? ` — ${s.reason}` : '';
+      return `${s.label} : D=${s.DISPONIBLE} A=${s.AUTORISE} ACT=${s.ACTIF}${extra}`;
+    }).join('\n'));
   setPre('permissions', JSON.stringify(data.permissions, null, 2));
   setPre('journal',
     data.journal.map((e) => `${e.TIMESTAMP}  ${e.EVENT}${e.TOOL_NAME ? ' [' + e.TOOL_NAME + ']' : ''}`).join('\n') || '(vide)');
@@ -449,11 +453,16 @@ function init() {
   if (libSearchBtn) libSearchBtn.onclick = async () => {
     const q = $('lib-search-q').value.trim();
     if (!q) return;
-    const res = await getJSON('/api/libraries/search?q=' + encodeURIComponent(q));
-    setPre('lib-search-result', res.length ? res.map((r) => {
-      const hits = r.hits.map((h) => `  · [${h.family}] ${esc(h.content)}`).join('\n');
-      return `${r.libraryName} (${r.libraryId})\n${hits}`;
-    }).join('\n\n') : 'Aucune correspondance.');
+    const ml = document.getElementById('lib-search-lang') ? document.getElementById('lib-search-lang').value : '';
+    const mt = document.getElementById('lib-search-type') ? document.getElementById('lib-search-type').value : '';
+    const url = '/api/libraries/search?q=' + encodeURIComponent(q) + '&limit=20'
+      + (ml ? '&language=' + encodeURIComponent(ml) : '')
+      + (mt ? '&type=' + encodeURIComponent(mt) : '');
+    const res = await getJSON(url);
+    setPre('lib-search-result', res.count ? res.results.map((r) => {
+      const cause = r.fields.map((f) => `${f.field}:${f.score}`).join(' ');
+      return `[${r.score}] ${r.title} (${r.type}${r.language ? ', ' + r.language : ''} — ${r.libraryName})\n   cause : ${cause}`;
+    }).join('\n') : 'Aucune correspondance.');
   };
 
   $('btn-memorize').onclick = async () => {
