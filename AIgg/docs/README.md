@@ -66,6 +66,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd web-read <url>    # lire une page (via le contrat, outil web)
 .\AIgg.cmd web-search <q>    # recherche web
 .\AIgg.cmd notebook-add <q>  # expérience de laboratoire
+.\AIgg.cmd notebook-del <id>  # supprime une expérience (révocable)
 .\AIgg.cmd avatar            # générer la représentation
 .\AIgg.cmd needs             # liste des demandes d'AIgg
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)

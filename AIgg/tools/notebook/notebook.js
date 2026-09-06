@@ -64,9 +64,25 @@ function get(id) {
   return list().find((e) => e.ID === id) || null;
 }
 
+function fileFor(id) {
+  return fs.readdirSync(NOTEBOOK_DIR)
+    .filter((f) => f.endsWith('.json'))
+    .find((f) => {
+      const e = util.readJson(path.join(NOTEBOOK_DIR, f), null);
+      return e && e.ID === id;
+    }) || null;
+}
+
+function remove(id) {
+  const f = fileFor(id);
+  if (!f) throw new Error('Expérience introuvable: ' + id);
+  fs.unlinkSync(path.join(NOTEBOOK_DIR, f));
+  return { removed: true, ID: id };
+}
+
 async function runTest() {
+  const entry = add({ question: 'test_outil_notebook', hypothesis: 'vérification locale' });
   try {
-    const entry = add({ question: 'test_outil_notebook', hypothesis: 'vérification locale' });
     const ok = !!entry.ID;
     const count = list().length;
     const found = get(entry.ID);
@@ -75,7 +91,9 @@ async function runTest() {
       : { status: 'FAIL', note: 'écriture/lecture impossible' };
   } catch (err) {
     return { status: 'FAIL', note: err.message };
+  } finally {
+    try { remove(entry.ID); } catch {}
   }
 }
 
-module.exports = { add, setResult, list, get, runTest, NOTEBOOK_DIR };
+module.exports = { add, setResult, list, get, remove, runTest, NOTEBOOK_DIR };

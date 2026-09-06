@@ -374,6 +374,12 @@ function start() {
           () => require('../tools/notebook/notebook.js').add(body));
         return;
       }
+      if (url.pathname === '/api/notebook/remove' && req.method === 'POST') {
+        const body = await readBody(req);
+        toolCall(res, ident, 'notebook', 'notebook.remove', { source: 'WEB', confidence: 0.9, action: 'remove' },
+          () => require('../tools/notebook/notebook.js').remove(body.id));
+        return;
+      }
       if (url.pathname === '/api/avatar/generate' && req.method === 'POST') {
         toolCall(res, ident, 'avatar', 'avatar.generate', { source: 'WEB', confidence: 1.0, action: 'generate' },
           () => require('../tools/avatar/avatar.js').generate(ident));

@@ -6,7 +6,7 @@
   "category": "pensee",
   "capability": "LABORATOIRE",
   "need": "Séparer données, hypothèses, résultats et conclusions.",
-  "interactions": ["notebook.add", "notebook.list", "notebook.get"],
+  "interactions": ["notebook.add", "notebook.list", "notebook.get", "notebook.remove"],
   "needs_permissions": ["local_files"],
   "risks": [
     "Le carnet n'est pas la mémoire autobiographique",

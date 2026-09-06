@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.2 · Suite de tests : 93 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.3 · Suite de tests : 94 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -110,13 +110,13 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
       noter ici avant de commencer.
 
 ### Améliorations techniques courtes (liste d'attente)
-- [ ] `tools/notebook/notebook.js` : `runTest()` et le test `NOTEBOOK RÉEL`
-      créent des entrées persistantes (`test_suite`, `test_outil_notebook`) qui
-      s'accumulent — nettoyage à l'issue du test souhaitable (le 2026-09-05 :
-      25 entrées résiduelles purgées manuellement).
-- [ ] `tests/run-tests.js` (section 4 MÉMOIRE) : l'entrée `{question:'test',
-      answer:'ok'}` n'est pas supprimée à la fin → suppression automatique
-      souhaitable (4 résidus purgés manuellement le 2026-09-05).
+- [x] `tools/notebook/notebook.js` : `runTest()` et le test `NOTEBOOK RÉEL`
+      créaient des entrées persistantes (`test_suite`, `test_outil_notebook`) →
+      **réglé en v0.1.3** : `runTest()` autonettoyant, test §12 supprime son
+      entrée et vérifie `notebook.remove(id)`.
+- [x] `tests/run-tests.js` (section 4 MÉMOIRE) : l'entrée `{question:'test',
+      answer:'ok'}` n'était pas supprimée à la fin → **réglé** (le test supprime
+      déjà son entrée ; 0 résidu constaté le 2026-09-06).
 - [ ] Observer si le mode `library` CLI a besoin d'une aide en français plus
       détaillée (`AIgg.cmd library` sans argument l'affiche déjà).
 

@@ -374,7 +374,8 @@ function renderNotebook() {
       const div = document.createElement('div');
       div.className = 'nb-row';
       div.innerHTML =
-        `<span class="meta">${esc(n.TIMESTAMP)} — statut: ${esc(n.STATUS)}</span><br>` +
+        `<span class="meta">${esc(n.TIMESTAMP)} — statut: ${esc(n.STATUS)}</span>` +
+        ` <button data-nb-del="${esc(n.ID)}">supprimer</button><br>` +
         `Q: ${esc(n.QUESTION)}<br>` +
         (n.HYPOTHESIS ? `H: ${esc(n.HYPOTHESIS)}<br>` : '') +
         (n.RESULT ? `R: ${esc(n.RESULT)}<br>` : '') +
@@ -383,6 +384,14 @@ function renderNotebook() {
     }
   }).catch(() => {});
 }
+
+document.addEventListener('click', async (ev) => {
+  const del = ev.target.closest('button[data-nb-del]');
+  if (del) {
+    await postJSON('/api/notebook/remove', { id: del.dataset.nbDel });
+    refresh(); return;
+  }
+});
 
 function init() {
   refresh();

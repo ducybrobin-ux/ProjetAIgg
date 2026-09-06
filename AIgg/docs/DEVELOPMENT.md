@@ -26,7 +26,7 @@ cd AIgg
 
 Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
-<outil> revoke <outil> web-read <url> web-search <requête> notebook-add
+<outil> revoke <outil> web-read <url> web-search <requête> notebook-add <id>
 <question> avatar migrate <destination> library <sous-commande>`.
 (Moteur de bibliothèque : voir `LIBRARIES.md`.)
 

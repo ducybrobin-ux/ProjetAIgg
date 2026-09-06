@@ -213,6 +213,20 @@ async function runNotebookAdd(ident, question, hypothesis) {
   console.log(JSON.stringify(out, null, 2));
 }
 
+async function runNotebookDel(ident, id) {
+  const tool = toolkit.findManifest('notebook');
+  const out = await contract.executeTool(ident, tool.manifest, 'notebook.remove', {
+    source: 'CLI',
+    confidence: 0.9,
+    action: 'remove',
+    async execute() {
+      const nb = toolkit.loadModule('notebook').module;
+      return { ok: true, data: nb.remove(id) };
+    },
+  });
+  console.log(JSON.stringify(out, null, 2));
+}
+
 async function runAvatar(ident) {
   const tool = toolkit.findManifest('avatar');
   const out = await contract.executeTool(ident, tool.manifest, 'avatar.generate', {
@@ -453,6 +467,9 @@ async function main() {
     case 'notebook-add':
       await runNotebookAdd(ident, args[1], args[2]);
       break;
+    case 'notebook-del':
+      await runNotebookDel(ident, args[1]);
+      break;
     case 'avatar':
       await runAvatar(ident);
       break;
@@ -480,7 +497,7 @@ async function main() {
         'Commandes :\n' +
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
-        '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], avatar\n' +
+        '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
         '  library <sous-commande>, migrate <destination>'
       );
   }

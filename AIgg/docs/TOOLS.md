@@ -17,7 +17,7 @@ Révocation = révocation de permission + libération de la capacité.
 | Outil | Capacité fournie | Actions | Besoin couvert | Indépendant | Révocable | Test |
 |---|---|---|---|---|---|---|
 | `web` | RECHERCHER | `web.read` (fetch HTML), `web.search` (DuckDuckGo sans clé) | « J'ai besoin d'information » | oui (fetch natif) | oui | PASS (local + recherche réelle) |
-| `notebook` | LABORATOIRE | `add`, `list`, `get`, `setResult` | « J'ai besoin d'expérimenter » | oui | oui | PASS |
+| `notebook` | LABORATOIRE | `add`, `list`, `get`, `setResult`, `remove` | « J'ai besoin d'expérimenter » | oui | oui | PASS |
 | `avatar` | REPRESENTATION | `generate` (SVG local déterministe) | « J'ai besoin d'une représentation » | oui | oui | PASS |
 
 ## Détails par outil

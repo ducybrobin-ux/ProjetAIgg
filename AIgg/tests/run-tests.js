@@ -190,6 +190,8 @@ async function run() {
     report('expérience_comptée', nb.list().length === beforeCount + 1);
     const updated = nb.setResult(entry.ID, { result: 'observé', conclusion: 'conforme', status: 'conclu' });
     report('expérience_conclue', updated.STATUS === 'conclu' && updated.CONCLUSION === 'conforme');
+    const removedNb = nb.remove(entry.ID);
+    report('expérience_supprimée', removedNb.removed === true && nb.list().length === beforeCount);
   }
 
   // 13. Avatar réel

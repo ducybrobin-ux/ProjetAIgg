@@ -65,7 +65,7 @@ Chaque outil vit dans `tools/<nom>/` :
 | Outil | Capacité | Interactions | Indépendant |
 |---|---|---|---|
 | `web` | RECHERCHER | web.read, web.search | oui (fetch natif) |
-| `notebook` | LABORATOIRE | notebook.add, list, get, result | oui |
+| `notebook` | LABORATOIRE | notebook.add, list, get, result, remove | oui |
 | `avatar` | REPRESENTATION | avatar.generate (SVG local) | oui |
 
 Flux d'acquisition :

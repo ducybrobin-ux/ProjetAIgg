@@ -3,6 +3,27 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.1.3 — 2026-09-06 — carnet : entrées révocables, autonomie des tests
+
+### Ajouts / améliorations
+- `tools/notebook/notebook.js` : nouvelle interaction `notebook.remove(id)`
+  (suppression d'une expérience, données locales uniquement).
+- `runTest()` du carnet est désormais **autonettoyant** : il supprime
+  l'expérience `test_outil_notebook` qu'il crée (l'outil ne laisse plus de
+  trace après `AIgg.cmd test notebook`).
+- Tests :: le test `NOTEBOOK RÉEL` supprime son entrée `test_suite` et vérifie
+  la suppression (`expérience_supprimée`) → **94 PASS / 0 FAIL** (au lieu de
+  93).
+- CLI : `AIgg.cmd notebook-del <id>` (via contrat `notebook.remove`).
+- API : `POST /api/notebook/remove` → `{ id }` (contrôlé par le contrat).
+- Console web : bouton **supprimer** sur chaque ligne du carnet.
+
+### Nettoyage
+- Purge des données résiduelles de test laissées par les anciennes versions
+  du carnet (`test_suite`, `test_outil_notebook`) — seule l'expérience
+  légitime « Test du carnet de labo » subsiste.
+- `.gitignore` : exclusion des messages du tuteur (`InformationsProjetAIgg/Message*.txt`).
+
 ## v0.1.2 — 2026-09-06 — correction naissance interactive
 
 ### Correction
