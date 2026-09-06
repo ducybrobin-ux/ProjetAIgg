@@ -106,6 +106,13 @@ figurer (test automatisé inclus).
 - **Aide CLI `library` en français** reflétant le code réel.
 - **`AIgg.cmd docs-check`** : audit lecture seule de la cohérence
   docs ↔ code (versions, compteurs de tests).
+- Suite de tests : **122 PASS / 0 FAIL**.
+
+## Contenu de la release v0.2.1
+
+- **Import CLI robuste** : un BOM UTF-8 en tête de fichier `--file` est
+  ignoré (signature Windows/PowerShell) ; smoke de bout en bout validé
+  (create → search → export → import → remove).
 - Dossier privé tuteur `InformationsProjetAIgg/` retiré du dépôt public.
 - Suite de tests : **122 PASS / 0 FAIL**.
 

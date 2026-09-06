@@ -3,6 +3,19 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.2.1 — 2026-09-06 — finalisation N2 : import robuste + docs exactes
+
+### Corrections / améliorations (facteur de robustesse)
+- **Import CLI** : un BOM UTF-8 éventuel en tête du fichier `--file` est
+  désormais ignoré (échec `JSON.parse` auparavant avec un fichier signé
+  Windows/PowerShell) — `AIgg.js`.
+- **Smoke de bout en bout** validé réellement : create → source → connaissance
+  → search (filtres, accents, score+cause) → export → import → remove ; cause
+  de classement `notes` ajoutée à `docs/LIBRARIES.md` (§18).
+
+### Remarque
+- Suite de tests : **122 PASS / 0 FAIL**.
+
 ## v0.2.0 — 2026-09-06 — recherche niveau 2 + sens réels + aide CLI + docs-check
 
 ### Ajouts / améliorations
@@ -39,9 +52,7 @@ amélioration, sécurité, documentation.
 ### Remarque
 - Suite de tests : **122 PASS / 0 FAIL** (94 → 119 avec sens réels,
   recherche N2 et import ; → 122 avec la couverture `docs-check`).
-- Finalisation N2 : smoke CLI réel étendu de bout en bout
-  (create → source → connaissance → search → export → import → remove) —
-  l'import CLI ignore désormais un éventuel BOM UTF-8 en tête de fichier.
+- Finalisation N2 (import BOM + docs exactes) : reportée en **v0.2.1**.
 
 ## v0.1.3 — 2026-09-06 — carnet : entrées révocables, autonomie des tests
 
