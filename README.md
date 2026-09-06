@@ -108,6 +108,15 @@ figurer (test automatisé inclus).
   docs ↔ code (versions, compteurs de tests).
 - Suite de tests : **122 PASS / 0 FAIL**.
 
+## Contenu de la release v0.2.2
+
+- **Installation portable** : AIgg installé sur un autre lecteur via
+  `AIgg.cmd migrate` (continuité d'identité préservée) — suite complète
+  **122 PASS / 0 FAIL** validée sur le lecteur cible.
+- **Tests portables** : §21 ne dépend plus du `README.md` racine du projet
+  (inexistant dans une copie portable) — lecture conditionnelle.
+- Suite de tests : **122 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.2.1
 
 - **Import CLI robuste** : un BOM UTF-8 en tête de fichier `--file` est

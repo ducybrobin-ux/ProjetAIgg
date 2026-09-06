@@ -519,7 +519,8 @@ async function run() {
     const docscheck = require('../src/docscheck');
     const stateText = fs.readFileSync(path.join(config.PATHS.docs, 'STATE.md'), 'utf8');
     const changelogText = fs.readFileSync(path.join(config.PATHS.docs, 'CHANGELOG.md'), 'utf8');
-    const readmeText = fs.readFileSync(path.join(config.PATHS.root, '..', 'README.md'), 'utf8');
+    const readmePath = path.join(config.PATHS.root, '..', 'README.md');
+    const readmeText = fs.existsSync(readmePath) ? fs.readFileSync(readmePath, 'utf8') : null;
     const r = docscheck.run({ stateText, changelogText, readmeText });
     report('docs_check_ok', r.ok === true, `${r.checks.length} vérifications`);
     report('docs_check_lecture_seule', r.readonly === true);

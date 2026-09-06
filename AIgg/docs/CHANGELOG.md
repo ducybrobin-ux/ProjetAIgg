@@ -3,6 +3,16 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.2.2 — 2026-09-06 — portabilité : installation sur un autre lecteur
+
+### Corrections / améliorations
+- **Tests portables** : §21 (docs-check) ne dépend plus du `README.md` racine
+  du projet (inexistant dans une copie portable) — lecture conditionnelle via
+  `fs.existsSync`. La suite passe désormais sur un incubateur installé sur un
+  autre lecteur (ex. `G:\AIgg`, installé via `AIgg.cmd migrate`).
+- Installation portable vérifiée de bout en bout : `migrate` → `status` →
+  `docs-check` → suite complète **122 PASS / 0 FAIL** sur le lecteur cible.
+
 ## v0.2.1 — 2026-09-06 — finalisation N2 : import robuste + docs exactes
 
 ### Corrections / améliorations (facteur de robustesse)
