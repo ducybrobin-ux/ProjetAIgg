@@ -10,6 +10,13 @@ id_ed25519
 # Messages personnels du tuteur (journaux de session, relevés…)
 InformationsProjetAIgg/Message*.txt
 
+# Dossier privé entre le tuteur et AIgg — jamais publié sur le dépôt
+InformationsProjetAIgg/
+
+# Artéfacts Canal (cadrage/documents de conception du tuteur — canal d'information)
+Canal_*
+InformationsProjetAIgg/Canal_*
+
 # Données privées AIgg (identité, mémoire, journal, courriers, sauvegardes, labo)
 AIgg/core/
 AIgg/memory/

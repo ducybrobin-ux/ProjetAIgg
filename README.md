@@ -16,7 +16,6 @@ d'autres tuteurs.
 |---|---|
 | `AIgg/` | Corps logiciel de l'incubateur (code `src/`, outils `tools/`, interface `web/`, tests, docs) |
 | `AIgg/docs/` | Documentation de l'état réel (audit, architecture, outils, sécurité, migration…) |
-| `InformationsProjetAIgg/` | Documents de conception (recette de naissance, écosystème, **Prompt Maître**) |
 
 ## Principes (extraits du Prompt Maître)
 
@@ -81,7 +80,9 @@ Migration sur autre support :
 
 Les données d'identité, de mémoire, le journal, le carnet, les besoins et les
 sauvegardes sont **exclus de ce dépôt** (voir `AIgg/.gitignore`). Ce dépôt
-contient uniquement code et documentation publique. Aucun secret ne doit y
+contient uniquement code et documentation publique. Les documents de conception
+(recette de naissance, écosystème, Prompt Maître) sont **privés**, échangés
+hors dépôt. Aucun secret ne doit y
 figurer (test automatisé inclus).
 
 ## Contenu de la release v0.1.0
