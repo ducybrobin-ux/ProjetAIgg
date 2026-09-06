@@ -3,6 +3,23 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.1.2 — 2026-09-06 — correction naissance interactive
+
+### Correction
+- **Naissance interactive impossible depuis la release** : `AIgg.cmd` (sans
+  identité) provoquait `PROBLÈME: process.stdin.close is not a function`
+  (CAUSE/FIN). La collecte des réponses TTY fermait `process.stdin` d'une
+  façon non portable (introuvable sur certains Node) → remplacée par la
+  fermeture de l'interface `readline` (`rl.close()`), API stable partout.
+  Vérifié : naissance de bout en bout dans un bac à sable (entrées canalisées),
+  exit 0, état `AWAKE`, `status` correct ensuite.
+- Suppression de la fonction auxiliaire devenue orpheline (`askInteractive`).
+
+### Remarque
+- La suite de tests reste à **93 PASS / 0 FAIL** (le parcours de naissance
+  interactif n'est pas couvert par `tests/run-tests.js` : nécessite un TTY ;
+  désormais vérifié par reproduction directe dans un bac à sable).
+
 ## v0.1.1 — 2026-09-05 — bibliothèques de spécialisation (cahier)
 
 ### Ajouts

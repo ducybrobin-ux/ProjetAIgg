@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.1 · Suite de tests : 93 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.1.2 · Suite de tests : 93 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -97,7 +97,7 @@ Dernière mise à jour : 2026-09-05 · CORE_VERSION 0.1.1 · Suite de tests : 93
 - `web/` → les fichiers sont sous `web/public/` (index.html, style.css, app.js),
   équivalent direct de `web/` cible.
 
-## PROCHAIN TRAVAIL (organisé le 2026-09-05, fin de journée v0.1.1)
+## PROCHAIN TRAVAIL (organisé le 2026-09-06 — v0.1.2 publié : naissance interactive réparée depuis la release)
 
 Priorité d'ordre décroissant ; chaque item garde un critère observable.
 

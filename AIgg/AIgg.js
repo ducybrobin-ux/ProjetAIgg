@@ -44,20 +44,17 @@ function readAllStdin() {
   });
 }
 
-function askInteractive() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return async function ask(question) {
-    return new Promise((resolve) => rl.question(question, resolve));
-  };
-}
-
 async function collectAnswers(questions) {
   if (isTTY()) {
-    const ask = askInteractive();
-    const answers = [];
-    for (const q of questions) answers.push((await ask(q)).trim());
-    process.stdin.close();
-    return answers;
+    return await new Promise((resolve) => {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answers = [];
+      const next = (i) => {
+        if (i >= questions.length) { rl.close(); resolve(answers); return; }
+        rl.question(questions[i], (a) => { answers.push(String(a || '').trim()); next(i + 1); });
+      };
+      next(0);
+    });
   }
   const data = await readAllStdin();
   const lines = data.split(/\r?\n/);

@@ -7,6 +7,9 @@
 id_rsa
 id_ed25519
 
+# Messages personnels du tuteur (journaux de session, relevés…)
+InformationsProjetAIgg/Message*.txt
+
 # Données privées AIgg (identité, mémoire, journal, courriers, sauvegardes, labo)
 AIgg/core/
 AIgg/memory/
