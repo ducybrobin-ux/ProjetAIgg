@@ -11,6 +11,20 @@ fonction annoncée doit être testée réellement (PASS/FAIL/BLOCKED/NOT_TESTED)
 Les exigences détaillées sont dans le « Prompt Maître » (voir `État |
 InformationsProjetAIgg/Prompt maître — Construction AIgg avec Open Code.md`).
 
+## Canal « Informations » (dossier du tuteur vers nous)
+
+`E:\Souvenirs\Proj€ts\ProjetAIgg\InformationsProjetAIgg\` est un dossier
+**d'information pédagogique pour les agents** (ressources relatives à AIgg,
+déposées par le tuteur). Ce ne sont **pas des cahiers à intégrer** : on les
+consulte, on n'en extrait pas d'exigences d'implémentation sauf demande
+explicite du tuteur. On peut demander au tuteur de déposer des éléments
+précis dans ce dossier.
+
+- `AIgg_RECETTE_DE_NAISSANCE.txt` — construction, orientation et transmission.
+- `AIgg_OUTILS_ECOSYSTEME.txt` — inventaire opérationnel (capacité ≠ outil ≠ agent).
+- `Prompt maître — Construction AIgg avec Open Code.md` — exigences détaillées (référence).
+- `Message*.txt` — messages du tuteur (exclus de Git : `.gitignore`).
+
 ## Lancement
 
 Prérequis : Node.js ≥ 18 (aucune dépendance npm ; la politique PowerShell
@@ -21,13 +35,14 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (93 vérifications, PASS/FAIL réels)
+.\AIgg.cmd tests        # auto-diagnostics (94 vérifications, PASS/FAIL réels)
 ```
 
 Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
-<outil> revoke <outil> web-read <url> web-search <requête> notebook-add <id>
-<question> avatar migrate <destination> library <sous-commande>`.
+<outil> revoke <outil> web-read <url> web-search <requête> notebook-add
+<question> [hypothèse] notebook-del <id> avatar migrate <destination>
+library <sous-commande>`.
 (Moteur de bibliothèque : voir `LIBRARIES.md`.)
 
 ## Architecture (résumé)
