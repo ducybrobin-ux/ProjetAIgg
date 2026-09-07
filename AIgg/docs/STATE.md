@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.3.0 · Suite de tests : 123 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.1 · Suite de tests : 132 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -81,6 +81,18 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.3.0 · Suite de tests : 12
 | Bloqué par défaut + config.json hors Git | IMPLEMENTED | permissions.js (DEFAULT_TOOLS_BLOCKED), .gitignore |
 | Réception IMAP, AUTH SMTP, STARTTLS | PLANNED | documenté « non fait » (honnêteté) |
 
+## Coffre-fort local (vault) — infrastructure sécurité (testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| Chiffrement AES-256-GCM (clé dérivée scrypt, sel/IV aléatoires) | IMPLEMENTED | src/vault.js + TEST_VAULT |
+| `vault/vault.json` **hors Git** (jamais publié, même chiffré) | IMPLEMENTED | `.gitignore` (`vault/`) |
+| Init / put / get / list / rm / wipe / status | IMPLEMENTED | `AIgg.cmd vault` (CLI testée) |
+| Mot de passe jamais stocké (--password= ou env AIGG_VAULT_PASSWORD) | IMPLEMENTED | src/vault.js (aucun champ mdp) |
+| Mauvais mot de passe refusé, secret jamais en clair dans le fichier | IMPLEMENTED | vault_mauvais_mdp_bloque, vault_secret_jamais_clair |
+| Coffre autonettoyant pour les tests (tmp, jamais dans Git) | IMPLEMENTED | vault_test_autonettoyant |
+| Récupération de mot de passe perdu | BLOCKED | illisible sans mot de passe — par conception (zéro récupérateur) |
+
 ## PARTIAL (existe, mais limité / à renforcer)
 
 | Composant | État réel |
@@ -93,7 +105,7 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.3.0 · Suite de tests : 12
 ## PLANNED (prévu, non fait — on ne prétend pas le contraire)
 
 - Réception e-mail (IMAP) : **non faite** (PHASE 4 en cours — l'envoi SMTP est fait).
-- Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
+- Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5) — identifiants OAuth à ranger dans le coffre-fort `vault`.
 - IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
 - Voix (synthèse + reconnaissance), vision (caméra) : sens/outils futurs.
 - Hébergement Web et publication contrôlée (PHASE 6-7).

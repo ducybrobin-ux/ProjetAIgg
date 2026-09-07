@@ -40,6 +40,7 @@ Résultats de blocage honnêtes : `CAPACITY`, `PERMISSION`, `EXECUTION`,
 | `toolkit.js` | registre des outils, flux d'acquisition |
 | `migrate.js` | copie portable avec continuité AIgg_ID |
 | `library.js` | bibliothèques de spécialisation (voir `LIBRARIES.md`) |
+| `vault.js` | coffre-fort local chiffré (AES-256-GCM, scrypt, zéro dépendance) |
 | `server.js` | API HTTP + console web |
 
 ## États d'AIgg

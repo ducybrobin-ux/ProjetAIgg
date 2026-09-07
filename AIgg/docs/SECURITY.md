@@ -38,6 +38,7 @@ Exclus du dépôt Git (`.gitignore` racine + `AIgg/.gitignore`) :
 - `tools/*/providers.json` (clés éventuelles de recherche) ;
 - `tools/email/config.json` (configuration SMTP du tuteur — espace privé) ;
 - `web/public/avatar.svg` (artefact généré localement) ;
+- `vault/` (coffre-fort local — même chiffré, il reste hors Git) ;
 - `.env`, clés, certificats.
 
 Règles :
@@ -47,6 +48,19 @@ Règles :
 - l'e-mail du tuteur n'apparaît que dans `core/identity.json` (exclu) ;
 - test automatisé : avatar et pages publiques vérifiés sans secret
   (TEST_AVATAR « avatar_pas_de_secret », TEST_IDENTITE).
+
+## Coffre-fort local (vault) — secrets sous chiffrement
+
+- Les secrets (tokens OAuth des connecteurs, mots de passe d'une boîte
+  e-mail, identifiants applicatifs) vont dans `vault/vault.json`, chiffré en
+  **AES-256-GCM** avec clé dérivée par **scrypt** (natif, zéro dépendance).
+- Le **mot de passe du coffre n'est jamais stocké** : il est fourni à chaque
+  commande (`--password=` ou variable d'environnement `AIGG_VAULT_PASSWORD`)
+  et n'apparaît dans aucun fichier, journal, mémoire ou doc.
+- `vault/` est **hors Git** (.gitignore) : même chiffré, il n'est jamais publié.
+- CLI : `AIgg.cmd vault init|put|get|list|rm|wipe|status`.
+- Si le mot de passe est perdu, les secrets sont illisibles — aucune
+  récupération magique n'existe (par conception).
 
 ## Frontière tuteur / AIgg / outils
 

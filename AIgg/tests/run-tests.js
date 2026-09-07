@@ -239,6 +239,41 @@ async function run() {
     report('avatar_pas_de_secret', !svgText.includes(ident.AIgg_ID) && !svgText.includes(ident.TUTOR_EMAIL));
   }
 
+  // 13 bis. Coffre-fort local (vault)
+  console.log('\n13 bis) COFFRE RÉEL (VAULT)');
+  {
+    const vault = require('../src/vault');
+    const vtest = await vault.runTest();
+    report('vault_test_autonettoyant', vtest.status === 'PASS', vtest.note || vtest.status);
+
+    const tmpDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'aigg-vault-suite-'));
+    const tf = path.join(tmpDir, 'vault.json');
+    const pw = 'phrase-de-test-' + Date.now();
+    try {
+      const i = vault.init(pw, tf);
+      report('vault_init_creer', i.ok === true && vault.exists(tf));
+      const p = vault.put('gmail_oauth', 'SECRET_TEST_' + Date.now(), pw, tf);
+      report('vault_put_range', p.ok === true);
+      const g = vault.get('gmail_oauth', pw, tf);
+      report('vault_get_restaure', g.ok === true && /^SECRET_TEST_/.test(g.value));
+      const wrong = vault.get('gmail_oauth', 'mauvais-mdp', tf);
+      report('vault_mauvais_mdp_bloque', wrong.ok === false && (wrong.error === 'WRONG_PASSWORD' || wrong.error === 'AUTH_FAIL'));
+      const listW = vault.get('gmail_oauth', 'mauvais-mdp', tf);
+      const raw = fs.readFileSync(tf, 'utf8');
+      report('vault_secret_jamais_clair', !raw.includes('SECRET_TEST_'));
+      const l = vault.list(pw, tf);
+      report('vault_list_cles', l.ok === true && l.count === 1 && l.keys[0] === 'gmail_oauth');
+      const r = vault.remove('gmail_oauth', pw, tf);
+      report('vault_rm_clé', r.ok === true && vault.list(pw, tf).count === 0);
+      const w = vault.wipe(tf);
+      report('vault_wipe_efface', w.ok === true && !vault.exists(tf));
+    } catch (e) {
+      report('vault_bloc', false, e.message);
+    } finally {
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    }
+  }
+
   // 14. Interface (données de la console web)
   console.log('\n14) INTERFACE (TEST_INTERFACE)');
   if (ident) {

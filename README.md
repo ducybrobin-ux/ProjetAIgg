@@ -47,7 +47,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 123 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 132 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -57,7 +57,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (123 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (132 vérifications réelles)
 ```
 
 Premiers outils :
@@ -117,6 +117,14 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.1
+
+- **Coffre-fort local chiffré (`vault`)** : secrets (mots de passe, tokens
+  OAuth, identifiants de connecteurs) protégés en **AES-256-GCM + scrypt**
+  (natif, aucun secret dans Git), `vault/` hors dépôt, mot de passe jamais
+  stocké ; CLI `AIgg.cmd vault init|put|get|list|rm|wipe|status`.
+- Suite de tests : **132 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.2.2
 

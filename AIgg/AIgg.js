@@ -15,6 +15,7 @@ const toolkit = require('./src/toolkit');
 const contract = require('./src/contract');
 const migrate = require('./src/migrate');
 const library = require('./src/library');
+const vault = require('./src/vault');
 
 const { PATHS, PORT, DEFAULT_FIRST_NAME } = config;
 
@@ -430,6 +431,144 @@ async function runEmail(ident, args) {
   }
 }
 
+const VAULT_HELP_FR = [
+  'AIgg — coffre-fort local (vault) — aide (français)',
+  '',
+  'But : stocker des secrets (mots de passe, tokens, identifiants OAuth)',
+  'chiffrés avec AES-256-GCM (clé dérivée par scrypt depuis un mot de passe) ;',
+  'zéro dépendance npm. Le fichier vault/vault.json est HORS Git.',
+  '',
+  'RÈGLES DE SÉCURITÉ',
+  '  - Le mot de passe du coffre est toujours saisi, JAMAIS stocké, JAMAIS',
+  '    écrit dans Git, journal, mémoire ou docs. Il est fourni à chaque',
+  '    commande via --password=... OU la variable AIGG_VAULT_PASSWORD.',
+  '  - Ne mets jamais le mot de passe du coffre dans la commande si d\'autres',
+  '    personnes voient ton écran ou l\'historique du terminal.',
+  '',
+  'COMMANDES',
+  '  init                  Crée un coffre vide (refuse si un coffre existe).',
+  '  put <clé> <valeur>    Chiffre et range une valeur sous une clé.',
+  '  get <clé>             Déchiffre et affiche la valeur d\'une clé.',
+  '  list                  Liste les clés (les valeurs restent chiffrées).',
+  '  rm <clé>              Supprime une clé (donnée perdue).',
+  '  wipe                  Détruit tout le coffre (irréversible).',
+  '  status                État du coffre (existe ? clés chiffrées ?).',
+  '',
+  'EXEMPLES',
+  '  $env:AIGG_VAULT_PASSWORD="une grosse phrase" ; AIgg.cmd vault init',
+  '  $env:AIGG_VAULT_PASSWORD="une grosse phrase" ; AIgg.cmd vault put gmail_oauth "valeur secrète"',
+  '  $env:AIGG_VAULT_PASSWORD="une grosse phrase" ; AIgg.cmd vault get gmail_oauth',
+  '  AIgg.cmd vault status',
+  '',
+  'Limites honnêtes (v0.3.1) : chiffrement local ; pas de récupération possible',
+  'si le mot de passe est perdu (aucun mot de passe enregistré nulle part).',
+].join('\n');
+
+function vaultPassword(fl) {
+  return fl.password !== undefined ? fl.password : process.env.AIGG_VAULT_PASSWORD;
+}
+
+function runVault(args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0];
+  const password = vaultPassword(fl);
+
+  if ((sub === 'put' || sub === 'get' || sub === 'rm' || sub === 'list') && !password) {
+    showProblem(
+      'Mot de passe du coffre manquant.',
+      'Aucun --password= ni AIGG_VAULT_PASSWORD fourni.',
+      'Définis $env:AIGG_VAULT_PASSWORD puis relance la commande.',
+      'FAIL'
+    );
+    return;
+  }
+
+  switch (sub) {
+    case 'init': {
+      if (!password) {
+        showProblem('Mot de passe manquant.', 'Init exige un mot de passe.', 'Définis $env:AIGG_VAULT_PASSWORD ou passe --password=...', 'FAIL');
+        return;
+      }
+      const r = vault.init(password);
+      if (!r.ok) {
+        showProblem('Init impossible.', r.message || r.error, 'Si un coffre existe déjà : AIgg.cmd vault wipe (destructif).', 'FAIL');
+        return;
+      }
+      journal.journalEvent('VAULT_INIT', identity.loadIdentity(), { FORMAT: 'aigg-vault' });
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    case 'put': {
+      const key = rest[1];
+      const value = rest.slice(2).join(' ');
+      if (!key || value === '') {
+        showProblem('Argument absent.', 'vault put exige <clé> et <valeur>.', 'Ex : AIgg.cmd vault put gmail_oauth "secret"', 'FAIL');
+        return;
+      }
+      const r = vault.put(key, value, password);
+      if (!r.ok) {
+        showProblem('Écriture impossible.', r.message || r.error, 'Vérifie le mot de passe et que le coffre existe (init).', 'FAIL');
+        return;
+      }
+      journal.journalEvent('VAULT_PUT', identity.loadIdentity(), { KEY: key, CHIFFRE: 'aes-256-gcm' });
+      console.log(JSON.stringify({ ok: true, key: r.key }, null, 2));
+      break;
+    }
+    case 'get': {
+      const key = rest[1];
+      if (!key) {
+        showProblem('Argument absent.', 'vault get exige <clé>.', 'Ex : AIgg.cmd vault get gmail_oauth', 'FAIL');
+        return;
+      }
+      const r = vault.get(key, password);
+      if (!r.ok) {
+        showProblem('Lecture impossible.', r.message || r.error, 'Vérifie le mot de passe et que la clé existe (list).', 'BLOCKED');
+        return;
+      }
+      journal.journalEvent('VAULT_GET', identity.loadIdentity(), { KEY: key });
+      console.log(r.value);
+      break;
+    }
+    case 'list': {
+      const r = vault.list(password);
+      if (!r.ok) {
+        showProblem('Liste impossible.', r.message || r.error, 'Vérifie le mot de passe du coffre.', 'FAIL');
+        return;
+      }
+      journal.journalEvent('VAULT_LIST', identity.loadIdentity(), { COUNT: r.count });
+      console.log(JSON.stringify({ count: r.count, keys: r.keys }, null, 2));
+      break;
+    }
+    case 'rm': {
+      const key = rest[1];
+      if (!key) {
+        showProblem('Argument absent.', 'vault rm exige <clé>.', 'Ex : AIgg.cmd vault rm gmail_oauth', 'FAIL');
+        return;
+      }
+      const r = vault.remove(key, password);
+      if (!r.ok) {
+        showProblem('Suppression impossible.', r.message || r.error, 'Vérifie le mot de passe et que la clé existe.', 'FAIL');
+        return;
+      }
+      journal.journalEvent('VAULT_RM', identity.loadIdentity(), { KEY: key });
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    case 'wipe': {
+      journal.journalEvent('VAULT_WIPE', identity.loadIdentity(), { IRREVERSIBLE: true });
+      console.log(JSON.stringify(vault.wipe(), null, 2));
+      break;
+    }
+    case 'status': {
+      const st = vault.status();
+      console.log(JSON.stringify({ ...st, file: config.PATHS.vaultFile, git: 'hors Git (vault/ ignoré)' }, null, 2));
+      break;
+    }
+    default:
+      console.log(VAULT_HELP_FR);
+  }
+}
+
 function runLibrary(ident, args) {
   const { flags: fl, rest } = flags(args);
   const sub = rest[0];
@@ -690,6 +829,9 @@ async function main() {
     case 'email':
       await runEmail(ident, args.slice(1));
       break;
+    case 'vault':
+      runVault(args.slice(1));
+      break;
 
     default:
       console.log(
@@ -697,7 +839,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, email <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, vault <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

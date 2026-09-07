@@ -5,7 +5,7 @@ const os = require('os');
 
 const ROOT = path.join(__dirname, '..');
 
-const CORE_VERSION = '0.3.0';
+const CORE_VERSION = '0.3.1';
 const MEMORY_VERSION = '0.1.0';
 const AIGG_NAME = 'AIgg';
 const DEFAULT_FIRST_NAME = 'Bob007';
@@ -27,6 +27,8 @@ const PATHS = {
   inbox: path.join(ROOT, 'inbox'),
   outbox: path.join(ROOT, 'outbox'),
   backups: path.join(ROOT, 'backups'),
+  vault: path.join(ROOT, 'vault'),
+  vaultFile: path.join(ROOT, 'vault', 'vault.json'),
   web: path.join(ROOT, 'web', 'public'),
   docs: path.join(ROOT, 'docs'),
   tests: path.join(ROOT, 'tests'),

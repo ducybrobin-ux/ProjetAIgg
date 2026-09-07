@@ -35,7 +35,7 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (123 vérifications, PASS/FAIL réels)
+.\AIgg.cmd tests        # auto-diagnostics (132 vérifications, PASS/FAIL réels)
 .\AIgg.cmd docs-check   # audit des docs (versions, compteurs) — lecture seule
 ```
 
@@ -43,7 +43,7 @@ Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
 <outil> revoke <outil> web-read <url> web-search <requête> notebook-add
 <question> [hypothèse] notebook-del <id> avatar migrate <destination>
-library <sous-commande> email <sous-commande> docs-check`.
+library <sous-commande> email <sous-commande> vault <sous-commande> docs-check`.
 (Moteur de bibliothèque : voir `LIBRARIES.md`.)
 
 ## Architecture (résumé)

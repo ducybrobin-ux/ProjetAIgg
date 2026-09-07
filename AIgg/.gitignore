@@ -12,6 +12,9 @@ inbox/
 outbox/
 backups/
 
+# Coffre-fort local (même chiffré : jamais publié)
+vault/
+
 # Bibliothèques de spécialisation du tuteur : privées par défaut
 libraries/*
 !libraries/examples/

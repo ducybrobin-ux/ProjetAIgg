@@ -3,6 +3,37 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.1 — 2026-09-07 — sécurité : coffre-fort local chiffré (vault)
+
+### Ajouts (infrastructure de sécurité, local)
+- **Coffre-fort `vault`** (`src/vault.js`) : stockage de secrets (mots de
+  passe, tokens OAuth, identifiants de connecteurs) **chiffrés** — AES-256-GCM,
+  clé dérivée par **scrypt** (module natif `crypto`, aucune dépendance npm),
+  sel et IV aléatoires par coffre, tag d'authentification.
+- **Mot de passe jamais stocké** : fourni à chaque commande via `--password=`
+  ou la variable d'environnement `AIGG_VAULT_PASSWORD` ; aucun champ mot de
+  passe dans `vault/vault.json`, dans Git, le journal, la mémoire ou les docs.
+- **`vault/vault.json` hors Git** (`.gitignore` : `vault/`) — publié jamais,
+  même chiffré (principe moindre privilège).
+- **CLI** : `AIgg.cmd vault init|put|get|list|rm|wipe|status` + aide
+  française ; journalisation des actions sans jamais révéler les valeurs.
+- Fonctions : `init`, `put`, `get`, `list`, `remove`, `wipe`, `status`,
+  `runTest()` — version fichier (testable) + version par défaut (`PATHS.vault`).
+- **Test réel autonettoyant** : coffre de test dans `os.tmpdir()`,
+  autonomie totale (init → put → get → mauvais mdp → list → rm → wipe),
+  secret vérifié **jamais en clair** dans le fichier ; aucun résidu.
+
+### Limites honnêtes (documentées)
+- Aucune récupération possible si le mot de passe est perdu (par conception :
+  aucun mot de passe enregistré nulle part).
+- Pense-bête : pour connecteurs Google (P2/PHASE 4-5), ranger les
+  identifiants OAuth dans le coffre avant toute utilisation.
+
+### Tests
+- Suite complète : **132 PASS / 0 FAIL** (9 vérifications VAULT ajoutées :
+  `vault_test_autonettoyant`, init, put, get, mauvais mdp, clair jamais,
+  list, rm, wipe).
+
 ## v0.3.0 — 2026-09-06 — communication externe : outil e-mail (PHASE 4, envoi SMTP)
 
 ### Ajouts (premier outil externe réel)
