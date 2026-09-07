@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.1 · Suite de tests : 132 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.2 · Suite de tests : 134 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -93,11 +93,25 @@ Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.1 · Suite de tests : 13
 | Coffre autonettoyant pour les tests (tmp, jamais dans Git) | IMPLEMENTED | vault_test_autonettoyant |
 | Récupération de mot de passe perdu | BLOCKED | illisible sans mot de passe — par conception (zéro récupérateur) |
 
+## Connecteur Gmail (P2) — testé réellement (API simulée locale, aucun secret réel)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| Outil `gmail` (manifeste + moteur natif) | IMPLEMENTED | `tools/gmail/` (manifest.json + gmail.js) |
+| API Gmail v1 — list (métadonnées) / read / send, 100 % natif | IMPLEMENTED | TEST_OUTIL_GMAIL (serveur HTTP local simulant l'API, token Bearer vérifié) |
+| Moindre privilège : scope minimal `gmail.metadata`, refus sans scope | IMPLEMENTED | gmail_scope_minimal — `gmail.list` exige le scope accordé |
+| Token + scopes dans le coffre local (vault), jamais dans Git | IMPLEMENTED | `vault` (clés `gmail.access_token`, `gmail.scopes`) — .gitignore `tools/gmail/config.json`, `vault/` |
+| CLI `gmail status|list|read|send` + aide FR | IMPLEMENTED | `AIgg.cmd gmail` (testé réellement) |
+| Envoi tracé dans `outbox/` (SENT/FAILED) | IMPLEMENTED | gmail.js `logRecord` (même outbox que l'outil email) |
+| Bloqué par défaut (permission + capabilité) | IMPLEMENTED | permissions.js (`gmail` dans DEFAULT_TOOLS_BLOCKED) + contrat |
+| Accès réel à Gmail (OAuth2 Google) | PARTIAL | nécessite identifiants OAuth2 du tuteur rangés dans le coffre — moteur testé contre API simulée locale |
+
 ## PARTIAL (existe, mais limité / à renforcer)
 
 | Composant | État réel |
 |---|---|
 | Communication e-mail | IMPLEMENTED (envoi SMTP natif, outil `email`) — réception IMAP non faite |
+| Accès Gmail | PARTIAL — moteur de connecteur testé (API simulée) ; OAuth2 réel en attente d'identifiants |
 | Recherche Web multi-sources | PARTIAL — DuckDuckGo sans clé implémenté ; Gmail/Drive/Maps non |
 | Web `web.search` | PARTIAL — nécessite réseau ; testée réellement (3 résultats) le 2026-09-05 |
 | Synchronisation des demandes après redémarrage | IMPLEMENTED (core/needs.json) — fil conversation limité à la session |
@@ -105,8 +119,8 @@ Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.1 · Suite de tests : 13
 ## PLANNED (prévu, non fait — on ne prétend pas le contraire)
 
 - Réception e-mail (IMAP) : **non faite** (PHASE 4 en cours — l'envoi SMTP est fait).
-- Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5) — identifiants OAuth à ranger dans le coffre-fort `vault`.
-- IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
+- Connecteurs Google restants : Drive / Docs / Sheets (PHASE 4-5) — identifiants OAuth à ranger dans le coffre-fort `vault`. Gmail : moteur fait, OAuth2 réel en attente.
+- IA externe comme OUTIL (porté par Connecteurs IA : outil, jamais le cerveau).
 - Voix (synthèse + reconnaissance), vision (caméra) : sens/outils futurs.
 - Hébergement Web et publication contrôlée (PHASE 6-7).
 - Acquisition autonome d'outils sous contrôle du tuteur (PHASE 8).
@@ -165,7 +179,11 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
       outil `email` (envoi SMTP natif, test réel local), `outbox/` privé,
       CLI + API + capabilité COMMUNICATION. Réception IMAP et connecteurs
       Gmail/Drive = suite (non faites).
-- [ ] Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
-- [ ] IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
+- [x] **Connecteur Gmail (P2)** — **fait en v0.3.2** : outil `gmail`
+      (moteur natif testé contre API simulée locale, token + scopes dans le
+      coffre `vault`, scope minimal `gmail.metadata`, envoi tracé dans
+      `outbox/`). OAuth2 réel en attente d'identifiants du tuteur.
+- [ ] Connecteurs Drive / Docs / Sheets (PHASE 4-5).
+- [ ] IA externe comme OUTIL (porté par Connecteurs IA : outil, jamais le cerveau).
 - [ ] Voix (synthèse + reconnaissance), vision (caméra) ; hébergement Web et
       publication contrôlée (PHASE 6-7) ; `MOURIR` (procédure explicite requise).

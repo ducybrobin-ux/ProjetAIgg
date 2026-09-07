@@ -28,6 +28,10 @@ AIgg/notebook/
 AIgg/senses/
 AIgg/tools/*/providers.json
 AIgg/tools/email/config.json
+AIgg/tools/gmail/config.json
+
+# Coffre-fort local (même chiffré : jamais publié)
+AIgg/vault/
 
 # Artefact généré localement (représentation)
 AIgg/web/public/avatar.svg

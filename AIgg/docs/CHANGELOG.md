@@ -3,6 +3,37 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.2 — 2026-09-07 — ajout : connecteur Gmail (P2) à scopes minimaux
+
+### Ajouts (premier connecteur Google, moindre privilège)
+- **Outil `gmail`** (`tools/gmail/`) : moteur **100 % natif** de l'API Gmail
+  v1 — `list` (métadonnées), `read`, `send` — `fetch` Node ≥ 18, aucune
+  dépendance npm. Capabilité `COMMUNICATION` (partagée avec l'outil `email`).
+- **Moindre privilège** : scope minimal `gmail.metadata` par défaut ; `read`
+  corps complet exige `gmail.readonly`, `send` exige `gmail.send` — refus
+  explicite sinon (jamais de dépassement silencieux).
+- **Secrets dans le coffre** : `gmail.access_token` et `gmail.scopes`
+  rangés dans le `vault` (AES-256-GCM, hors Git) ; mot de passe du coffre
+  fourni à chaque commande, jamais stocké.
+- **Envoi tracé** dans `outbox/` (SENT/FAILED, même dossier que l'outil
+  `email`) ; chaque action passe par le Contrat Commun (permission + capacité).
+- **CLI** : `AIgg.cmd gmail status|list|read|send` + aide française ;
+  `gmail` restauré dans `DEFAULT_TOOLS_BLOCKED` (bloqué par défaut).
+- `tools/gmail/config.json` (base d'API surchargable) ajouté au `.gitignore`.
+
+### Limites honnêtes (documentées)
+- Le moteur est **testé contre une API Gmail simulée locale** (aucun secret
+  réel, aucun réseau externe) — comme l'outil `email` avec son serveur SMTP
+  local. L'accès réel exige les identifiants OAuth2 du tuteur (projet Google
+  Cloud : client + scopes) rangés dans le coffre.
+- Les verbes OAuth (auth URL, redirect, refresh) ne sont pas encore un flux
+  complet : le token renseigné par le tuteur est utilisé en Bearer direct.
+
+### Tests
+- Suite complète : **134 PASS / 0 FAIL** (`test_outil_gmail` + 
+  `gmail_scope_minimal` ; couverture list/read/send via serveur local simulé,
+  vérification du Bearer et du refus sans scope, coffre temporaire autonettoyé).
+
 ## v0.3.1 — 2026-09-07 — sécurité : coffre-fort local chiffré (vault)
 
 ### Ajouts (infrastructure de sécurité, local)

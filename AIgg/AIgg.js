@@ -431,6 +431,123 @@ async function runEmail(ident, args) {
   }
 }
 
+const GMAIL_HELP_FR = [
+  'AIgg — aide de `gmail` (français)',
+  '',
+  'But : connecteur Gmail via l\'API Google, à scopes minimaux (moindre',
+  'privilège). Le token et les scopes accordés vivent dans le coffre local',
+  '(vault), jamais dans Git, l\'aide, la mémoire ou le journal.',
+  '',
+  'PRÉPARATION (par le tuteur, jamais par l\'IA)',
+  '  1. Crée un projet Google Cloud + identifiants OAuth2 (client) côté Google.',
+  '  2. Range le access token et les scopes dans le coffre :',
+  '       $env:AIGG_VAULT_PASSWORD="..." ; AIgg.cmd vault put gmail.access_token "<token>"',
+  '       $env:AIGG_VAULT_PASSWORD="..." ; AIgg.cmd vault put gmail.scopes "[\"...\"]"',
+  '  3. Autorise et installe l\'outil :',
+  '       AIgg.cmd authorize gmail',
+  '       AIgg.cmd install gmail',
+  '',
+  'COMMANDES',
+  '  status                     État du connecteur (base API, scopes présents, opérations possibles).',
+  '  list [--max=10]            Métadonnées des messages (scope gmail.metadata).',
+  '  read --id=<id> [--format=metadata|full]',
+  '                             Lire un message (corps complet : scope gmail.readonly).',
+  '  send --to=dest@x --from=exp@y --subject="S" --body="... "',
+  '                             Envoyer (scope gmail.send) — tracé dans outbox/.',
+  '',
+  'SECRETS ET SÉCURITÉ',
+  '  - Le mot de passe du coffre est fourni à chaque commande (--password= ou',
+  '    AIGG_VAULT_PASSWORD) ; il n\'est jamais stocké ni journalisé.',
+  '  - Aucun token n\'est affiché par ces commandes.',
+  '  - Scope minimal par défaut : gmail.metadata. Lecture corps complet et',
+  '    envoi exigent des scopes supplémentaires accordés par Google.',
+  '  - Révoquer : AIgg.cmd revoke gmail (permission) ; retirer le token du coffre : vault rm gmail.access_token',
+  '',
+  'Limites honnêtes (v0.3.2) : connecteur testé contre une API Gmail simulée',
+  'locale (aucun secret réel) ; l\'accès réel exige les identifiants OAuth2 du',
+  'tuteur repris dans le coffre.',
+].join('\n');
+
+async function runGmail(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0] || 'help';
+  const gmailMod = toolkit.loadModule('gmail').module;
+  const password = fl.password !== undefined ? fl.password : process.env.AIGG_VAULT_PASSWORD;
+
+  switch (sub) {
+    case 'status': {
+      const tool = toolkit.findManifest('gmail');
+      const out = await contract.executeTool(ident, tool.manifest, 'gmail.status', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'status',
+        async execute() {
+          return { ok: true, data: gmailMod.status(password) };
+        },
+      });
+      if (!out.ok) {
+        showProblem('Statut indisponible.', out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil gmail.' : out.reason, 'AIgg.cmd authorize gmail ; puis AIgg.cmd install gmail', `BLOCKED:${out.blocked}`);
+        return;
+      }
+      console.log(JSON.stringify(out.result.data, null, 2));
+      break;
+    }
+    case 'list': {
+      const tool = toolkit.findManifest('gmail');
+      const out = await contract.executeTool(ident, tool.manifest, 'gmail.list', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'list',
+        async execute() {
+          const r = await gmailMod.list({ password, max: fl.max ? Number(fl.max) : undefined });
+          return { ok: r.ok, data: r };
+        },
+      });
+      if (!out.ok) { showProblem('Liste impossible.', out.blocked === 'PERMISSION' ? 'Permission refusée.' : out.reason, 'AIgg.cmd authorize gmail ; puis AIgg.cmd install gmail', `BLOCKED:${out.blocked}`); return; }
+      const r = out.result.data;
+      if (!r.ok) { showProblem('Liste impossible.', r.error || 'erreur API', 'Vérifie le token dans le coffre (vault status) et les scopes.', 'FAIL'); return; }
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    case 'read': {
+      const tool = toolkit.findManifest('gmail');
+      const out = await contract.executeTool(ident, tool.manifest, 'gmail.read', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'read',
+        async execute() {
+          const r = await gmailMod.read({ password, id: fl.id, format: fl.format });
+          return { ok: r.ok, data: r };
+        },
+      });
+      if (!out.ok) { showProblem('Lecture impossible.', out.blocked === 'PERMISSION' ? 'Permission refusée.' : out.reason, 'AIgg.cmd authorize gmail ; puis AIgg.cmd install gmail', `BLOCKED:${out.blocked}`); return; }
+      const r = out.result.data;
+      if (!r.ok) { showProblem('Lecture impossible.', r.error || 'erreur API', 'Vérifie le token, les scopes et l\'id du message.', 'FAIL'); return; }
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    case 'send': {
+      const tool = toolkit.findManifest('gmail');
+      const out = await contract.executeTool(ident, tool.manifest, 'gmail.send', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'send',
+        async execute() {
+          const r = await gmailMod.send({ password, to: fl.to, from: fl.from, subject: fl.subject, body: fl.body });
+          return { ok: r.ok, data: r };
+        },
+      });
+      if (!out.ok) { showProblem('Envoi impossible.', out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil gmail.' : out.reason, 'AIgg.cmd authorize gmail ; puis AIgg.cmd install gmail', `BLOCKED:${out.blocked}`); return; }
+      const r = out.result.data;
+      if (!r.ok) { showProblem('Envoi en échec.', r.error || 'erreur API', 'Vérifie le token, les scopes et la config tools/gmail/config.json.', 'FAIL'); return; }
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    default:
+      console.log(GMAIL_HELP_FR);
+  }
+}
+
 const VAULT_HELP_FR = [
   'AIgg — coffre-fort local (vault) — aide (français)',
   '',
@@ -829,6 +946,9 @@ async function main() {
     case 'email':
       await runEmail(ident, args.slice(1));
       break;
+    case 'gmail':
+      await runGmail(ident, args.slice(1));
+      break;
     case 'vault':
       runVault(args.slice(1));
       break;
@@ -839,7 +959,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, email <sous-commande>, vault <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, vault <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

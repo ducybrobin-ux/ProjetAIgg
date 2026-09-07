@@ -151,7 +151,7 @@ async function run() {
     const tools = toolkit.discoverAll();
     report('decouverte_outils', tools.length >= 3, `${tools.length} outils`);
     const names = tools.map((t) => t.name);
-    report('outils_essentiels', ['web', 'notebook', 'avatar', 'email'].every((n) => names.includes(n)));
+    report('outils_essentiels', ['web', 'notebook', 'avatar', 'email', 'gmail'].every((n) => names.includes(n)));
     report('propositions', !!toolkit.propose('web').proposal);
     report('manifests_valides', tools.every((t) => !!t.manifest.capability && !!t.manifest.version));
   }
@@ -214,6 +214,11 @@ async function run() {
   toolkit.authorize('email'); toolkit.install('email');
   const emailTest = await toolkit.test('email');
   report('test_outil_email', emailTest.test.status === 'PASS', emailTest.test.note || emailTest.test.status);
+
+  toolkit.authorize('gmail'); toolkit.install('gmail');
+  const gmailTest = await toolkit.test('gmail');
+  report('test_outil_gmail', gmailTest.test.status === 'PASS', gmailTest.test.note || gmailTest.test.status);
+  report('gmail_scope_minimal', gmailTest.test.status === 'PASS', 'moindre privilège' );
 
   // 12. Notebook réel
   console.log('\n12) NOTEBOOK RÉEL');

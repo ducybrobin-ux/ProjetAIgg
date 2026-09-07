@@ -38,7 +38,9 @@ d'autres tuteurs.
 - Capacités évolutives, permissions (tout bloqué par défaut).
 - Registre d'outils + Contrat Commun (identité → capacité → permission → exécution → journal).
 - Outils : `web` (lecture HTTP + recherche DuckDuckGo sans clé), `notebook`,
-  `avatar` (SVG déterministe), `email` (envoi SMTP natif, PHASE 4).
+  `avatar` (SVG déterministe), `email` (envoi SMTP natif, PHASE 4),
+  `gmail` (connecteur Gmail à scopes minimaux) + coffre local `vault`
+  (secrets chiffrés AES-256-GCM, hors Git).
 - **Conversation** honnête avec cycle d'apprentissage « apprends que X ».
 - **Demandes** : AIgg peut demander de l'aide au tuteur.
 - **Apparence** contrôlée et journalisée.
@@ -47,7 +49,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 132 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 134 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -57,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (132 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (134 vérifications réelles)
 ```
 
 Premiers outils :
@@ -117,6 +119,19 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.2
+
+- **Connecteur Gmail (P2)** : outil `gmail` — moteur **100 % natif** de
+  l'API Gmail v1 (`list` / `read` / `send`), **scope minimal
+  `gmail.metadata`** (moindre privilège), refus explicite sans scope.
+- **Secrets dans le coffre** : `gmail.access_token` et `gmail.scopes` dans
+  le `vault` (jamais dans Git) ; envoi tracé dans `outbox/` ; bloqué par
+  défaut.
+- CLI `AIgg.cmd gmail status|list|read|send` ; test réel via serveur local
+  simulé de l'API (aucun secret réel).
+- Limite honnête : OAuth2 réel en attente des identifiants du tuteur.
+- Suite de tests : **134 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.1
 

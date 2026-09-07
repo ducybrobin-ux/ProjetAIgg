@@ -62,6 +62,22 @@ Règles :
 - Si le mot de passe est perdu, les secrets sont illisibles — aucune
   récupération magique n'existe (par conception).
 
+## Connecteur Gmail — moindre privilège et secrets dans le coffre
+
+- Outil `gmail` : accès via l'API Gmail v1, **scope minimal `gmail.metadata`**
+  par défaut ; `read` corps complet exige `gmail.readonly`, `send` exige
+  `gmail.send` — toute opération sur un scope absent est **refusée**.
+- Le `access_token` et les scopes accordés vivent dans le **vault**
+  (clés `gmail.access_token`, `gmail.scopes`), jamais dans Git, journal,
+  mémoire ou aide CLI.
+- `tools/gmail/config.json` (base d'API surchargable) est hors Git.
+- Aucun envoi automatique : chaque `send` passe par le Contrat Commun
+  (permission + capacité) et est tracé dans `outbox/`.
+- Le connecteur est **révocable** (`AIgg.cmd revoke gmail`, `vault rm
+  gmail.access_token`).
+- Limite honnête : le moteur est testé contre une API simulée locale ; l'accès
+  réel exige les identifiants OAuth2 du tuteur.
+
 ## Frontière tuteur / AIgg / outils
 
 - Le tuteur détient l'autorité sur les permissions et peut révoquer à tout

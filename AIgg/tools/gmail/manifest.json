@@ -1,0 +1,20 @@
+{
+  "name": "gmail",
+  "version": "0.1.0",
+  "title": "Connecteur Gmail",
+  "description": "Accès Gmail via l'API Google à scopes minimaux (moindre privilège) : métadonnées par défaut, lecture et envoi seulement si le tuteur fournit les scopes. 100% natif. Tokens dans le coffre local (jamais dans Git).",
+  "category": "communication",
+  "capability": "COMMUNICATION",
+  "need": "Lire et envoyer des e-mails Gmail sous autorisation explicite du tuteur, avec moindre privilège.",
+  "interactions": ["gmail.status", "gmail.list", "gmail.read", "gmail.send"],
+  "needs_permissions": ["network", "send_external"],
+  "risks": [
+    "Un accès Google est une porte sur la boîte du tuteur : tokens dans le coffre local chiffré, jamais dans Git/mémoire/journal",
+    "Scope minimal par défaut (gmail.metadata) ; lecture/écriture exigent des scopes supplémentaires confirmés par le tuteur",
+    "Aucun envoi automatique ; chaque action journalisée",
+    "Révoquable : authorize/revoke"
+  ],
+  "requires_external_ai": false,
+  "independence": true,
+  "reversibility": "révocable"
+}

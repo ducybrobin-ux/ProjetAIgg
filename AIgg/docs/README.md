@@ -79,11 +79,12 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd library import --file=<fichier> --confirm
 .\AIgg.cmd email send --to=x@y --subject="S" --body="B"   # envoi SMTP
 .\AIgg.cmd email status                                  # config + outbox
+.\AIgg.cmd gmail status / list / read --id=.. / send --to=..  # connecteur Gmail (scopes minimaux, token dans le coffre)
 .\AIgg.cmd vault init   / put <clé> <valeur> / get <clé> # coffre secrets (chiffré)
 .\AIgg.cmd vault list / rm <clé> / wipe / status         # clés, suppression, état
 .\AIgg.cmd docs-check      # audit READ SEUL des docs (versions, compteurs)
 .\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (132 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (134 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution
