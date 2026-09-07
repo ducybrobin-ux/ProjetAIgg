@@ -27,6 +27,7 @@ AIgg/backups/
 AIgg/notebook/
 AIgg/senses/
 AIgg/tools/*/providers.json
+AIgg/tools/email/config.json
 
 # Artefact généré localement (représentation)
 AIgg/web/public/avatar.svg

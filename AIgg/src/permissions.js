@@ -20,6 +20,7 @@ const DEFAULT_TOOLS_BLOCKED = [
   'google_docs', 'google_sheets', 'google_calendar', 'google_maps',
   'gemini', 'notebook', 'camera', 'microphone', 'voice_synthesis',
   'voice_recognition', 'cloud_storage', 'social', 'avatar', 'hosting',
+  'email',
 ];
 
 function loadPermissions() {

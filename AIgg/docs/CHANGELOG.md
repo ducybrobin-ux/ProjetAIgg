@@ -3,6 +3,32 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.0 — 2026-09-06 — communication externe : outil e-mail (PHASE 4, envoi SMTP)
+
+### Ajouts (premier outil externe réel)
+- **Outil `email`** (`tools/email/`) : envoi de messages via SMTP **100 %
+  natif** (RFC 5321 : EHLO, MAIL FROM, RCPT TO, DATA, QUIT — module `net`,
+  aucune dépendance npm). Capabilité `COMMUNICATION` acquise par
+  `toolkit.install('email')`.
+- **Traçabilité `outbox/`** (privé) : chaque envoi (réussi ou échoué) est
+  journalisé en JSON avec ID, destination, sujet, serveur, erreur.
+- **Test réel autonettoyant** : serveur SMTP local (TCP sur port éphémère) —
+  un message part réellement et est vérifié à la réception ; aucun faux PASS.
+- **CLI** : `AIgg.cmd email send|status|log` (libellés `--to --subject --body
+  [--host --port --from --timeout_ms]`) + aide française complète.
+- **API HTTP** : `/api/email/send` (POST), `/api/email/log` (GET), via le
+  Contrat Commun (journalisation `TOOL_EMAIL_EXEC`).
+- Bloqué par défaut (moindre privilège) : `email` ajouté à
+  `DEFAULT_TOOLS_BLOCKED` ; `tools/email/config.json` exclu de Git.
+
+### Limites honnêtes (documentées)
+- Réception (IMAP), AUTH SMTP et STARTTLS **non implémentés** ; connecteurs
+  Gmail / Drive / Docs / Sheets toujours prévus (PHASE 4-5), non faits.
+
+### Tests
+- Suite complète : **123 PASS / 0 FAIL** (test_outil_email ajouté, §9
+  `outils_essentiels` étendu à `email`).
+
 ## v0.2.2 — 2026-09-06 — portabilité : installation sur un autre lecteur
 
 ### Corrections / améliorations

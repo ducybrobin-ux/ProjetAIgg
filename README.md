@@ -38,7 +38,7 @@ d'autres tuteurs.
 - Capacités évolutives, permissions (tout bloqué par défaut).
 - Registre d'outils + Contrat Commun (identité → capacité → permission → exécution → journal).
 - Outils : `web` (lecture HTTP + recherche DuckDuckGo sans clé), `notebook`,
-  `avatar` (SVG déterministe).
+  `avatar` (SVG déterministe), `email` (envoi SMTP natif, PHASE 4).
 - **Conversation** honnête avec cycle d'apprentissage « apprends que X ».
 - **Demandes** : AIgg peut demander de l'aide au tuteur.
 - **Apparence** contrôlée et journalisée.
@@ -47,7 +47,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 122 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 123 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -57,7 +57,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (122 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (123 vérifications réelles)
 ```
 
 Premiers outils :
@@ -107,6 +107,16 @@ figurer (test automatisé inclus).
 - **`AIgg.cmd docs-check`** : audit lecture seule de la cohérence
   docs ↔ code (versions, compteurs de tests).
 - Suite de tests : **122 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.0
+
+- **Communication externe (PHASE 4)** : outil `email` — envoi SMTP **100 %
+  natif** (RFC 5321), capabilité `COMMUNICATION`, traçabilité `outbox/`
+  (privé), CLI `AIgg.cmd email send|status|log`, API `/api/email/send`,
+  test réel via serveur SMTP local (message vérifié à la réception).
+- Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
+- Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
+- Suite de tests : **123 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.2.2
 

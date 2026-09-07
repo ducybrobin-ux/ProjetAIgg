@@ -400,6 +400,17 @@ function start() {
         catch (e) { sendError(res, e.message); }
         return;
       }
+      if (url.pathname === '/api/email/send' && req.method === 'POST') {
+        const body = await readBody(req);
+        toolCall(res, ident, 'email', 'email.send', { source: 'WEB', confidence: 0.9, action: 'send' },
+          () => require('../tools/email/email.js').send(body).then((r) => ({ ok: r.ok, data: r })));
+        return;
+      }
+      if (url.pathname === '/api/email/log' && req.method === 'GET') {
+        toolCall(res, ident, 'email', 'email.log', { source: 'WEB', confidence: 1.0, action: 'log' },
+          () => Promise.resolve({ ok: true, data: require('../tools/email/email.js').list() }));
+        return;
+      }
     }
 
     // --- Fichiers statiques ---

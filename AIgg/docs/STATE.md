@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.2.2 · Suite de tests : 122 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.3.0 · Suite de tests : 123 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -68,18 +68,31 @@ Dernière mise à jour : 2026-09-06 · CORE_VERSION 0.2.2 · Suite de tests : 12
 | P10 — Aide CLI `library` en français reflétant le code réel | IMPLEMENTED | `AIgg.cmd library`, LIBRARIES.md, STATE/CHANGELOG |
 | P11 — `docs-check` : audit docs/versions/compteurs, lecture seule | IMPLEMENTED | TEST_DOCS_CHECK (docs_check_ok, docs_check_detecte_divergence) |
 
+## Communication externe e-mail — PHASE 4 (testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| Outil `email` (manifeste + moteur) | IMPLEMENTED | `tools/email/` (manifest.json + email.js) |
+| Envoi SMTP natif — RFC 5321 (EHLO/MAIL/RCPT/DATA/QUIT) | IMPLEMENTED | TEST_OUTIL_EMAIL (serveur SMTP local réel, message vérifié à la réception) |
+| Capabilité `COMMUNICATION` (acquise par `install email`) | IMPLEMENTED | `toolkits` — capabilities.json |
+| Traçabilité `outbox/` (SENT/FAILED, private) | IMPLEMENTED | `email log` / `/api/email/log` |
+| CLI `email send|status|log` + aide FR | IMPLEMENTED | `AIgg.cmd email` (testé) |
+| API `/api/email/send` (Contrat Commun) | IMPLEMENTED | serveur (route, smoke HTTP) |
+| Bloqué par défaut + config.json hors Git | IMPLEMENTED | permissions.js (DEFAULT_TOOLS_BLOCKED), .gitignore |
+| Réception IMAP, AUTH SMTP, STARTTLS | PLANNED | documenté « non fait » (honnêteté) |
+
 ## PARTIAL (existe, mais limité / à renforcer)
 
 | Composant | État réel |
 |---|---|
-| Communication e-mail (Gmail…) | PARTIAL — architecture outil prête, aucun connecteur e-mail encore. |
+| Communication e-mail | IMPLEMENTED (envoi SMTP natif, outil `email`) — réception IMAP non faite |
 | Recherche Web multi-sources | PARTIAL — DuckDuckGo sans clé implémenté ; Gmail/Drive/Maps non |
 | Web `web.search` | PARTIAL — nécessite réseau ; testée réellement (3 résultats) le 2026-09-05 |
 | Synchronisation des demandes après redémarrage | IMPLEMENTED (core/needs.json) — fil conversation limité à la session |
 
 ## PLANNED (prévu, non fait — on ne prétend pas le contraire)
 
-- Communication externe via e-mail (PHASE 4 du Prompt Maître).
+- Réception e-mail (IMAP) : **non faite** (PHASE 4 en cours — l'envoi SMTP est fait).
 - Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
 - IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
 - Voix (synthèse + reconnaissance), vision (caméra) : sens/outils futurs.
@@ -113,8 +126,10 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
       Demandes, Apparence, Bibliothèques (créer une bibliothèque privée, ajouter
       une source + connaissance + compétence, vérifier la recherche) — critère :
       aucune erreur console, données visibles après rechargement.
-- [ ] Décider de la prochaine fonctionnalité (propositions ci-dessous) et le
-      noter ici avant de commencer.
+- [x] **Décision prise le 2026-09-06 (v0.3.0)** : prochaine fonctionnalité =
+      **communication externe e-mail (PHASE 4)** — premier outil externe :
+      `email` (envoi SMTP natif), `outbox/` pour la traçabilité, test réel via
+      serveur SMTP local. Réception (IMAP) et connecteurs Gmail/Drive = suite.
 
 ### Améliorations techniques courtes (liste d'attente)
 - [x] `tools/notebook/notebook.js` : `runTest()` et le test `NOTEBOOK RÉEL`
@@ -134,7 +149,10 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
       → **fait en v0.2.0** : `searchL2` (normalisation, classement expliqué,
       filtres, FR/EN/ES), import réel CLI `--file` ; relecture conjointe
       N2 + état/documents selon « Documenter le réel » en cours de finalisation.
-- [ ] Communication externe e-mail (PHASE 4 du Prompt Maître).
+- [x] **Communication externe e-mail (PHASE 4)** — **fait en v0.3.0** :
+      outil `email` (envoi SMTP natif, test réel local), `outbox/` privé,
+      CLI + API + capabilité COMMUNICATION. Réception IMAP et connecteurs
+      Gmail/Drive = suite (non faites).
 - [ ] Connecteurs Gmail / Drive / Docs / Sheets (PHASE 4-5).
 - [ ] IA externe comme OULE (porté par Connecteurs IA : outil, jamais le cerveau).
 - [ ] Voix (synthèse + reconnaissance), vision (caméra) ; hébergement Web et

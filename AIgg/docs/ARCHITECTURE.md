@@ -67,6 +67,7 @@ Chaque outil vit dans `tools/<nom>/` :
 | `web` | RECHERCHER | web.read, web.search | oui (fetch natif) |
 | `notebook` | LABORATOIRE | notebook.add, list, get, result, remove | oui |
 | `avatar` | REPRESENTATION | avatar.generate (SVG local) | oui |
+| `email` | COMMUNICATION | email.send, email.log, email.status (SMTP natif) | oui (net natif) |
 
 Flux d'acquisition :
 BESOIN -> RECHERCHE -> PROPOSITION -> AUTORISATION -> TEST -> INSTALLATION
@@ -91,9 +92,10 @@ Détails : `LIBRARIES.md`, `templates/*.json`.
 
 ## Limites connues (honnêtes)
 
-- Pas encore : e-mail, Google, GitHub (code source seulement), caméra, micro,
+- Pas encore : Google, GitHub (code source seulement), caméra, micro,
   voix, hébergement, IA externe. Le socle vise le lot de la Partie XXIV de la
-  recette + premiers outils locaux et le web en lecture/recherche.
+  recette + premiers outils locaux et le web en lecture/recherche ; l'envoi
+  e-mail (SMTP) est fait depuis v0.3.0, la réception (IMAP) reste à faire.
 - `web.search` nécessite un fournisseur dans `tools/web/providers.json`
   (généralement DuckDuckGo sans clé) ; les clés éventuelles ne vont jamais
   dans Git.

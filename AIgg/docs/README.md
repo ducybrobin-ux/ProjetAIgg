@@ -29,7 +29,8 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   permissions, mémoire, notebook, journal, sauvegardes, avatar, **conversation**,
   **demandes** (besoins), **apparence** et **bibliothèques**.
 - **Outils disponibles** : `web` (lecture HTTP + recherche), `notebook` (carnet
-  de laboratoire), `avatar` (représentation SVG déterministe).
+  de laboratoire), `avatar` (représentation SVG déterministe), `email` (envoi
+  SMTP natif, tracé dans `outbox/` — PHASE 4).
 - **Conversation** : moteur honnête — reconnaît quelques formulations simples,
   apprend par « apprends que … » avec confirmation du tuteur, sinon répond
   « Je ne sais pas encore faire cela. »
@@ -76,9 +77,11 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd library create Maths --domain=maths --private
 .\AIgg.cmd library search <q># recherche niveau 2 (multilingue FR/EN/ES)
 .\AIgg.cmd library import --file=<fichier> --confirm
+.\AIgg.cmd email send --to=x@y --subject="S" --body="B"   # envoi SMTP
+.\AIgg.cmd email status                                  # config + outbox
 .\AIgg.cmd docs-check      # audit READ SEUL des docs (versions, compteurs)
 .\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (122 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (123 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

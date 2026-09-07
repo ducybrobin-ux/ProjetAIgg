@@ -19,6 +19,7 @@ Révocation = révocation de permission + libération de la capacité.
 | `web` | RECHERCHER | `web.read` (fetch HTML), `web.search` (DuckDuckGo sans clé) | « J'ai besoin d'information » | oui (fetch natif) | oui | PASS (local + recherche réelle) |
 | `notebook` | LABORATOIRE | `add`, `list`, `get`, `setResult`, `remove` | « J'ai besoin d'expérimenter » | oui | oui | PASS |
 | `avatar` | REPRESENTATION | `generate` (SVG local déterministe) | « J'ai besoin d'une représentation » | oui | oui | PASS |
+| `email` | COMMUNICATION | `send` (SMTP natif), `log` (outbox), `status` | « J'ai besoin de communiquer à distance » | oui (net natif) | oui | PASS (serveur SMTP local réel) |
 
 ## Détails par outil
 
@@ -42,13 +43,26 @@ Révocation = révocation de permission + libération de la capacité.
 - Test réel : vérifie la génération et l'absence de secrets (AIgg_ID,
   e-mail tuteur) dans le SVG.
 
+### email (`tools/email/`) — PHASE 4, communication externe
+- Envoi de messages via **SMTP natif** (RFC 5321 : EHLO, MAIL FROM, RCPT TO,
+  DATA, QUIT — module `net`, aucune dépendance npm).
+- Configuration tutorielle dans `tools/email/config.json` (`host`, `port`,
+  `from`, `timeout_ms`) : dossier **exclu de Git** (jamais de secret publié).
+- Traçabilité : chaque envoi (réussi ou échoué) est journalisé dans
+  `outbox/` (privé) — `email log` / `/api/email/log`.
+- Test réel : serveur SMTP **local** sur port éphémère ; un message part
+  réellement, le serveur vérifie destination/sujet/corps à la réception.
+  Autonettoyant : restitue `outbox/` tel quel. Aucun faux PASS.
+- Limites honnêtes : réception (IMAP), AUTH SMTP et STARTTLS **non
+  implémentés** ; connecteurs Gmail/Drive prévus (PHASE 4-5), non faits.
+
 ## Outils bloqués par défaut (liste de moindre privilège)
 
 `powershell, git, github, web, gmail, google_drive, google_docs,
 google_sheets, google_calendar, google_maps, gemini, notebook, camera,
 microphone, voice_synthesis, voice_recognition, cloud_storage, social,
-avatar, hosting` — tous `authorized: false` jusqu'à décision explicite du
-tuteur (CLI `authorize` ou bouton web « Autoriser »).
+avatar, hosting, email` — tous `authorized: false` jusqu'à décision
+explicite du tuteur (CLI `authorize` ou bouton web « Autoriser »).
 
 ## Demandes liées aux outils
 

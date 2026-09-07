@@ -16,10 +16,14 @@ autorisée par le tuteur (CLI `authorize` ou console web).
 | send_external | false |
 | arbitrary_file_access | false |
 
-Tous les outils `tools/*` sont `authorized: false` à la naissance.
+Tous les outils `tools/*` sont `authorized: false` à la naissance
+(`email`, Gmail, Drive… ajoutés à `DEFAULT_TOOLS_BLOCKED`).
 Le Contrat Commun (`src/contract.js`) bloque toute exécution sans
 identité / capacité / permission : codes `IDENTITY`, `CAPACITY`,
 `PERMISSION`, `EXECUTION`.
+L'envoi externe (`send_external: false` par défaut) n'est possible que si le
+tuteur autorise l'outil `email` ET fournit une configuration valide
+(`tools/email/config.json`, hors Git).
 
 ## Jamais de secrets dans le public
 
@@ -32,12 +36,14 @@ Exclus du dépôt Git (`.gitignore` racine + `AIgg/.gitignore`) :
 - `libraries/*` privées du tuteur et `libraries/_trash/` (seuls
   `libraries/examples/` sont publics — structure sans savoir pré-rempli) ;
 - `tools/*/providers.json` (clés éventuelles de recherche) ;
+- `tools/email/config.json` (configuration SMTP du tuteur — espace privé) ;
 - `web/public/avatar.svg` (artefact généré localement) ;
 - `.env`, clés, certificats.
 
 Règles :
 - aucun mot de passe / token / clé privée dans Git, HTML, JS public, journal,
-  mémoire, prompt, README public ;
+  mémoire, prompt, README public (l'outil `email` n'utilise aucun secret en
+  v0.3.0 : pas d'AUTH/STARTTLS, un serveur SMTP simple non chiffré) ;
 - l'e-mail du tuteur n'apparaît que dans `core/identity.json` (exclu) ;
 - test automatisé : avatar et pages publiques vérifiés sans secret
   (TEST_AVATAR « avatar_pas_de_secret », TEST_IDENTITE).

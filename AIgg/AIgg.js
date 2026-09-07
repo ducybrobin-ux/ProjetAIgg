@@ -347,6 +347,89 @@ const LIBRARY_HELP_FR = [
   'Documentation longue : AIgg/docs/LIBRARIES.md',
 ].join('\n');
 
+const EMAIL_HELP_FR = [
+  'AIgg — aide de `email` (français)',
+  '',
+  'Commande :',
+  '  AIgg.cmd email <commande> [arguments] [options]',
+  '',
+  'ENVOI (action externe réelle)',
+  '  send --to=dest@example.test --subject="Sujet" --body="Corps"',
+  '       [--host=smtp.x --port=25 --from=expediteur@x --timeout_ms=10000]',
+  '       Envoie un message via le serveur SMTP configuré (RFC 5321, natif).',
+  '',
+  'OBSERVATION',
+  '  status   État de la configuration SMTP et du carnet de sortie.',
+  '  log      Liste les envois tracés (outbox/, dossier privé).',
+  '',
+  'CONFIGURATION (jamais de secret dans Git)',
+  '  tools/email/config.json : { "host": "...", "port": 25, "from": "...", "timeout_ms": 10000 }',
+  '  L\'outil est bloqué par défaut :',
+  '    AIgg.cmd authorize email',
+  '    AIgg.cmd install email',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd email status',
+  '  AIgg.cmd email send --to=robin@example.test --subject="Bonjour" --body="Message"',
+  '  AIgg.cmd email send --to=a@b.test --subject="Test" --body="T" --host=127.0.0.1 --port=2525',
+  '',
+  'Limites honnêtes (v0.3.0) : réception (IMAP), AUTH et STARTTLS non',
+  'implémentés ; l\'envoi est tracé dans outbox/ (privé).',
+].join('\n');
+
+async function runEmail(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0];
+  const email = toolkit.loadModule('email').module;
+
+  switch (sub) {
+    case 'send': {
+      const tool = toolkit.findManifest('email');
+      const out = await contract.executeTool(ident, tool.manifest, 'email.send', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'send',
+        async execute() {
+          const r = await email.send({
+            to: fl.to,
+            subject: fl.subject,
+            body: fl.body,
+            host: fl.host,
+            port: fl.port ? Number(fl.port) : undefined,
+            from: fl.from,
+            timeout_ms: fl.timeout_ms ? Number(fl.timeout_ms) : undefined,
+          });
+          return { ok: r.ok, data: r };
+        },
+      });
+      if (!out.ok) {
+        showProblem(
+          'Envoi impossible.',
+          out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil email.' : out.reason,
+          'Commande : AIgg.cmd authorize email ; puis AIgg.cmd install email',
+          `BLOCKED:${out.blocked}`
+        );
+        return;
+      }
+      const r = out.result.data;
+      if (!r.ok) {
+        showProblem('Envoi en échec.', r.error || 'erreur SMTP', 'Vérifie la config tools/email/config.json et le serveur SMTP.', 'FAIL');
+        return;
+      }
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    case 'status':
+      console.log(JSON.stringify(email.status(), null, 2));
+      break;
+    case 'log':
+      console.log(JSON.stringify(email.list(), null, 2));
+      break;
+    default:
+      console.log(EMAIL_HELP_FR);
+  }
+}
+
 function runLibrary(ident, args) {
   const { flags: fl, rest } = flags(args);
   const sub = rest[0];
@@ -604,6 +687,9 @@ async function main() {
     case 'lib':
       runLibrary(ident, args.slice(1));
       break;
+    case 'email':
+      await runEmail(ident, args.slice(1));
+      break;
 
     default:
       console.log(
@@ -611,7 +697,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

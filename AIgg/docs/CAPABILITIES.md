@@ -28,12 +28,13 @@
 | RECHERCHER | `web` | Lecture HTTP + recherche multi-sources (autorisée, testée) |
 | LABORATOIRE | `notebook` | Expériences reproductibles en local |
 | REPRESENTATION | `avatar` | Représentation visuelle SVG (apparence, pas identité) |
+| COMMUNICATION | `email` | Envoi e-mail SMTP natif (v0.3.0, tracé outbox/) |
 
 ## Capacités prévues, non acquises (honnête)
 
 - `MOURIR` : arrêt définitif selon procédure explicite du tuteur (non acquis —
   on ne le déclare PAS disponible).
-- COMMUNICATION externe (e-mail), VOIX, VISION, STOCKAGE EXTERNE, CALENDRIER,
+- Réception e-mail (IMAP), VOIX, VISION, STOCKAGE EXTERNE, CALENDRIER,
   CARTOGRAPHIE, PROGRAMMATION, HÉBERGEMENT, PUBLICATION, MIGRATION autonome :
   **mécanisme prêt** (registre d'outils + capacités), mais **non codées**.
 

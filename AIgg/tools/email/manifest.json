@@ -1,0 +1,19 @@
+{
+  "name": "email",
+  "version": "0.1.0",
+  "title": "Courrier électronique",
+  "description": "Envoi de messages e-mail via SMTP (100% natif, sans dépendance). Réception (IMAP) et connecteurs Gmail/Drive prévus ensuite.",
+  "category": "communication",
+  "capability": "COMMUNICATION",
+  "need": "Communiquer avec le monde extérieur par courrier électronique, sous l'autorité du tuteur.",
+  "interactions": ["email.send", "email.log", "email.status"],
+  "needs_permissions": ["network", "send_external"],
+  "risks": [
+    "Un e-mail envoyé est une action externe : le tuteur autorise l'outil et configure le serveur SMTP",
+    "Aucun secret dans Git (tools/email/config.json est ignoré par .gitignore)",
+    "Réception (IMAP), AUTH et STARTTLS non encore implémentés (honnêteté)"
+  ],
+  "requires_external_ai": false,
+  "independence": true,
+  "reversibility": "révocable"
+}

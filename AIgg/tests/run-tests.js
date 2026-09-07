@@ -151,7 +151,7 @@ async function run() {
     const tools = toolkit.discoverAll();
     report('decouverte_outils', tools.length >= 3, `${tools.length} outils`);
     const names = tools.map((t) => t.name);
-    report('outils_essentiels', ['web', 'notebook', 'avatar'].every((n) => names.includes(n)));
+    report('outils_essentiels', ['web', 'notebook', 'avatar', 'email'].every((n) => names.includes(n)));
     report('propositions', !!toolkit.propose('web').proposal);
     report('manifests_valides', tools.every((t) => !!t.manifest.capability && !!t.manifest.version));
   }
@@ -210,6 +210,10 @@ async function run() {
   const avTest = await toolkit.test('avatar');
   report('test_outil_avatar', avTest.test.status === 'PASS', avTest.test.note || avTest.test.status);
   report('avatar_svg_existe', fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')));
+
+  toolkit.authorize('email'); toolkit.install('email');
+  const emailTest = await toolkit.test('email');
+  report('test_outil_email', emailTest.test.status === 'PASS', emailTest.test.note || emailTest.test.status);
 
   // 12. Notebook réel
   console.log('\n12) NOTEBOOK RÉEL');
