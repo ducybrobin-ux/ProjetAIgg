@@ -5,6 +5,7 @@ const { PATHS } = require('./config');
 const state = require('./state');
 const memory = require('./memory');
 const needs = require('./needs');
+const conversation = require('./conversation');
 
 /**
  * Moteur de conversation minimal et HONNÊTE.
@@ -71,6 +72,7 @@ function helpText() {
 function handleLearn(ident, content) {
   const pending = { CONTENT: content, TIMESTAMP: util.nowIso(), ID: util.uuid() };
   savePending(pending);
+  try { state.setState('LEARNING', ident, 'Apprentissage proposé par la conversation'); } catch {}
   needs.createNeed(ident, {
     type: 'CONFIRMATION',
     description: `AIgg a retenu que « ${content} ». Est-ce correct ?`,
@@ -88,6 +90,7 @@ function handleConfirmation(ident, yes) {
   }
   const activeNeed = needs.listActiveNeeds().find((n) => n.TYPE === 'CONFIRMATION'
     && n.DESCRIPTION.includes(pending.CONTENT && pending.CONTENT.slice(0, 40)));
+  try { state.setState('LEARNING', ident, 'Confirmation d\'apprentissage'); } catch {}
   if (yes) {
     memory.memorize('knowledge', { question: pending.CONTENT, answer: 'confirmé par le tuteur' }, ident, {
       source: 'TUTOR',
@@ -97,12 +100,68 @@ function handleConfirmation(ident, yes) {
     if (activeNeed) needs.fulfillNeed(activeNeed.ID, ident, 'Le tuteur a confirmé.');
     journal(ident, 'LEARN_VALIDATED', { CONTENT: pending.CONTENT });
     savePending(null);
+    try { state.setState('AWAKE', ident, 'Fin de l\'apprentissage'); } catch {}
     return `Mémorisé : « ${pending.CONTENT} ». Merci de m'avoir appris cela.`;
   }
   if (activeNeed) needs.rejectNeed(activeNeed.ID, ident, 'Le tuteur a infirmé.');
   journal(ident, 'LEARN_REJECTED', { CONTENT: pending.CONTENT });
   savePending(null);
+  try { state.setState('AWAKE', ident, 'Fin de l\'apprentissage (infirmé)'); } catch {}
   return `Compris : je ne mémorise pas « ${pending.CONTENT} ». Dis-moi la version correcte, ou « apprends que … ».`;
+}
+
+function handleQuestion(ident, content) {
+  needs.createNeed(ident, {
+    type: 'QUESTION',
+    description: content,
+    question_for_tutor: content,
+  });
+  journal(ident, 'QUESTION_ASKED', { CONTENT: content });
+  return `Je me pose une question, et je préfère te demander plutôt que de deviner : « ${content} ». ` +
+    'Tu peux y répondre dans l\'onglet Demandes de la console, ou directement ici.';
+}
+
+function tutorAnswer(ident, rawAnswer) {
+  const questionNeed = needs.listActiveNeeds().find((n) => n.TYPE === 'QUESTION');
+  if (!questionNeed) return null;
+  needs.fulfillNeed(questionNeed.ID, ident, 'Réponse du tuteur', rawAnswer);
+  const answer = rawAnswer;
+  memory.memorize('knowledge', {
+    question: questionNeed.DESCRIPTION,
+    answer: `réponse du tuteur : ${answer}`,
+  }, ident, { source: 'TUTOR', confidence: 0.9, status: 'validated' });
+  journal(ident, 'QUESTION_ANSWERED', { QUESTION: questionNeed.DESCRIPTION, ANSWER: answer });
+  return {
+    question: questionNeed.DESCRIPTION,
+    answer,
+    reply: `Merci pour ta réponse : « ${answer} ». Je l'ai mémorisée.`,
+  };
+}
+
+/**
+ * Proactivité honnête (v0.3.4) : au réveil, AIgg lit réellement ses besoins en
+ * attente (QUESTions/CONFIRMATION) et, s'il en existe, adresse un message
+ * initié au tuteur. S'il n'y a rien, il garde le silence (aucune illusion).
+ */
+function proactiveDigest(ident) {
+  const waiting = needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION');
+  if (!waiting.length) return null;
+  try { state.setState('WAITING', ident, 'Proactivité : rappel des besoins en attente'); } catch {}
+  const lines = waiting.map((n) => {
+    const kind = n.TYPE === 'QUESTION' ? 'je te demande' : 'j\'attends ta confirmation sur';
+    return `— ${kind} : « ${n.DESCRIPTION} » (${n.ID})`;
+  });
+  const reply = `Bonjour ${ident.TUTOR_NAME}. Pendant que j'étais endormi, j'ai gardé en mémoire ces demandes en attente de toi :\n${lines.join('\n')}`;
+  conversation.append('ai', reply, ['PROACTIVE_DIGEST'], ident);
+  return { reply, needs: waiting };
+}
+
+function openQuestionNeeds() {
+  return needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION');
+}
+
+function listPendingMessages() {
+  return needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION');
 }
 
 function respond(rawText, identity) {
@@ -124,16 +183,26 @@ function respond(rawText, identity) {
   const learnMatch = text.match(/apprends?\s+que\s+(.+)/) || text.match(/(souviens-toi|souviens toi|mémorise|memorise)\s+que\s+(.+)/);
   if (learnMatch) return respondWith(ident, handleLearn(ident, learnMatch[1].trim()), ['LEARN_PROPOSE']);
 
+  const questionMatch = text.match(/(?:je me demande|je voudrais savoir|j'aimerais savoir|je m'interroge)\s*(?:si|sur|à propos de|a propos de|quoi|comment|pourquoi|quand|où|ou|qui|que|ce que)\s*(.+)/);
+  if (questionMatch) return respondWith(ident, handleQuestion(ident, questionMatch[1].trim()), ['QUESTION_OPEN']);
+
   const yeswords = ['oui', 'oui.', 'oui c\'est', 'oui ça', 'c\'est juste', 'c\'est correct', 'confirmé', 'confirme', 'exact', 'exactement', 'voilà', 'c\'est bien ça', 'si'];
   const nowords = ['non', 'non.', 'faux', 'pas ça', 'ce n\'est pas', 'c\'est faux', 'infirme'];
   const isYes = yeswords.some((w) => text === w) || saysAny(text, ['oui c\'est', 'c\'est correct', 'c\'est exact', 'confirme', 'tu as raison', 'exactement']);
   const isNo = nowords.some((w) => text === w);
   if (isYes || isNo) return respondWith(ident, handleConfirmation(ident, isYes), ['LEARN_CONFIRM']);
 
-  if (asksWho) return { reply: whoAreYou(ident), intents: ['IDENTITY'] };
+  // Si une question est ouverte et que le tuteur répond, traiter comme une réponse
+  const pendingQuestion = needs.listActiveNeeds().find((n) => n.TYPE === 'QUESTION');
+  if (pendingQuestion && text.length > 2) {
+    const handled = tutorAnswer(ident, rawText.trim());
+    if (handled) return respondWith(ident, handled.reply, ['QUESTION_ANSWERED']);
+  }
+
+  if (asksWho) return respondWith(ident, whoAreYou(ident), ['IDENTITY']);
   if (asksTutor) return respondWith(ident, `Mon tuteur est ${ident.TUTOR_NAME}. Je le respecte, et c'est lui qui contrôle mes permissions.`, ['TUTOR']);
   if (asksAge) return respondWith(ident, ageAnswer(ident), ['TIME']);
-  if (asksCaps) return { reply: listCapabilities(ident), intents: ['CAPABILITIES'] };
+  if (asksCaps) return respondWith(ident, listCapabilities(ident), ['CAPABILITIES']);
   if (asksSleep) {
     state.sleep(ident);
     return respondWith(ident, 'Je m\'endors doucement. À bientôt. (Sauvegarde et continuité conservées.)', ['SLEEP']);
@@ -161,8 +230,9 @@ function respondWith(ident, reply, intents) {
   try {
     const journal = require('./journal');
     journal.journalEvent('CONVERSATION', ident, { INTENTS: intents.join(', ') });
+    conversation.append('ai', reply, intents, ident);
   } catch {}
   return { reply, intents, state: require('./state').status(ident).state };
 }
 
-module.exports = { respond, normalize, handleLearn, handleConfirmation, helpText };
+module.exports = { respond, normalize, handleLearn, handleConfirmation, handleQuestion, tutorAnswer, proactiveDigest, openQuestionNeeds, listPendingMessages, helpText };

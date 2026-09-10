@@ -104,6 +104,17 @@ input, select, textarea {
 }
 .need-row .meta { color: var(--ap-muted); font-size: .72rem; }
 .need-row button { padding: .15rem .5rem; font-size: .72rem; }
+.need-row input { padding: .25rem .4rem; font-size: .78rem; margin-bottom: .2rem; }
+
+.needs-badge {
+  background: #4a2430; color: var(--ap-danger); border-color: #6f3240;
+  margin-left: .3rem; font-size: .72rem; padding: .05rem .45rem;
+}
+.tab.has-needs .badge { animation: needs-pulse 1.6s ease-in-out infinite; }
+@keyframes needs-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240,160,160,.4); }
+  50% { box-shadow: 0 0 0 5px rgba(240,160,160,0); }
+}
 
 .appearance-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem .8rem; margin-bottom: .5rem; }
 .appearance-grid label { font-size: .78rem; color: var(--ap-muted); display: flex; align-items: center; gap: .4rem; }

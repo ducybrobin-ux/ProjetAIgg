@@ -120,6 +120,20 @@ figurer (test automatisé inclus).
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
 
+## Contenu de la release v0.3.4
+
+- **Communication proactive (P1-COM)** : conversation **persistée**
+  (`core/conversation.ndjson`), rechargée à chaque visite.
+- **Questions ouvertes au tuteur** : « je me demande si X » crée un besoin
+  `QUESTION` et passe l'état à `WAITING` ; le tuteur répond (console ou web)
+  → réponse mémorisée + besoin `FULFILLED` + retour `AWAKE`.
+- **Proactivité honnête** : au réveil, AIgg n'adresse un message QUE si des
+  besoins sont réellement en attente ; sinon silence (aucune illusion).
+- **État WAITING réel** : déclenché par les besoins ouverts, `LEARNING`
+  confirmé → `AWAKE` ; badges + champ de réponse dans l'onglet Demandes.
+- CLI : `talk <texte>`, `messages [answer <id> <rép>]`, `wake` → digest.
+- Suite de tests : **160 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.3.3
 
 - **Apparence avancée (APP)** : **états visuels complets** — 8 couleurs

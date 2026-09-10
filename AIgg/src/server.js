@@ -19,6 +19,7 @@ const needs = require('./needs');
 const appearance = require('./appearance');
 const talk = require('./talk');
 const library = require('./library');
+const conversation = require('./conversation');
 const util = require('./util');
 
 const MIME = {
@@ -31,6 +32,7 @@ const MIME = {
 
 function apiData() {
   const ident = identity.loadIdentity();
+  const activeQuestions = needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION').length;
   return {
     identity: ident,
     status: state.status(ident),
@@ -43,6 +45,8 @@ function apiData() {
     backups: backup.listBackups().map((b) => b.manifest),
     notebook: notebookListSafe(),
     needs: needs.listNeeds(),
+    conversation: conversation.history(200),
+    active_questions: activeQuestions,
     appearance: appearance.status(),
     libraries: library.list(),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
@@ -187,7 +191,8 @@ function start() {
         journal.journalEvent('WAKE', ident, { source: 'WEB' });
         const out = state.wake(ident);
         try { require('../tools/avatar/avatar.js').generate(ident, { state: out.state }); } catch {}
-        sendJson(res, out);
+        const digest = talk.proactiveDigest(ident);
+        sendJson(res, digest ? { ...out, proactive: digest } : out);
         return;
       }
       if (url.pathname === '/api/backup' && req.method === 'POST') {
@@ -199,8 +204,14 @@ function start() {
       // --- Conversation ---
       if (url.pathname === '/api/talk' && req.method === 'POST') {
         const body = await readBody(req);
-        const out = talk.respond(body.text || '', ident);
+        const text = String(body.text || '');
+        conversation.append('tutor', text, null, ident);
+        const out = talk.respond(text, ident);
         sendJson(res, out);
+        return;
+      }
+      if (url.pathname === '/api/conversation' && req.method === 'GET') {
+        sendJson(res, conversation.history(200));
         return;
       }
 
@@ -217,7 +228,7 @@ function start() {
       }
       if (url.pathname === '/api/needs/fulfill' && req.method === 'POST') {
         const body = await readBody(req);
-        const resolved = needs.fulfillNeed(body.id, ident, body.resolution);
+        const resolved = needs.fulfillNeed(body.id, ident, body.resolution, body.response_text);
         if (!resolved) sendError(res, 'Besoin introuvable', 404);
         else sendJson(res, resolved);
         return;

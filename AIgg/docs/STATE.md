@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.3 · Suite de tests : 142 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-10 · CORE_VERSION 0.3.4 · Suite de tests : 160 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 

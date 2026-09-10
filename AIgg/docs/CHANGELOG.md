@@ -3,6 +3,32 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.4 — 2026-09-10 — ajout : communication proactive (conversation persistée, questions ouvertes, WAITING réel)
+
+### Ajouts (communication d'abord, proactivité honnête)
+- **Conversation persistée** : module `src/conversation.js` — append/history/clear —
+  historique `core/conversation.ndjson`, visible dans la console web et au rechargement.
+- **Questions ouvertes au tuteur** : « je me demande si … » crée un besoin `QUESTION`,
+  passe l'état à `WAITING`, le tuteur répond (console/web) → réponse mémorisée + besoin
+  `FULFILLED` + état `AWAKE`.
+- **Proactivité honnête** : au réveil, si des besoins QUESTION/CONFIRMATION sont en
+  attente, AIgg adresse un `proactiveDigest` ; sinon silence (aucune illusion).
+- **État WAITING réel** : déclenché par les besoins ouverts, transition vers `AWAKE`
+  quand tous sont résolus ; `LEARNING` confirmé par le tuteur → `AWAKE`.
+- **Console web** : fil de conversation reconstruit depuis le serveur (source de
+  vérité), badge clignotant sur l'onglet Demandes, champ de réponse aux questions.
+- **CLI** : `talk <texte>` (one-shot persisté), `messages [answer <id> <rép>]`
+  (liste/répond), `wake` déclenche le digest.
+
+### Tests
+- Suite complète : **160 PASS / 0 FAIL** (18 nouveaux : `conversation_persiste`,
+  `conversation_histoire`, `conversation_reponse_persistee`, `conversation_fichier`,
+  `etat_waiting_question`, `question_need_creee`, `question_reponse`,
+  `question_need_acheve`, `question_reponse_memorisee`, `etat_awake_apres_reponse`,
+  `question_reponse_tracee`, `proactif_silence_sans_attente`, `proactif_digest_attente`,
+  `proactif_digest_persiste`, `etat_learning_prop`, `etat_waiting_confirmation`,
+  `apprentissage_valide_etat_awake`, `apprentissage_memorise`).
+
 ## v0.3.3 — 2026-09-07 — ajout : apparence avancée (états visuels + avatar vivant)
 
 ### Ajouts (apparence contrôlée, couleurs d'état)

@@ -934,6 +934,43 @@ async function runAppearance(ident, args) {
   }
 }
 
+async function runTalk(ident, text) {
+  if (!text) {
+    console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
+    return;
+  }
+  const talk = require('./src/talk');
+  const conversation = require('./src/conversation');
+  conversation.append('tutor', text, null, ident);
+  const out = talk.respond(text, ident);
+  console.log(`AIgg : ${out.reply}`);
+}
+
+async function runMessages(ident, args) {
+  const talk = require('./src/talk');
+  const needs = require('./src/needs');
+  if (args[0] === 'answer' && args[1]) {
+    const id = args[1];
+    const answer = args.slice(2).join(' ') || 'ok';
+    const need = needs.listActiveNeeds().find((n) => n.ID === id);
+    if (!need) { console.log(`Aucun besoin actif « ${id} ».`); return; }
+    if (need.TYPE === 'QUESTION') {
+      const handled = talk.tutorAnswer(ident, answer);
+      console.log(handled ? handled.reply : 'Réponse enregistrée.');
+    } else {
+      needs.fulfillNeed(id, ident, 'Réponse du tuteur', answer);
+      console.log('Confirmé et clôturé.');
+    }
+    return;
+  }
+  const pending = talk.listPendingMessages();
+  if (!pending.length) { console.log('Aucun message/question en attente de toi.'); return; }
+  for (const n of pending) {
+    console.log(`[${n.TYPE}] ${n.ID} — ${n.DESCRIPTION}`);
+  }
+  console.log('\nPour répondre : AIgg.cmd messages answer <id> <réponse>');
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -957,12 +994,21 @@ async function main() {
     case 'wake':
       state.wake(ident);
       journal.journalEvent('WAKE', ident, {});
-      console.log('Éveillé.');
+      {
+        const digest = require('./src/talk').proactiveDigest(ident);
+        console.log(digest ? `Éveillé. ${digest.reply}` : 'Éveillé.');
+      }
       break;
     case 'sleep':
       state.sleep(ident);
       journal.journalEvent('SLEEP', ident, {});
       console.log('Endormi. Expérience conservée.');
+      break;
+    case 'talk':
+      await runTalk(ident, args.slice(1).join(' '));
+      break;
+    case 'messages':
+      await runMessages(ident, args.slice(1));
       break;
     case 'backup':
       console.log(backup.createBackup(ident));
@@ -1050,6 +1096,7 @@ async function main() {
       console.log(
         'Commandes :\n' +
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
+        '  talk <texte>, messages [answer <id> <réponse>],\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
         '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check'

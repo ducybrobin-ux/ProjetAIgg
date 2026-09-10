@@ -25,7 +25,7 @@
   <nav id="tabs">
     <button class="tab active" data-tab="identity">Identité</button>
     <button class="tab" data-tab="conversation">Conversation</button>
-    <button class="tab" data-tab="needs">Demandes</button>
+    <button class="tab" data-tab="needs">Demandes <span id="needs-badge" class="badge needs-badge" style="display:none"></span></button>
     <button class="tab" data-tab="appearance">Apparence</button>
     <button class="tab" data-tab="capabilities">Capacités</button>
     <button class="tab" data-tab="senses">Sens</button>
@@ -47,7 +47,7 @@
     <section id="tab-conversation" class="tabpane">
       <div class="panel">
         <h2>Conversation avec AIgg</h2>
-        <p class="hint">AIgg répond honnêtement : reconnaître quelques formulations simples, apprendre par « apprends que … », sinon « Je ne sais pas encore faire cela. » Le fil est conservé pendant la session.</p>
+        <p class="hint">AIgg répond honnêtement : reconnaître quelques formulations simples (dont « apprends que … » et « je me demande si … »), sinon « Je ne sais pas encore faire cela. » Le fil est <b>persisté</b> : il survit au rechargement de la page.</p>
         <div id="chat-log" class="chat-log">…</div>
         <div class="chat-compose">
           <input id="chat-input" placeholder="Écris à AIgg…" autocomplete="off">
@@ -59,7 +59,7 @@
     <section id="tab-needs" class="tabpane">
       <div class="panel">
         <h2>Demandes d'AIgg au tuteur</h2>
-        <p class="hint">C'est ici qu'AIgg demande de l'aide : une confirmation, une autorisation d'outil, une information. Un besoin n'est pas une action.</p>
+        <p class="hint">C'est ici qu'AIgg demande de l'aide : une confirmation, une autorisation d'outil, une <b>question</b> (réponds directement dans le champ). Un besoin n'est pas une action.</p>
         <div id="needs-list">chargement…</div>
       </div>
       <div class="panel">

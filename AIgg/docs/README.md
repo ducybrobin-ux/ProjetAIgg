@@ -33,9 +33,13 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   SMTP natif, tracé dans `outbox/` — PHASE 4).
 - **Conversation** : moteur honnête — reconnaît quelques formulations simples,
   apprend par « apprends que … » avec confirmation du tuteur, sinon répond
-  « Je ne sais pas encore faire cela. »
+  « Je ne sais pas encore faire cela. » **Historique persisté** et rechargé.
+- **Communication proactive** : conversation persistée (`core/conversation.ndjson`),
+  questions ouvertes au tuteur (besoin `QUESTION` + état `WAITING`), digest au
+  réveil uniquement si des demandes sont réellement en attente.
 - **Besoins** : AIgg peut demander de l'aide au tuteur (confirmation,
-  autorisation d'outil, information) — visible dans l'onglet Demandes.
+  autorisation d'outil, information) — visible dans l'onglet Demandes, avec
+  champ de réponse in situ.
 - **Apparence** : proposition → validation → application → journalisation ;
   le HTML est le corps visible d'AIgg (variables CSS pilotées).
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
@@ -83,9 +87,11 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd vault init   / put <clé> <valeur> / get <clé> # coffre secrets (chiffré)
 .\AIgg.cmd vault list / rm <clé> / wipe / status         # clés, suppression, état
 .\AIgg.cmd docs-check      # audit READ SEUL des docs (versions, compteurs)
-.\AIgg.cmd appearance status / set <clé>=<val> / reset / suggest / apply # apparence + couleurs d'état (CLI)
-.\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (142 vérifications)
+.\\AIgg.cmd appearance status / set <clé>=<val> / reset / suggest / apply # apparence + couleurs d'état (CLI)
+.\\AIgg.cmd talk <texte>    # conversation one-shot persistée
+.\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
+.\\AIgg.cmd server            # console du tuteur web
+.\\AIgg.cmd tests             # auto-diagnostics (160 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

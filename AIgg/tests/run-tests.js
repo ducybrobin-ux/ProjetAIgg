@@ -293,35 +293,42 @@ async function run() {
   // 15. Conversation (TEST_COMMUNICATION)
   console.log('\n15) COMMUNICATION (TEST_COMMUNICATION)');
   if (ident) {
-    const talk = require('../src/talk');
-    const who = talk.respond('Qui es-tu ?', ident);
-    report('conversation_identite', who.reply.includes(ident.AIgg_NAME) && who.reply.includes(ident.TUTOR_NAME));
-    const age = talk.respond('Quel âge as-tu ?', ident);
-    report('conversation_age', /jour/.test(age.reply));
-    const unknown = talk.respond('récite moi l\'intégrale de Proust', ident);
-    report('conversation_honnete', unknown.reply.includes('Je ne sais pas encore'));
-    const silent = talk.respond('   ', ident);
-    report('conversation_silence', silent.reply.length > 0);
+    const convSaved = fs.existsSync(config.PATHS.conversation) ? fs.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    try {
+      const talk = require('../src/talk');
+      const who = talk.respond('Qui es-tu ?', ident);
+      report('conversation_identite', who.reply.includes(ident.AIgg_NAME) && who.reply.includes(ident.TUTOR_NAME));
+      const age = talk.respond('Quel âge as-tu ?', ident);
+      report('conversation_age', /jour/.test(age.reply));
+      const unknown = talk.respond('récite moi l\'intégrale de Proust', ident);
+      report('conversation_honnete', unknown.reply.includes('Je ne sais pas encore'));
+      const silent = talk.respond('   ', ident);
+      report('conversation_silence', silent.reply.length > 0);
 
-    const learn = talk.respond('apprends que le ciel est bleu', ident);
-    report('apprentissage_propose', learn.reply.includes('Est-ce correct ?'));
-    const pendingExists = fs.existsSync(config.PATHS.pendingLearning);
-    const confirm = talk.respond('oui', ident);
-    report('apprentissage_confirme', confirm.reply.includes('Mémorisé'));
-    const found = memory.recollect('knowledge', 'le ciel est bleu').length >= 1
-      || memory.recollect('knowledge', 'ciel est bleu').length >= 1;
-    report('apprentissage_memorise', found);
-    // Nettoyage de la connaissance de test
-    const toClean = memory.allFamilies().filter((r) => {
-      const c = JSON.stringify(r.entry.CONTENT || '');
-      return c.includes('le ciel est bleu');
-    });
-    toClean.forEach((r) => memory.deleteEntry(r.family, r.entry.ID));
+      const learn = talk.respond('apprends que le ciel est bleu', ident);
+      report('apprentissage_propose', learn.reply.includes('Est-ce correct ?'));
+      const pendingExists = fs.existsSync(config.PATHS.pendingLearning);
+      const confirm = talk.respond('oui', ident);
+      report('apprentissage_confirme', confirm.reply.includes('Mémorisé'));
+      const found = memory.recollect('knowledge', 'le ciel est bleu').length >= 1
+        || memory.recollect('knowledge', 'ciel est bleu').length >= 1;
+      report('apprentissage_memorise', found);
+      // Nettoyage de la connaissance de test
+      const toClean = memory.allFamilies().filter((r) => {
+        const c = JSON.stringify(r.entry.CONTENT || '');
+        return c.includes('le ciel est bleu');
+      });
+      toClean.forEach((r) => memory.deleteEntry(r.family, r.entry.ID));
 
-    const learn2 = talk.respond('apprends que 2+2=5', ident);
-    const reject = talk.respond('non', ident);
-    report('apprentissage_infirme', reject.reply.includes('ne mémorise pas'));
-    if (pendingExists) { try { fs.unlinkSync(config.PATHS.pendingLearning); } catch {} }
+      const learn2 = talk.respond('apprends que 2+2=5', ident);
+      const reject = talk.respond('non', ident);
+      report('apprentissage_infirme', reject.reply.includes('ne mémorise pas'));
+      if (pendingExists) { try { fs.unlinkSync(config.PATHS.pendingLearning); } catch {} }
+    } finally {
+      // restaure l'historique de conversation réel (les messages de test ne persistent pas)
+      if (convSaved !== null) { try { fs.writeFileSync(config.PATHS.conversation, convSaved, 'utf8'); } catch {} }
+      else if (fs.existsSync(config.PATHS.conversation)) { try { fs.unlinkSync(config.PATHS.conversation); } catch {} }
+    }
   }
 
   // 16. Besoins (registre)
@@ -599,6 +606,92 @@ async function run() {
       changelogText, readmeText,
     });
     report('docs_check_detecte_divergence', rBad.ok === false);
+  }
+
+  // 22. v0.3.4 : communication proactive (conversation persistée, questions, états réels)
+  console.log('\n22) COMMUNICATION PROACTIVE');
+  if (ident) {
+    const talk = require('../src/talk');
+    const conversation = require('../src/conversation');
+    const needs = require('../src/needs');
+    const fsX = require('fs');
+    const savedState = util.readJson(config.PATHS.state, {});
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedPending = util.readJson(config.PATHS.pendingLearning, null);
+    const savedConv = fsX.existsSync(config.PATHS.conversation) ? fsX.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    try {
+      // 22a. Persistance de la conversation
+      conversation.clear();
+      const entry = conversation.append('tutor', 'bonjour test', null, ident);
+      report('conversation_persiste', !!entry.ID && !!entry.TIMESTAMP && entry.ROLE === 'tutor' && entry.TEXT === 'bonjour test');
+      report('conversation_histoire', conversation.history().length >= 1 && conversation.history().at(-1).TEXT === 'bonjour test');
+      const out = talk.respond('qui es-tu ?', ident);
+      report('conversation_reponse_persistee', conversation.history().some((e) => e.ROLE === 'ai' && e.INTENTS.includes('IDENTITY')));
+      report('conversation_fichier', fsX.existsSync(config.PATHS.conversation) && fsX.readFileSync(config.PATHS.conversation, 'utf8').split('\n').filter(Boolean).length >= 2);
+
+      // 22b. État WAITING réel : une question ouverte passe AIgg en WAITING
+      conversation.clear();
+      needs.deleteAllForTest && needs.deleteAllForTest();
+      const q = talk.respond('je me demande si le ciel est bleu', ident);
+      const stateNow = require('../src/state').status(ident).state;
+      report('etat_waiting_question', stateNow === 'WAITING' && q.intents.includes('QUESTION_OPEN'));
+      report('question_need_creee', needs.listActiveNeeds().some((n) => n.TYPE === 'QUESTION'));
+
+      // 22c. Réponse du tuteur à la question -> mémorisée, état AWAKE
+      const qNeedId = needs.listActiveNeeds().find((n) => n.TYPE === 'QUESTION').ID;
+      const ans = talk.tutorAnswer(ident, 'oui, le ciel est bleu');
+      report('question_reponse', !!ans && ans.answer === 'oui, le ciel est bleu');
+      report('question_need_acheve', needs.listActiveNeeds().every((n) => n.TYPE !== 'QUESTION'));
+      report('question_reponse_memorisee', memory.recollect('knowledge', 'le ciel est bleu').length >= 1);
+      report('etat_awake_apres_reponse', require('../src/state').status(ident).state === 'AWAKE');
+      report('question_reponse_tracee', journal.recentJournal(200).some((e) => e.EVENT === 'QUESTION_ANSWERED'));
+
+      // 22d. Proactivité honnête : rien en attente = silence ; question en attente = digeste
+      conversation.clear();
+      needs.deleteAllForTest && needs.deleteAllForTest();
+      const silent = talk.proactiveDigest(ident);
+      report('proactif_silence_sans_attente', silent === null);
+      talk.respond('je me demande quelle couleur tu aimes', ident);
+      const digest = talk.proactiveDigest(ident);
+      report('proactif_digest_attente', !!digest && digest.reply.includes('Bonjour') && digest.needs.length >= 1);
+      report('proactif_digest_persiste', conversation.history().some((e) => e.INTENTS.includes('PROACTIVE_DIGEST')));
+
+      // 22e. Apprentissage -> État LEARNING (puis WAITING car confirmation créée)
+      conversation.clear();
+      needs.deleteAllForTest();
+      state.wake(ident); // réinitialise à AWAKE
+      const stateBeforeLearn = require('../src/state').status(ident).state;
+      const learnReply = talk.respond('apprends que 2+2 fait 4', ident);
+      const stateAfterLearn = require('../src/state').status(ident).state;
+      const learnJournal = journal.recentJournal(200);
+      report('etat_learning_prop', (stateAfterLearn === 'WAITING' || stateAfterLearn === 'LEARNING')
+        && learnJournal.some((e) => e.EVENT === 'STATE_CHANGE' && e.TO === 'LEARNING'));
+      report('etat_waiting_confirmation', stateAfterLearn === 'WAITING');
+      const stateAfterConfirm = talk.respond('oui', ident);
+      report('apprentissage_valide_etat_awake', require('../src/state').status(ident).state === 'AWAKE' && stateAfterConfirm.intents.includes('LEARN_CONFIRM'));
+      report('apprentissage_memorise', memory.recollect('knowledge', '2+2 fait 4').length >= 1);
+    } finally {
+      // Autonettoyage strict : restaure état, besoins, pending, conversation, mémoire de test
+      try { util.writeJson(config.PATHS.state, savedState); } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      try {
+        if (savedPending) util.writeJson(config.PATHS.pendingLearning, savedPending);
+        else if (fsX.existsSync(config.PATHS.pendingLearning)) fsX.unlinkSync(config.PATHS.pendingLearning);
+      } catch {}
+      if (savedConv !== null) { try { fsX.writeFileSync(config.PATHS.conversation, savedConv, 'utf8'); } catch {} }
+      else { try { conversation.clear(); } catch {} }
+      // nettoyage des connaissances de test "2+2 fait 4" et "le ciel est bleu"
+      const junk = ['2+2 fait 4', 'le ciel est bleu'];
+      for (const ent of memory.allFamilies()) {
+        const content = JSON.stringify(ent.entry && ent.entry.CONTENT) || '';
+        if (junk.some((j) => content.includes(j))) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+    }
   }
 
   // Summary

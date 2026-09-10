@@ -9,6 +9,9 @@ function setPre(id, text) { $(id).textContent = text; }
 function esc(s) {
   return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
+function cssEsc(s) {
+  return String(s ?? '').replace(/["\\]/g, '\\$&');
+}
 
 async function getJSON(url) {
   const r = await fetch(url);
@@ -82,6 +85,8 @@ function render(data) {
   renderLibraries(data.libraries);
   renderNotebook();
   renderNeeds(data.needs);
+  renderNeedsBadge(data.needs, data.active_questions);
+  renderChatEntries(data.conversation);
   applyAppearance(data.appearance);
 }
 
@@ -173,6 +178,15 @@ window.addEventListener('click', async (ev) => {
     refresh();
     return;
   }
+  const answer = ev.target.closest('button[data-answer]');
+  if (answer) {
+    const id = answer.dataset.answer;
+    const input = document.querySelector(`input[data-resp-for="${cssEsc(id)}"]`);
+    const responseText = (input && input.value.trim()) || 'réponse du tuteur';
+    await postJSON('/api/needs/fulfill', { id, resolution: 'Réponse à la question', response_text: responseText });
+    refresh();
+    return;
+  }
   const resolve = ev.target.closest('button[data-resolve]');
   if (resolve) {
     const resolution = prompt(resolve.dataset.kind === 'fulfill' ? 'Résolution (texte libre) :' : 'Motif du refus :', '');
@@ -194,6 +208,22 @@ window.addEventListener('click', async (ev) => {
   }
 });
 
+function renderNeedsBadge(needsList, activeQuestions) {
+  const count = activeQuestions || (needsList || []).filter((n) => n.STATUS === 'ACTIVE').length;
+  const b = $('needs-badge');
+  if (!b) return;
+  if (count > 0) {
+    b.textContent = count;
+    b.style.display = 'inline-block';
+    const tab = b.closest('.tab');
+    if (tab) tab.classList.add('has-needs');
+  } else {
+    b.style.display = 'none';
+    const tab = b.closest('.tab');
+    if (tab) tab.classList.remove('has-needs');
+  }
+}
+
 function renderNeeds(needsList) {
   const box = $('needs-list');
   box.innerHTML = '';
@@ -202,12 +232,17 @@ function renderNeeds(needsList) {
     const div = document.createElement('div');
     div.className = 'need-row';
     const badge = n.STATUS === 'ACTIVE' ? 'en attente' : n.STATUS === 'FULFILLED' ? 'résolu' : 'refusé';
+    const kind = n.TYPE === 'QUESTION' ? 'question' : n.TYPE === 'CONFIRMATION' ? 'confirmation' : n.TYPE.toLowerCase();
     div.innerHTML =
-      `<span class="meta">[${esc(n.TYPE)}] ${esc(n.TIMESTAMP)} — ${esc(badge)}${n.RELATED_TOOL ? ' (outil: ' + esc(n.RELATED_TOOL) + ')' : ''}</span><br>` +
+      `<span class="meta">[${esc(kind)}] ${esc(n.TIMESTAMP)} — ${esc(badge)}${n.RELATED_TOOL ? ' (outil: ' + esc(n.RELATED_TOOL) + ')' : ''}</span><br>` +
       `${esc(n.DESCRIPTION)}<br>` +
-      (n.RESOLUTION ? `<span class="meta">résolution: ${esc(n.RESOLUTION)}</span><br>` : '') +
+      (n.RESPONSE_TEXT ? `<span class="meta">réponse d'AIgg reçue: ${esc(n.RESPONSE_TEXT)}</span><br>` : '') +
+      (n.RESOLUTION && !n.RESPONSE_TEXT ? `<span class="meta">résolution: ${esc(n.RESOLUTION)}</span><br>` : '') +
+      (n.RESOLVED_AT ? `<span class="meta">résolu le: ${esc(n.RESOLVED_AT)}</span><br>` : '') +
       (n.STATUS === 'ACTIVE'
-        ? `<button data-resolve="${esc(n.ID)}" data-kind="fulfill">Résoudre</button><button data-resolve="${esc(n.ID)}" data-kind="reject" class="danger">Refuser</button>`
+        ? (n.TYPE === 'QUESTION'
+          ? `<input data-resp-for="${esc(n.ID)}" placeholder="Ta réponse à AIgg…"><button data-answer="${esc(n.ID)}">Répondre</button>`
+          : `<button data-resolve="${esc(n.ID)}" data-kind="fulfill">Résoudre</button><button data-resolve="${esc(n.ID)}" data-kind="reject" class="danger">Refuser</button>`)
         : '');
     box.appendChild(div);
   }
@@ -275,19 +310,34 @@ function readAppearanceForm() {
   };
 }
 
-// --- Conversation ---
+// --- Rendus conversation (persistée serveur, v0.3.4) ---
 const chatLog = $('chat-log');
-function appendChat(role, text) {
+
+function renderChatEntries(entries) {
+  chatLog.innerHTML = '';
+  if (!entries || !entries.length) { chatLog.innerHTML = '<span class="meta">Aucun échange encore. Écris à AIgg…</span>'; return; }
+  for (const e of entries) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (e.ROLE === 'ai' ? 'from-ai' : 'from-tutor');
+    const who = e.ROLE === 'ai' ? (STATE ? STATE.identity.AIgg_NAME : 'AIgg') : 'tuteur';
+    const badge = e.INTENTS && e.INTENTS.length ? ` <span class="meta">[${esc(e.INTENTS.join(','))}]</span>` : '';
+    div.innerHTML = `<span class="meta">${esc(who)} · ${esc((e.TIMESTAMP || '').slice(11, 19))}</span>${badge}<br><span>${esc(e.TEXT)}</span>`;
+    chatLog.appendChild(div);
+  }
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function appendChat(role, text, intents) {
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (role === 'ai' ? 'from-ai' : 'from-tutor');
   div.innerHTML = `<span class="meta">${role === 'ai' ? (STATE ? esc(STATE.identity.AIgg_NAME) : 'AIgg') : 'tuteur'}</span><br><span>${esc(text)}</span>`;
   chatLog.appendChild(div);
   chatLog.scrollTop = chatLog.scrollHeight;
 }
+
 function sendChat() {
   const text = $('chat-input').value.trim();
   if (!text) return;
-  appendChat('tutor', text);
   $('chat-input').value = '';
   postJSON('/api/talk', { text }).then((out) => {
     appendChat('ai', out.reply || '(aucune réponse)');

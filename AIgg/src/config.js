@@ -5,7 +5,7 @@ const os = require('os');
 
 const ROOT = path.join(__dirname, '..');
 
-const CORE_VERSION = '0.3.3';
+const CORE_VERSION = '0.3.4';
 const MEMORY_VERSION = '0.1.0';
 const AIGG_NAME = 'AIgg';
 const DEFAULT_FIRST_NAME = 'Bob007';
@@ -43,6 +43,7 @@ const PATHS = {
   appearance: path.join(ROOT, 'core', 'appearance.json'),
   appearanceProposal: path.join(ROOT, 'core', 'appearance_proposal.json'),
   pendingLearning: path.join(ROOT, 'core', 'pending_learning.json'),
+  conversation: path.join(ROOT, 'core', 'conversation.ndjson'),
   birthCertificate: path.join(ROOT, 'core', 'birth_certificate.json'),
 };
 
