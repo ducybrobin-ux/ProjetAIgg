@@ -3,6 +3,23 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.3 — 2026-09-07 — ajout : apparence avancée (états visuels + avatar vivant)
+
+### Ajouts (apparence contrôlée, couleurs d'état)
+- **États visuels complets** : 8 couleurs d'état (BORN/AWAKE/LEARNING/THINKING/WAITING/SLEEPING/PAUSED/STOPPED) dans `STATE_COLORS` (valeur par défaut), compatibilité ascendante assurée par `mergeSchema()`.
+- **Avatar vivant** : variantes SVG par état (yeux ouverts/fermés/demi, bouche, anneau de couleur d'état) ; `data-state` sur la balise SVG pour vérification honnête.
+- **CLI `appearance`** : `status|set|reset|suggest|apply|drop|avatar [état]` + aide française ; le tuteur peut modifier toutes les couleurs (COLORS + STATE_COLORS) directement depuis la CLI.
+- **Console web enrichie** : badge coloré par état, sélecteurs d'état (8 couleurs) dans l'onglet Apparence, anneau avatar dynamique.
+- **Routes serveur** : `POST /api/appearance/set`, `/api/appearance/reset` ; avatar régénéré après sleep/wake.
+- **Chemin d'application** : les couleurs d'état passent en tant que custom properties `--ap-state-*` dans le CSS.
+
+### Limites honnêtes (documentées)
+- L'avatar reste un SVG statique (pas d'animation) — il reflète l'état au moment de la régénération.
+- Le tuteur doit régénérer l'avatar manuellement (`AIgg.cmd appearance avatar`) si l'état a changé sans passer par sleep/wake.
+
+### Tests
+- Suite complète : **142 PASS / 0 FAIL** (8 nouveaux : `apparence_state_colors`, `apparence_state_color`, `apparence_merge_retrocompat`, `apparence_reset`, `apparence_reset_journalise`, `avatar_etats_variantes`, `avatar_data_state`, `avatar_anneau_couleur`).
+
 ## v0.3.2 — 2026-09-07 — ajout : connecteur Gmail (P2) à scopes minimaux
 
 ### Ajouts (premier connecteur Google, moindre privilège)

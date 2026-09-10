@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.2 · Suite de tests : 134 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.3 · Suite de tests : 142 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -39,6 +39,19 @@ Dernière mise à jour : 2026-09-07 · CORE_VERSION 0.3.2 · Suite de tests : 13
 | Gestion d'erreurs PROBLÈME/CAUSE/SOLUTION/ÉTAT | IMPLEMENTED | CLI `AIgg.js` (web-read, migrate, catch) |
 | Tests du corpus (13 tests nommés) | IMPLEMENTED | tests/run-tests.js, 122 vérifications |
 | Licence MIT | IMPLEMENTED | LICENSE (racine) + package.json |
+
+## Apparence avancée (v0.3.3 — chantier APP, testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| États visuels complets : `STATE_COLORS` (8 états) | IMPLEMENTED | `apparence_state_colors` |
+| Couleur d'état résolue (`stateColor`, fallback) | IMPLEMENTED | `apparence_state_color` |
+| Schéma rétro-compatible (`mergeSchema` complète les fichiers v1) | IMPLEMENTED | `apparence_merge_retrocompat` |
+| Reset de l'apparence (journalisé `APPEARANCE_RESET`) | IMPLEMENTED | `apparence_reset`, `apparence_reset_journalise` |
+| Avatar vivant : variantes par état (yeux/bouche/anneau couleur) | IMPLEMENTED | `avatar_etats_variantes`, `avatar_data_state`, `avatar_anneau_couleur` |
+| CLI `appearance` (status/set/reset/suggest/apply/drop/avatar) | IMPLEMENTED | `AIgg.cmd appearance` (testé) |
+| Badge coloré par état + sélecteurs d'état dans la console web | IMPLEMENTED | web/public (app.js, index.html, style.css) |
+| Avatar régénéré après sleep/wake (web) | IMPLEMENTED | src/server.js (/api/sleep, /api/wake) |
 
 ## Bibliothèques de spécialisation — cahier appliqué (testé réellement)
 
@@ -183,6 +196,10 @@ Priorité d'ordre décroissant ; chaque item garde un critère observable.
       (moteur natif testé contre API simulée locale, token + scopes dans le
       coffre `vault`, scope minimal `gmail.metadata`, envoi tracé dans
       `outbox/`). OAuth2 réel en attente d'identifiants du tuteur.
+- [x] **Apparence avancée (APP)** — **fait en v0.3.3** : états visuels
+      complets (couleurs `STATE_COLORS` pour les 8 états), avatar vivant
+      (variantes par état + anneau d'état), CLI `appearance`
+      (status/set/reset/suggest/apply/avatar), console web enrichie.
 - [ ] Connecteurs Drive / Docs / Sheets (PHASE 4-5).
 - [ ] IA externe comme OUTIL (porté par Connecteurs IA : outil, jamais le cerveau).
 - [ ] Voix (synthèse + reconnaissance), vision (caméra) ; hébergement Web et

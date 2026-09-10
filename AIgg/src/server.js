@@ -178,12 +178,16 @@ function start() {
       // --- État ---
       if (url.pathname === '/api/sleep' && req.method === 'POST') {
         journal.journalEvent('SLEEP', ident, { source: 'WEB' });
-        sendJson(res, state.sleep(ident));
+        const out = state.sleep(ident);
+        try { require('../tools/avatar/avatar.js').generate(ident, { state: out.state }); } catch {}
+        sendJson(res, out);
         return;
       }
       if (url.pathname === '/api/wake' && req.method === 'POST') {
         journal.journalEvent('WAKE', ident, { source: 'WEB' });
-        sendJson(res, state.wake(ident));
+        const out = state.wake(ident);
+        try { require('../tools/avatar/avatar.js').generate(ident, { state: out.state }); } catch {}
+        sendJson(res, out);
         return;
       }
       if (url.pathname === '/api/backup' && req.method === 'POST') {
@@ -242,6 +246,16 @@ function start() {
       }
       if (url.pathname === '/api/appearance/suggest' && req.method === 'POST') {
         sendJson(res, appearance.suggest(ident));
+        return;
+      }
+      if (url.pathname === '/api/appearance/set' && req.method === 'POST') {
+        const body = await readBody(req);
+        const assignments = body.fields || body.assignments || [];
+        sendJson(res, appearance.setField(ident, Array.isArray(assignments) ? assignments : [assignments]));
+        return;
+      }
+      if (url.pathname === '/api/appearance/reset' && req.method === 'POST') {
+        sendJson(res, appearance.reset(ident));
         return;
       }
 

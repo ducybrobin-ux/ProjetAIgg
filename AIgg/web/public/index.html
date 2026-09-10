@@ -93,6 +93,17 @@
         </div>
         <input id="ap-font" placeholder="Police (ex : system-ui, sans-serif)">
         <textarea id="ap-notes" placeholder="Note du tuteur (raison de ce choix)…"></textarea>
+        <h3 style="margin-top:.6rem;color:var(--ap-muted);font-size:.85rem;">Couleurs d'état</h3>
+        <div class="appearance-grid">
+          <label> Naissance <input type="color" id="ap-state-BORN"></label>
+          <label> Éveillé <input type="color" id="ap-state-AWAKE"></label>
+          <label> Apprentissage <input type="color" id="ap-state-LEARNING"></label>
+          <label> Réflexion <input type="color" id="ap-state-THINKING"></label>
+          <label> Attente <input type="color" id="ap-state-WAITING"></label>
+          <label> Sommeil <input type="color" id="ap-state-SLEEPING"></label>
+          <label> Pause <input type="color" id="ap-state-PAUSED"></label>
+          <label> Arrêt <input type="color" id="ap-state-STOPPED"></label>
+        </div>
         <button id="btn-ap-suggest">AIgg propose</button>
         <button id="btn-ap-propose">Enregistrer la proposition</button>
         <button id="btn-ap-apply">Valider et appliquer</button>

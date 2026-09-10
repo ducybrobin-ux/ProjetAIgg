@@ -83,8 +83,9 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd vault init   / put <clé> <valeur> / get <clé> # coffre secrets (chiffré)
 .\AIgg.cmd vault list / rm <clé> / wipe / status         # clés, suppression, état
 .\AIgg.cmd docs-check      # audit READ SEUL des docs (versions, compteurs)
+.\AIgg.cmd appearance status / set <clé>=<val> / reset / suggest / apply # apparence + couleurs d'état (CLI)
 .\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (134 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (142 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

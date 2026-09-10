@@ -352,6 +352,32 @@ async function run() {
     report('apparence_couleurs', appearance.loadAppearance().COLORS.bg === cur.bg);
     const journals = journal.recentJournal(200);
     report('apparence_journalisee', journals.some((e) => e.EVENT === 'APPEARANCE_PROPOSED'));
+
+    // 17 bis. États visuels (v0.3.3)
+    const sc = appearance.loadAppearance().STATE_COLORS;
+    report('apparence_state_colors', sc && typeof sc === 'object' && ['BORN', 'AWAKE', 'LEARNING', 'THINKING', 'WAITING', 'SLEEPING', 'PAUSED', 'STOPPED'].every((k) => typeof sc[k] === 'string'));
+    report('apparence_state_color', appearance.stateColor('AWAKE') && appearance.stateColor('INCONNU') && appearance.stateColor('SLEEPING'));
+
+    const merged = appearance.mergeSchema({ COLORS: { bg: '#000' } });
+    report('apparence_merge_retrocompat', merged.STATE_COLORS && merged.COLORS && merged.COLORS.bg === '#000' && merged.STATE_COLORS.AWAKE);
+
+    const saved = appearance.loadAppearance();
+    const reset = appearance.reset(ident);
+    report('apparence_reset', reset.reset === true && appearance.loadAppearance().STATE_COLORS.AWAKE === appearance.DEFAULT_STATE_COLORS.AWAKE);
+    const journalsAfterReset = journal.recentJournal(200);
+    report('apparence_reset_journalise', journalsAfterReset.some((e) => e.EVENT === 'APPEARANCE_RESET'));
+    // Restaure pour ne pas casser les tests suivants
+    util.writeJson(config.PATHS.appearance, saved);
+
+    // Variantes d'avatar par état
+    const avatar = require('../tools/avatar/avatar.js');
+    const aw = avatar.generate(ident, { state: 'AWAKE' });
+    const sl = avatar.generate(ident, { state: 'SLEEPING' });
+    const svgAw = fs.readFileSync(path.join(config.PATHS.web, 'avatar.svg'), 'utf8');
+    report('avatar_etats_variantes', aw.size !== sl.size && aw.state === 'AWAKE' && sl.state === 'SLEEPING');
+    report('avatar_data_state', svgAw.includes('data-state="SLEEPING"'));
+    report('avatar_anneau_couleur', svgAw.includes('stroke="'));
+    avatar.generate(ident, { state: 'AWAKE' }); // restaure état AWAKE
   }
 
   // 18. Migration (continuité AIgg_ID)

@@ -32,11 +32,12 @@ header p { color: var(--ap-muted); margin-top: .3rem; }
   padding: .2rem .6rem;
   border-radius: 999px;
   font-size: .8rem;
-  background: var(--ap-accent);
-  color: var(--ap-muted);
+  background: var(--ap-panel);
+  color: var(--st, var(--ap-muted));
+  border: 1px solid var(--st, var(--ap-accent));
 }
-.badge.awake { background: #1e3a2f; color: #6ee7a0; }
-.badge.asleep { background: #3a2a2a; color: var(--ap-danger); }
+.badge.awake { background: #1e3a2f; color: #6ee7a0; border-color: #1e3a2f; }
+.badge.asleep { background: #3a2a2a; color: var(--ap-danger); border-color: #3a2a2a; }
 
 #tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
 .tab {

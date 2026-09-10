@@ -68,11 +68,14 @@ function render(data) {
     `âge: ${status.age.days} j, ${status.age.hours} h, ${status.age.minutes} min`);
 
   badge.textContent = status.state;
-  badge.className = `badge ${status.state === 'AWAKE' ? 'awake' : 'asleep'}`;
+  badge.className = `badge state`;
+  const stateColors = (data.appearance && data.appearance.current && data.appearance.current.STATE_COLORS) || {};
+  badge.style.setProperty('--st', stateColors[status.state] || stateColors.AWAKE || '#8fa895');
 
   const avatar = $('avatar-img');
   if (data.avatar) avatar.src = data.avatar + '?t=' + Date.now();
   else avatar.style.opacity = 0.25;
+  avatar.style.borderColor = stateColors[status.state] || stateColors.AWAKE || 'var(--ap-accent)';
 
   renderTools(data.tools);
   renderMemory();
@@ -223,6 +226,10 @@ function applyAppearance(ap) {
   root.style.setProperty('--ap-accent-text', c.accent_text);
   root.style.setProperty('--ap-danger', c.danger);
   root.style.setProperty('--ap-font', ap.current.FONT);
+  const stateColors = ap.current.STATE_COLORS || {};
+  for (const key of Object.keys(stateColors)) {
+    root.style.setProperty('--ap-state-' + key, stateColors[key]);
+  }
   // Alimente l'éditeur à partir de l'état courant, sans écraser les retouches du tuteur.
   if (!window.__apLoaded) {
     $('ap-bg').value = c.bg; $('ap-surface').value = c.surface; $('ap-panel').value = c.panel;
@@ -230,6 +237,10 @@ function applyAppearance(ap) {
     $('ap-accent-text').value = c.accent_text; $('ap-danger').value = c.danger;
     $('ap-font').value = ap.current.FONT || '';
     $('ap-notes').value = ap.current.NOTES || '';
+    for (const key of Object.keys(stateColors)) {
+      const el = $('ap-state-' + key);
+      if (el) el.value = stateColors[key];
+    }
     window.__apLoaded = true;
   }
   if (ap.proposal) {
@@ -248,6 +259,16 @@ function readAppearanceForm() {
       bg: $('ap-bg').value, surface: $('ap-surface').value, panel: $('ap-panel').value,
       text: $('ap-text').value, muted: $('ap-muted').value, accent: $('ap-accent').value,
       accent_text: $('ap-accent-text').value, danger: $('ap-danger').value,
+    },
+    STATE_COLORS: {
+      BORN: $('ap-state-BORN').value,
+      AWAKE: $('ap-state-AWAKE').value,
+      LEARNING: $('ap-state-LEARNING').value,
+      THINKING: $('ap-state-THINKING').value,
+      WAITING: $('ap-state-WAITING').value,
+      SLEEPING: $('ap-state-SLEEPING').value,
+      PAUSED: $('ap-state-PAUSED').value,
+      STOPPED: $('ap-state-STOPPED').value,
     },
     FONT: $('ap-font').value || 'system-ui, sans-serif',
     NOTES: $('ap-notes').value || '',

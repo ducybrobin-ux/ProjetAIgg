@@ -548,6 +548,34 @@ async function runGmail(ident, args) {
   }
 }
 
+const APPEARANCE_HELP_FR = [
+  'AIgg — aide de `appearance` (français)',
+  '',
+  'But : gérer l\'apparence (couleurs, police, couleurs d\'état) depuis la CLI.',
+  'L\'apparence appartient au tuteur : toute modification est directe ici',
+  '(le tuteur commande) et toujours journalisée (APPEARANCE_*).',
+  'La suggestion d\'AIgg reste une proposition à valider.',
+  '',
+  'COMMANDE :',
+  '  AIgg.cmd appearance <commande> [clés=valeurs]',
+  '',
+  '  status                          État courant + proposition en attente.',
+  '  set <clé>=<valeur> [...]        Applique immédiatement (journalisé).',
+  '                                  Clés : couleurs (bg, surface, panel, text,',
+  '                                  muted, accent, accent_text, danger), états',
+  '                                  (BORN, AWAKE, LEARNING, THINKING, WAITING,',
+  '                                  SLEEPING, PAUSED, STOPPED), font, notes.',
+  '                                  Ex : appearance set accent=#2c3a58 AWAKE=#6ee7a0',
+  '  reset                           Restaure l\'apparence par défaut (journalisé).',
+  '  suggest                         AIgg propose une palette (proposition).',
+  '  apply                           Valide et applique la proposition en attente.',
+  '  drop                            Abandonne la proposition en attente.',
+  '  avatar [état]                   Régénère l\'avatar SVG pour l\'état (défaut : actuel).',
+  '',
+  'HONNÊTETÉ : AIgg ne modifie jamais son apparence silencieusement ;',
+  'toute proposition passe par validation du tuteur puis journalisation.',
+];
+
 const VAULT_HELP_FR = [
   'AIgg — coffre-fort local (vault) — aide (français)',
   '',
@@ -844,6 +872,68 @@ function runLibrary(ident, args) {
   }
 }
 
+async function runAppearance(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0] || 'help';
+  const appearance = require('./src/appearance');
+
+  switch (sub) {
+    case 'status':
+      console.log(JSON.stringify(appearance.status(), null, 2));
+      break;
+    case 'set': {
+      const fields = rest.slice(1);
+      if (!fields.length) {
+        console.log('Utilisation : AIgg.cmd appearance set accent=#2c3a58 AWAKE=#6ee7a0 font=... notes=...');
+        break;
+      }
+      const out = appearance.setField(ident, fields);
+      console.log(JSON.stringify(out, null, 2));
+      break;
+    }
+    case 'reset': {
+      const out = appearance.reset(ident);
+      console.log(JSON.stringify(out, null, 2));
+      break;
+    }
+    case 'suggest': {
+      const out = appearance.suggest(ident);
+      console.log(JSON.stringify(out, null, 2));
+      break;
+    }
+    case 'apply': {
+      const out = appearance.apply(ident);
+      if (out.applied) {
+        console.log('Proposition validée et appliquée (journalisée).');
+      } else {
+        console.log(out.reason || 'Aucune proposition en attente.');
+      }
+      break;
+    }
+    case 'drop':
+      require('./src/util').writeJson(require('./src/config').PATHS.appearanceProposal, null);
+      console.log('Proposition abandonnée.');
+      break;
+    case 'avatar': {
+      const st = rest[1] || state.status(ident).state || 'AWAKE';
+      const tool = toolkit.findManifest('avatar');
+      const out = await contract.executeTool(ident, tool.manifest, 'avatar.generate', {
+        source: 'CLI',
+        confidence: 1.0,
+        action: 'generate',
+        async execute() {
+          const av = toolkit.loadModule('avatar').module;
+          return { ok: true, data: av.generate(ident, { state: st }) };
+        },
+      });
+      console.log(JSON.stringify(out, null, 2));
+      break;
+    }
+    default:
+      console.log(APPEARANCE_HELP_FR);
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -949,6 +1039,9 @@ async function main() {
     case 'gmail':
       await runGmail(ident, args.slice(1));
       break;
+    case 'appearance':
+      await runAppearance(ident, args.slice(1));
+      break;
     case 'vault':
       runVault(args.slice(1));
       break;
@@ -959,7 +1052,7 @@ async function main() {
         '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, vault <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

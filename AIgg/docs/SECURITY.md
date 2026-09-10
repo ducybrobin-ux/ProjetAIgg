@@ -86,6 +86,11 @@ Règles :
   révocables, jamais le cerveau obligatoire d'AIgg.
 - AIgg ne modifie jamais son apparence silencieusement : toute proposition
   passe par validation du tuteur puis journalisation (`APPEARANCE_*`).
+- `appearance set` (CLI) applique directement mais c'est **le tuteur qui
+  commande** : l'action est journalisée (`APPEARANCE_SET_BY_TUTOR`) ; AIgg
+  n'a aucun chemin pour changer son apparence par lui-même.
+- L'avatar reflète l'état (couleur d'anneau, `data-state`) sans jamais
+  contenir d'identifiant ni d'e-mail du tuteur (test `avatar_pas_de_secret`).
 
 ## Bibliothèques de spécialisation
 

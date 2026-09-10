@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (134 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (142 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,19 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.3
+
+- **Apparence avancée (APP)** : **états visuels complets** — 8 couleurs
+  d'état (`STATE_COLORS`) contrôlées par le tuteur, compatibilité avec les
+  fichiers v1 (`mergeSchema`).
+- **Avatar vivant** : variantes SVG par état (yeux, bouche, anneau de couleur
+  d'état, `data-state`) — l'avatar reflète l'état d'AIgg.
+- **CLI `appearance`** : `status|set|reset|suggest|apply|drop|avatar [état]`
+  + aide française ; console web enrichie (badge coloré, sélecteurs d'état).
+- Chemin d'application `--ap-state-*` ; routes serveur `/api/appearance/set`
+  et `/api/appearance/reset` ; avatar régénéré après sleep/wake.
+- Suite de tests : **142 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.2
 
