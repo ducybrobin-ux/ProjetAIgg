@@ -1018,7 +1018,7 @@ async function main() {
       require('./src/server').start();
       break;
     case 'learn':
-      await learn(ident);
+      await learn(ident, args.slice(1));
       break;
     case 'tests':
       require('./tests/run-tests').run();
@@ -1095,7 +1095,7 @@ async function main() {
     default:
       console.log(
         'Commandes :\n' +
-        '  birth, status, wake, sleep, backup, learn, server, tests, needs\n' +
+        '  birth, status, wake, sleep, backup, learn [domaine], server, tests, needs\n' +
         '  talk <texte>, messages [answer <id> <réponse>],\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
@@ -1104,7 +1104,26 @@ async function main() {
   }
 }
 
-async function learn(ident) {
+async function learn(ident, subArgs) {
+  const presets = require('./src/presets');
+
+  // learn <domaine> — charge un preset de connaissances
+  if (subArgs && subArgs[0]) {
+    const domain = subArgs[0].toLowerCase();
+    const available = presets.listPresets();
+    const found = available.find((p) => p.id === domain || p.domain === domain);
+    if (!found) {
+      console.log(`Preset inconnu : ${domain}`);
+      console.log('Presets disponibles : ' + (available.length ? available.map((p) => `${p.id} (${p.count} connaissances)`).join(', ') : 'aucun'));
+      return;
+    }
+    const result = presets.loadPreset(found.id, ident);
+    if (!result.ok) { console.log('Erreur : ' + result.error); return; }
+    console.log(`Preset « ${result.domain} » chargé : ${result.loaded} connaissances ajoutées, ${result.skipped} déjà connues (${result.total} au total).`);
+    return;
+  }
+
+  // learn interactif (sans argument) — mode manuel
   const [question, got] = await collectAnswers([
     'Quel apprentissage ? ',
     'Réponse que tu donnes : ',

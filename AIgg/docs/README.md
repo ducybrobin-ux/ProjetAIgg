@@ -34,6 +34,8 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
 - **Conversation** : moteur honnête — reconnaît quelques formulations simples,
   apprend par « apprends que … » avec confirmation du tuteur, sinon répond
   « Je ne sais pas encore faire cela. » **Historique persisté** et rechargé.
+  **Relecture mémoire** : répond depuis sa mémoire si la question ressemble à
+  une connaissance déjà apprise (jamais d'invention — sinon il avoue ignorer).
 - **Communication proactive** : conversation persistée (`core/conversation.ndjson`),
   questions ouvertes au tuteur (besoin `QUESTION` + état `WAITING`), digest au
   réveil uniquement si des demandes sont réellement en attente.
@@ -63,8 +65,8 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd status            # état complet
 .\AIgg.cmd wake / sleep      # veille
 .\AIgg.cmd backup            # sauvegarde
-.\AIgg.cmd learn             # apprentissage guidé
-.\AIgg.cmd discover          # outils découverts
+.\\AIgg.cmd learn             # apprentissage guidé ; `learn python` charge le preset de connaissances
+.\\AIgg.cmd discover          # outils découverts
 .\AIgg.cmd propose <outil>   # proposition d'acquisition
 .\AIgg.cmd authorize <outil> # autoriser (tuteur)
 .\AIgg.cmd install <outil>   # installer + acquérir la capacité
@@ -91,7 +93,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\\AIgg.cmd tests             # auto-diagnostics (160 vérifications)
+.\\AIgg.cmd tests             # auto-diagnostics (167 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

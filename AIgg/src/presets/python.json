@@ -1,0 +1,115 @@
+{
+  "domain": "python",
+  "label": "Python — langage de programmation",
+  "description": "Connaissances fondamentales sur le langage Python",
+  "knowledge": [
+    {
+      "question": "qu'est-ce que Python ?",
+      "answer": "Python est un langage de programmation interprété, polyvalent, créé par Guido van Rossum en 1991. Il est utilisé pour le web, la data science, l'IA, l'automatisation, et bien plus."
+    },
+    {
+      "question": "comment Python définit-il les blocs de code ?",
+      "answer": "Python utilise l'indentation (espaces ou tabulations) et les deux-points (:) pour délimiter les blocs de code, contrairement aux accolades en JavaScript ou en C."
+    },
+    {
+      "question": "quel est le type de null en Python ?",
+      "answer": "En Python, 'null' est représenté par 'None'. C'est un objet singleton du type 'NoneType'. On teste avec 'x is None' plutôt que 'x == None'."
+    },
+    {
+      "question": "quel est le type booléen en Python ?",
+      "answer": "Le type booléen est 'bool', avec les valeurs True et False. En Python, bool est une sous-classe de int : True vaut 1 et False vaut 0."
+    },
+    {
+      "question": "quel est le type entier en Python ?",
+      "answer": "Le type entier est 'int'. En Python 3, il n'y a pas de limite de taille pour les entiers (contrairement à C ou Java). Les entiers sont immuables."
+    },
+    {
+      "question": "quel est le type décimal en Python ?",
+      "answer": "Le type décimal est 'float' (virgule flottante 64 bits IEEE 754). Pour plus de précision, le module 'decimal' fournit 'Decimal'."
+    },
+    {
+      "question": "quel est le type chaîne de caractères en Python ?",
+      "answer": "Le type chaîne est 'str'. Les chaînes sont immuables en Python. On crée des chaînes avec des guillemets simples 'hello' ou doubles \"hello\". Le formatage f-string : f'Bonjour {nom}'."
+    },
+    {
+      "question": "quel est le type liste en Python ?",
+      "answer": "Le type liste est 'list'. Les listes sont mutables, ordonnées, et peuvent contenir des éléments de types différents. Exemple : [1, 'deux', 3.0]. On ajoute avec append(), on supprime avec remove()."
+    },
+    {
+      "question": "quel est le type tuple en Python ?",
+      "answer": "Le type tuple est 'tuple'. Les tuples sont immuables, ordonnés, et peuvent contenir des éléments de types différents. Exemple : (1, 'deux', 3.0). On accède par index : t[0]."
+    },
+    {
+      "question": "quel est le type dictionnaire en Python ?",
+      "answer": "Le type dictionnaire est 'dict'. Les dictionnaires associent des clés (hashables) à des valeurs. Exemple : {'nom': 'Alice', 'age': 30}. On accède par clé : d['nom']."
+    },
+    {
+      "question": "quel est le type ensemble en Python ?",
+      "answer": "Le type ensemble est 'set' (mutable) ou 'frozenset' (immuable). Les ensembles contiennent des éléments uniques et non ordonnés. Exemple : {1, 2, 3}. Utile pour les opérations ensemblistes : union, intersection, différence."
+    },
+    {
+      "question": "comment définit-on une fonction en Python ?",
+      "answer": "On définit une fonction avec 'def' suivi du nom et de parenthèses : def ma_fonction(param1, param2='valeur_defaut'): pass. Les fonctions peuvent retourner une valeur avec 'return'."
+    },
+    {
+      "question": "comment définit-on une classe en Python ?",
+      "answer": "On définit une classe avec 'class' : class MaClasse: pass. L'constructeur est '__init__(self, ...)' . L'héritage : class Enfant(Parent): pass."
+    },
+    {
+      "question": "comment importe-t-on des modules en Python ?",
+      "answer": "On importe avec 'import module' ou 'from module import fonction'. Exemple : import math ; from os import path. Le double underscore (__) dans les noms signifie 'privé'."
+    },
+    {
+      "question": "quel est le GIL en Python ?",
+      "answer": "Le GIL (Global Interpreter Lock) est un mécanisme du CPython qui empêche l'exécution simultanée de plusieurs threads Python sur un même cœur de processeur. Pour le parallélisme, on utilise 'multiprocessing' au lieu de 'threading'."
+    },
+    {
+      "question": "quel est le préfixe d'encapsulation en Python ?",
+      "answer": "Le préfixe '_' (underscore simple) signifie une variable 'protégée' par convention (non 'privée'). Le préfixe '__' (double underscore) déclenche le name mangling pour éviter les conflits dans l'héritage."
+    },
+    {
+      "question": "quel est le fichier d'entrée d'un package Python ?",
+      "answer": "Le fichier 'setup.py' ou 'pyproject.toml' configure le package. Le fichier '__init__.py' dans un dossier indique que c'est un package Python (obsolète depuis Python 3.3+ grâce aux namespaces)."
+    },
+    {
+      "question": "quel est le gestionnaire de paquets en Python ?",
+      "answer": "pip est le gestionnaire de paquets standard. 'pip install paquet' installe. 'pip freeze' liste les paquets installés. Les dépendances sont dans 'requirements.txt'."
+    },
+    {
+      "question": "comment gère-t-on les erreurs en Python ?",
+      "answer": "Avec try/except/else/finally : try: risky() except ValueError as e: handle(e) else: ok() finally: cleanup(). On lève des exceptions avec 'raise ValueError(\"msg\")'."
+    },
+    {
+      "question": "quel est le list comprehension en Python ?",
+      "answer": "Le list comprehension est une syntaxe concise pour créer des listes : [x**2 for x in range(10) if x % 2 == 0]. Équivalent à une boucle for avec append, mais plus lisible et rapide."
+    },
+    {
+      "question": "quel est le décorateur en Python ?",
+      "answer": "Un décorateur est une fonction qui prend une fonction et retourne une version modifiée. Syntaxe : @decorateur avant la définition de la fonction. Exemple classique : @property pour créer un getter."
+    },
+    {
+      "question": "quel est le generator en Python ?",
+      "answer": "Un générateur produit des valeurs à la volée avec 'yield' au lieu de 'return'. Il est économe en mémoire. Exemple : def compteur(): i=0; while True: yield i; i+=1."
+    },
+    {
+      "question": "quel est le type None en Python ?",
+      "answer": "None est un singleton qui représente l'absence de valeur. Son type est 'NoneType'. C'est la valeur de retour par défaut des fonctions sans 'return'. On teste avec 'x is None'."
+    },
+    {
+      "question": "comment fonctionne le slicing en Python ?",
+      "answer": "Le slicing extrait des sous-séquences : liste[debut:fin:pas]. Exemple : [1,2,3,4,5][1:4] = [2,3,4]. Les index négatifs comptent depuis la fin : s[-1] = dernier élément."
+    },
+    {
+      "question": "quel est le walrus operator en Python ?",
+      "answer": "Le walrus operator ':=' (PEP 572, Python 3.8+) assigne une valeur dans une expression. Exemple : if (n := len(data)) > 10: print(f'Trop long : {n} éléments')."
+    },
+    {
+      "question": "quel est le dataclass en Python ?",
+      "answer": "Un dataclass (@dataclass, Python 3.7+) génère automatiquement __init__, __repr__, __eq__ et plus. Utile pour les structures de données pures. from dataclasses import dataclass."
+    },
+    {
+      "question": "quel est le type annotation en Python ?",
+      "answer": "Les annotations de type (Python 3.5+) documentent les types des paramètres et retours : def add(a: int, b: int) -> int: return a + b. C'est indicatif, non vérifié à l'exécution par défaut. 'mypy' vérifie statiquement."
+    }
+  ]
+}

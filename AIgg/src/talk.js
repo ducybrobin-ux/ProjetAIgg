@@ -221,9 +221,52 @@ function respond(rawText, identity) {
   if (asksHelp) return respondWith(ident, helpText(), ['HELP']);
 
   const firstWords = text.split(' ').slice(0, 6).join(' ');
+  const recalled = recallAnswer(text);
+  if (recalled) return respondWith(ident, recalled.reply, ['KNOWLEDGE_RECALL']);
   return respondWith(ident,
     `Je ne sais pas encore bien répondre à cela (« ${firstWords}… »). Tu peux m'apprendre en disant « apprends que … », ` +
     'ou consulter mon interface pour découvrir mes capacités réelles.', ['UNKNOWN']);
+}
+
+const STOP_WORDS_FR = new Set([
+  'les', 'des', 'que', 'qui', 'quoi', 'avec', 'dans', 'pour', 'cela', 'cette',
+  'ces', 'aux', 'fait', 'faire', 'sont', 'être', 'comme', 'plus', 'tout',
+  'tous', 'toute', 'peut', 'comment', 'pourquoi', 'quand', 'et', 'ou', 'en',
+  'sur', 'par', 'de', 'la', 'le', 'je', 'tu', 'il', 'elle', 'on', 'un', 'une',
+  'est', 'son', 'sa', 'ses', 'pas', 'ne', 'du', 'au', 'aux', 'où',
+]);
+
+// Relecture honnête de la mémoire : si la question du tuteur ressemble à une
+// question déjà mémorisée, AIgg répond depuis sa mémoire (INTENT KNOWLEDGE_RECALL),
+// sinon il avoue ignorer. Aucune invention.
+function recallAnswer(text) {
+  const asked = normalize(text).split(/\s+/)
+    .map((w) => w.replace(/[^a-zâàçéèêëîïôöûüù0-9]/g, '').replace(/s$/, ''))
+    .filter((w) => w.length >= 3 && !STOP_WORDS_FR.has(w));
+  if (asked.length < 2) return null;
+
+  const entries = memory.allFamilies()
+    .filter((r) => r.family === 'knowledge')
+    .map((r) => r.entry);
+
+  let best = null;
+  let bestScore = 0;
+  for (const entry of entries) {
+    const cq = entry.CONTENT && entry.CONTENT.question;
+    if (!cq) continue;
+    const qWords = normalize(cq).split(/\s+/)
+      .map((w) => w.replace(/[^a-zâàçéèêëîïôöûüù0-9]/g, '').replace(/s$/, ''))
+      .filter((w) => w.length >= 3 && !STOP_WORDS_FR.has(w));
+    if (!qWords.length) continue;
+    const hits = qWords.filter((w) => asked.includes(w)).length;
+    const score = hits / qWords.length;
+    if (score >= 0.6 && hits >= 2 && score > bestScore) {
+      best = entry;
+      bestScore = score;
+    }
+  }
+  if (!best) return null;
+  return { reply: best.CONTENT.answer, id: best.ID, score: bestScore };
 }
 
 function respondWith(ident, reply, intents) {

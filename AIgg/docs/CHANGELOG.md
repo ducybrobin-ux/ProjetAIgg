@@ -3,6 +3,29 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.5 — 2026-09-10 — ajout : presets de connaissances + relecture mémoire par la conversation
+
+### Ajouts (AIgg connaît déjà Python, sans invention)
+- **Presets de connaissances** : module `src/presets.js` — `listPresets()`, `loadPreset()`,
+  fiches par domaine dans `src/presets/*.json`, chargement idempotent (jamais de doublon),
+  tracé `PRESET_LOADED`, source `PRESET`, confiance 0.85, validé.
+- **Preset `python`** : 27 connaissances fondamentales (blocs, types, fonctions, classes,
+  GIL, slicing, décorateurs, générateurs, dataclass, annotations…).
+- **CLI `learn python`** : `AIgg.cmd learn python` charge le preset ; `learn` sans argument
+  reste le mode guidé interactif.
+- **Relecture mémoire par la conversation** : si la question du tuteur ressemble à une
+  question mémorisée (≥ 0.6 de mots significatifs communs, ≥ 2 mots), AIgg répond depuis
+  sa mémoire (`KNOWLEDGE_RECALL`) au lieu de dire « je ne sais pas ». Aucune invention :
+  sinon, il avoue ignorer.
+- **Sûreté** : le preset est un pur ajout de connaissances (jamais une capacité, jamais
+  un outil, jamais une permission) ; les données restent dans `memory/knowledge/` (hors
+  Git).
+
+### Tests
+- Suite complète : **167 PASS / 0 FAIL** (7 nouveaux autonettoyants : `presets_liste`,
+  `presets_python_load`, `presets_python_domaine`, `presets_python_idempotent`,
+  `presets_inconnu`, `presets_memoire`, `presets_journal`).
+
 ## v0.3.4 — 2026-09-10 — ajout : communication proactive (conversation persistée, questions ouvertes, WAITING réel)
 
 ### Ajouts (communication d'abord, proactivité honnête)

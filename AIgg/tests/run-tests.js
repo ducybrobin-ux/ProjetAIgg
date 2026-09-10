@@ -694,6 +694,47 @@ async function run() {
     }
   }
 
+  // 23. v0.3.5 : presets de connaissances (chargement domaines, autonettoyant)
+  console.log('\n23) PRESETS DE CONNAISSANCES');
+  if (ident) {
+    const presets = require('../src/presets');
+    const preExisting = new Set(
+      memory.allFamilies()
+        .filter((r) => ((r.entry && r.entry.CONTEXT) || '').startsWith('preset:python'))
+        .map((r) => r.entry.ID)
+    );
+    try {
+      const list = presets.listPresets();
+      report('presets_liste', list.length >= 1 && list.some((p) => p.id === 'python'), `${list.length} preset(s)`);
+
+      const before = memory.recollect('knowledge', 'Python').length;
+      const result = presets.loadPreset('python', ident);
+      const after = memory.recollect('knowledge', 'Python').length;
+      report('presets_python_load', result.ok === true && result.total >= 10 && after >= before,
+        `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
+
+      report('presets_python_domaine', result.domain === 'python');
+      report('presets_python_idempotent', presets.loadPreset('python', ident).loaded === 0,
+        'double charge = 0 ajout (idempotent)');
+
+      report('presets_inconnu', presets.loadPreset('inexistant', ident).ok === false);
+      report('presets_memoire', memory.recollect('knowledge', 'Python').length >= 10,
+        `${memory.recollect('knowledge', 'Python').length} entrées Python`);
+
+      const journaux = journal.recentJournal(200);
+      report('presets_journal', journaux.some((e) => e.EVENT === 'PRESET_LOADED'),
+        'PRESET_LOADED tracé');
+    } finally {
+      // nettoyage : ne supprime que les entrées ajoutées par CE test (les pré-existantes, p.ex. le preset réel du tuteur, restent)
+      for (const ent of memory.allFamilies()) {
+        const ctx = (ent.entry && ent.entry.CONTEXT) || '';
+        if (ctx.startsWith('preset:python') && !preExisting.has(ent.entry.ID)) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

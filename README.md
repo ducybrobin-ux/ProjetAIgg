@@ -120,6 +120,20 @@ figurer (test automatisé inclus).
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
 
+## Contenu de la release v0.3.5
+
+- **AIgg connaît déjà Python** : preset de connaissances `learn python` —
+  **27 connaissances fondamentales** (blocs, types, fonctions, classes, GIL,
+  slicing, décorateurs, générateurs, dataclass, annotations…).
+- **Presets réutilisables** : `src/presets.js` + fiches par domaine dans
+  `src/presets/*.json` ; chargement idempotent (jamais de doublon), tracé
+  `PRESET_LOADED`, source `PRESET`, confiance 0.85.
+- **Relecture mémoire par la conversation** : quand le tuteur pose une question
+  qui ressemble à une connaissance mémorisée, AIgg répond depuis sa mémoire
+  (`KNOWLEDGE_RECALL`) — sans invention : sinon il avoue ignorer.
+- CLI : `AIgg.cmd learn python` (ou `learn` sans argument = mode guidé).
+- Suite de tests : **167 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.3.4
 
 - **Communication proactive (P1-COM)** : conversation **persistée**
