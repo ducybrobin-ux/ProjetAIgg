@@ -120,6 +120,20 @@ figurer (test automatisé inclus).
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
 
+## Contenu de la release v0.3.6
+
+- **Apprentissage continu** : module `src/review.js` — relecture de la mémoire
+  au réveil (CLI `wake` / `/api/wake`), révision des acquis (`review
+  [propose|apply] [--days=N] [--plan]` → marques `LAST_REVIEW`/`REVISION_COUNT`,
+  éventuelle demande `PLANIFICATION` au tuteur), et boucle journal→mémoire
+  (`review --replay`, aussi automatique au réveil) : reconstitution en mémoire
+  des acquisitions validées absentes, **idempotente et respectueuse des
+  suppressions explicites** (`MEMORY_DELETE`).
+- **Sûreté** : jamais d'invention — seules données réelles (mémoire, journal) ;
+  capacités, outils et permissions intouchés.
+- CLI : `AIgg.cmd review` (sec), `review apply`, `review --replay`.
+- Suite de tests : **174 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.3.5
 
 - **AIgg connaît déjà Python** : preset de connaissances `learn python` —

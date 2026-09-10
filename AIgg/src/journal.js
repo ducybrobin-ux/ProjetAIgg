@@ -23,4 +23,12 @@ function recentJournal(limit) {
   return lines.slice(-(limit || 50)).map((l) => JSON.parse(l));
 }
 
-module.exports = { journalEvent, recentJournal };
+function allEvents() {
+  if (!require('fs').existsSync(PATHS.journalFile)) return [];
+  const lines = require('fs').readFileSync(PATHS.journalFile, 'utf8').split('\n').filter(Boolean);
+  return lines
+    .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(Boolean);
+}
+
+module.exports = { journalEvent, recentJournal, allEvents };

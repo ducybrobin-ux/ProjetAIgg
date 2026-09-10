@@ -164,7 +164,11 @@ function start() {
         const body = await readBody(req);
         const removed = memory.deleteEntry(body.family, body.id);
         if (removed) {
-          journal.journalEvent('MEMORY_DELETE', ident, { family: body.family, id: body.id });
+          journal.journalEvent('MEMORY_DELETE', ident, {
+            family: body.family,
+            id: body.id,
+            question: (removed.CONTENT && removed.CONTENT.question) || null,
+          });
           sendJson(res, { ok: true });
         } else sendError(res, 'Entrée introuvable', 404);
         return;
@@ -191,6 +195,12 @@ function start() {
         journal.journalEvent('WAKE', ident, { source: 'WEB' });
         const out = state.wake(ident);
         try { require('../tools/avatar/avatar.js').generate(ident, { state: out.state }); } catch {}
+        // Apprentissage continu (v0.3.6) : relecture de la mémoire + boucle journal→mémoire
+        const review = require('./review');
+        try {
+          review.relireMemoire(ident);
+          review.journalToMemory(ident);
+        } catch {}
         const digest = talk.proactiveDigest(ident);
         sendJson(res, digest ? { ...out, proactive: digest } : out);
         return;

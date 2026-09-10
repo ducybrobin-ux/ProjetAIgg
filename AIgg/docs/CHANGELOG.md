@@ -3,6 +3,35 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.6 — 2026-09-10 — ajout : apprentissage continu (relecture au réveil, révision des acquis, boucle journal→mémoire)
+
+### Ajouts (AIgg apprend seul, honnêtement, sur données réelles)
+- **Module `src/review.js`** — trois mécanismes, jamais d'invention :
+  - **Relecture de la mémoire au réveil** (`relireMemoire`) : à chaque réveil
+    (CLI `wake` et `/api/wake`), AIgg re-parcourt ses 4 familles et dresse un
+    bilan réel (total, connaissances, acquises, en attente) — lecture seule.
+  - **Révision des acquis** (`revisionAcquis`) : les connaissances « validées »
+    non relues depuis N jours (7 par défaut) sont marquées
+    (`LAST_REVIEW`, `REVISION_COUNT`) ; CLI `review [propose|apply] [--days=N]`;
+    `--plan` demande un rendez-vous de révision au tuteur (besoin
+    `PLANIFICATION`, unique tant qu'il est actif). `propose` est sec.
+  - **Boucle journal→mémoire** (`journalToMemory`) : relit le journal et
+    reconstitue en mémoire les acquisitions validées (`LEARN_VALIDATED` /
+    `QUESTION_ANSWERED`) absentes — idempotent et SAUF suppression explicite
+    (`MEMORY_DELETE` respectée). La suppression d'une connaissance (console web)
+    journalise désormais la question pour honorer ce respect.
+- **CLI `wake`** : réveil → relecture de la mémoire + boucle journal→mémoire,
+  puis digest proactif honorable (silence si rien en attente).
+- **Sûreté** : révision et reconstitution ne modifient jamais une capacité, un
+  outil ou une permission ; l'autobiographie/relations/procédures ne sont pas
+  touchées par la boucle (connaissances uniquement).
+
+### Tests
+- Suite complète : **174 PASS / 0 FAIL** (7 nouveaux autonettoyants :
+  `continu_relire`, `continu_revision_propose`, `continu_revision_apply`,
+  `continu_revision_idempotente`, `continu_planification`,
+  `continu_boucle_restaure`, `continu_boucle_ignore_supprime`).
+
 ## v0.3.5 — 2026-09-10 — ajout : presets de connaissances + relecture mémoire par la conversation
 
 ### Ajouts (AIgg connaît déjà Python, sans invention)

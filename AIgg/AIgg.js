@@ -995,6 +995,12 @@ async function main() {
       state.wake(ident);
       journal.journalEvent('WAKE', ident, {});
       {
+        // Apprentissage continu (v0.3.6) : relecture de la mémoire + boucle journal→mémoire
+        const review = require('./src/review');
+        try {
+          review.relireMemoire(ident);
+          review.journalToMemory(ident);
+        } catch {}
         const digest = require('./src/talk').proactiveDigest(ident);
         console.log(digest ? `Éveillé. ${digest.reply}` : 'Éveillé.');
       }
@@ -1019,6 +1025,9 @@ async function main() {
       break;
     case 'learn':
       await learn(ident, args.slice(1));
+      break;
+    case 'review':
+      runReview(ident, args.slice(1));
       break;
     case 'tests':
       require('./tests/run-tests').run();
@@ -1096,6 +1105,7 @@ async function main() {
       console.log(
         'Commandes :\n' +
         '  birth, status, wake, sleep, backup, learn [domaine], server, tests, needs\n' +
+        '  review [propose|apply] [--days=N] [--plan],\n' +
         '  talk <texte>, messages [answer <id> <réponse>],\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
@@ -1137,6 +1147,30 @@ async function learn(ident, subArgs) {
   });
   journal.journalEvent('LEARN', ident, { question, answer: got });
   console.log('Mémorisé (validation).');
+}
+
+function runReview(ident, subArgs) {
+  const review = require('./src/review');
+  const has = (t) => subArgs && subArgs.some((a) => a === t);
+  const daysArg = subArgs && subArgs.find((a) => /^--days=\d+$/.test(a));
+  const opts = {
+    mode: has('apply') ? 'apply' : 'propose',
+    plan: has('--plan'),
+  };
+  if (daysArg) opts.days = Number(daysArg.split('=')[1]);
+
+  if (has('--replay')) {
+    const r = review.journalToMemory(ident);
+    console.log(`Boucle journal→mémoire : ${r.restored} acquisition(s) reconstituée(s), ${r.present} déjà présente(s), ${r.skipped} ignorée(s).`);
+    return;
+  }
+
+  const r = review.revisionAcquis(ident, opts);
+  if (opts.mode === 'apply') {
+    console.log(`Révision des acquis (${r.days} j) : ${r.reviewed} connaissance(s) relue(s).${r.planCreated ? ' Demande de révision créée pour le tuteur.' : ''}`);
+  } else {
+    console.log(`Revue des acquis (sec, ${r.days} j) : ${r.overdue} connaissance(s) à reviser. Utilise "review apply" pour appliquer.`);
+  }
 }
 
 main().catch((err) => {

@@ -735,6 +735,103 @@ async function run() {
     }
   }
 
+  // 24. v0.3.6 : apprentissage continu (relecture au réveil, révision des acquis, boucle journal→mémoire)
+  console.log('\n24) APPRENTISSAGE CONTINU');
+  if (ident) {
+    const review = require('../src/review');
+    const needs = require('../src/needs');
+    const fsX = require('fs');
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedState = util.readJson(config.PATHS.state, {});
+    const marker1 = 'quel est le test revision continu un';
+    const marker2 = 'quel est le test revision continu deux';
+    const metadata = {};
+    // Autonomie stricte : les entrées pré-existantes (p.ex. le preset réel) sont restaurées telles quelles
+    const preExistingReview = memory.allFamilies()
+      .filter((r) => r.family === 'knowledge')
+      .map((r) => ({ ID: r.entry.ID, LAST_REVIEW: r.entry.LAST_REVIEW || null, REVISION_COUNT: r.entry.REVISION_COUNT || 0 }));
+    try {
+      // 24a. Relecture de la mémoire (bilan réel, sans écriture)
+      const rel = review.relireMemoire(ident);
+      report('continu_relire', rel.ok === true && typeof rel.total === 'number' && typeof rel.connaissances === 'number'
+        && typeof rel.parFamille === 'object', `total=${rel.total} connaissances=${rel.connaissances}`);
+
+      // 24b. Révision des acquis — mode propose (sec) : ne touche à rien
+      metadata.preM1 = memory.memorize('knowledge', { question: marker1, answer: 'ok un' }, ident,
+        { source: 'TEST', confidence: 0.8, status: 'validated' });
+      const prop = review.revisionAcquis(ident, { days: 0 });
+      const rel1 = memory.allFamilies().find((r) => r.entry.ID === metadata.preM1.ID);
+      report('continu_revision_propose', prop.mode === 'propose' && prop.overdue >= 1 && prop.reviewed === 0
+        && !rel1.entry.LAST_REVIEW, `overdue=${prop.overdue}`);
+
+      // 24c. Révision des acquis — mode apply : marque LAST_REVIEW/REVISION_COUNT + journalise REVIEW
+      const app = review.revisionAcquis(ident, { days: 0, mode: 'apply' });
+      const rel2 = memory.allFamilies().find((r) => r.entry.ID === metadata.preM1.ID);
+      report('continu_revision_apply', app.mode === 'apply' && app.reviewed >= 1
+        && !!rel2.entry.LAST_REVIEW && rel2.entry.REVISION_COUNT === 1
+        && journal.recentJournal(200).some((e) => e.EVENT === 'REVIEW'), `revisées=${app.reviewed}`);
+
+      // 24d. Idempotence : une connaissance fraîchement relue n'est pas due pendant l'intervalle
+      const reApp = review.revisionAcquis(ident, { days: 30, mode: 'apply' });
+      report('continu_revision_idempotente', reApp.reviewed === 0, 'fraîche + intervalle 30 j = 0');
+
+      // 24e. Planification d'une révision : besoin PLANIFICATION créé une seule fois
+      metadata.preM2 = memory.memorize('knowledge', { question: marker2, answer: 'ok deux' }, ident,
+        { source: 'TEST', confidence: 0.8, status: 'validated' });
+      const plan1 = review.revisionAcquis(ident, { days: 0, mode: 'apply', plan: true });
+      const planNeeds = needs.listActiveNeeds().filter((n) => n.TYPE === 'PLANIFICATION');
+      const plan2 = review.revisionAcquis(ident, { days: 0, mode: 'apply', plan: true });
+      report('continu_planification', plan1.planCreated === true && planNeeds.length === 1
+        && plan2.planCreated === false, `${planNeeds.length} besoin(s) PLANIFICATION (unique)`);
+
+      // 24f. Boucle journal→mémoire : journal isolé, reconstitution d'une acquisition absente (idempotente)
+      if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, '', 'utf8');
+      const seedQ = 'test continu journal restaure';
+      journal.journalEvent('LEARN_VALIDATED', ident, { CONTENT: seedQ });
+      const rep1 = review.journalToMemory(ident);
+      const rep2 = review.journalToMemory(ident);
+      report('continu_boucle_restaure', rep1.restored === 1 && rep2.restored === 0
+        && memory.recollect('knowledge', seedQ).length >= 1, `restaurées=${rep1.restored}/${rep2.restored}`);
+
+      // 24g. Boucle journal→mémoire : une suppression explicite du tuteur n'est jamais reconstituée
+      journal.journalEvent('LEARN_VALIDATED', ident, { CONTENT: 'test continu journal supprime' });
+      journal.journalEvent('MEMORY_DELETE', ident, { family: 'knowledge', id: 'seed', question: 'test continu journal supprime' });
+      const rep3 = review.journalToMemory(ident);
+      report('continu_boucle_ignore_supprime', rep3.restored === 0
+        && memory.recollect('knowledge', 'test continu journal supprime').length === 0, `restaurées=${rep3.restored}`);
+    } finally {
+      // Autonettoyage strict : journal, besoins, état, mémoire de test (marqueurs + recompositions)
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      try { util.writeJson(config.PATHS.state, savedState); } catch {}
+      const junkMarkers = ['quel est le test revision continu', 'test continu journal'];
+      for (const ent of memory.allFamilies()) {
+        const content = JSON.stringify(ent.entry && ent.entry.CONTENT) || '';
+        if (junkMarkers.some((j) => content.includes(j))) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+      // restaure les marques de révision des entrées pré-existantes (inchangées par le test)
+      for (const pre of preExistingReview) {
+        const after = memory.allFamilies().find((r) => r.entry.ID === pre.ID && r.family === 'knowledge');
+        if (after) {
+          try {
+            memory.updateEntry('knowledge', pre.ID, {
+              LAST_REVIEW: pre.LAST_REVIEW || null,
+              REVISION_COUNT: pre.REVISION_COUNT || 0,
+            });
+          } catch {}
+        }
+      }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
