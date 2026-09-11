@@ -1,0 +1,19 @@
+{
+  "name": "ia",
+  "version": "0.1.0",
+  "title": "Connecteur IA externe",
+  "description": "Consulter une intelligence artificielle externe (endpoint compatible 'chat completions', ex. OpenAI) par prompt explicite. L'IA externe est un outil facultatif, jamais le cerveau d'AIgg : réponse marquée EXTERNAL_IA, jamais mémorisée automatiquement, toujours à vérifier.",
+  "category": "intelligence",
+  "capability": "CONSULTATION",
+  "need": "Consulter, sur demande explicite du tuteur, une IA externe comme simple outil d'aide — jamais comme cerveau.",
+  "interactions": ["ia.ask", "ia.status"],
+  "needs_permissions": ["network", "send_external"],
+  "risks": [
+    "Un prompt part vers un tiers : l'outil est bloqué par défaut, l'autorisation du tuteur est requise",
+    "La clé d'API vit dans le coffre local (vault), jamais dans Git, le journal, la mémoire ou l'aide",
+    "La réponse d'une IA externe n'est ni une vérité ni AIgg : marquée EXTERNAL_IA, jamais mémorisée automatiquement"
+  ],
+  "requires_external_ai": true,
+  "independence": true,
+  "reversibility": "révocable"
+}

@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (192 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (195 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,20 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.10
+
+- **L'IA externe comme OUTIL, jamais comme cerveau** : outil `ia` — connecteur
+  vers une IA externe compatible « chat completions » (ex. OpenAI), répondant à
+  la feuille de route « IA externe » (EXTAI). Capacité `CONSULTATION` ; réponse
+  marquée `EXTERNAL_IA`, jamais mémorisée automatiquement, toujours « à
+  vérifier ». **Bloqué par défaut** : `AIgg.cmd authorize ia` puis
+  `AIgg.cmd install ia`.
+- **CLI** : `AIgg.cmd ia status|ask --prompt="…" [--system=…] [--model=…]` ;
+  routes web `/api/ia/status` et `/api/ia/ask`.
+- **Secrets** : clé d'API dans le coffre local (`vault put ia.api_key`), base
+  d'API dans `tools/ia/config.json` (hors Git) ; sans clé → refus explicite.
+- Suite de tests : **195 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.9
 

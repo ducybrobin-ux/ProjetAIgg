@@ -24,3 +24,7 @@ libraries/_trash/
 # Fichiers temp
 *.tmp
 *.log
+
+# Config des outils (jamais de secret ni de clé d'API publié)
+tools/*/config.json
+tools/*/providers.json

@@ -20,6 +20,7 @@ Révocation = révocation de permission + libération de la capacité.
 | `notebook` | LABORATOIRE | `add`, `list`, `get`, `setResult`, `remove` | « J'ai besoin d'expérimenter » | oui | oui | PASS |
 | `avatar` | REPRESENTATION | `generate` (SVG local déterministe) | « J'ai besoin d'une représentation » | oui | oui | PASS |
 | `email` | COMMUNICATION | `send` (SMTP natif), `log` (outbox), `status` | « J'ai besoin de communiquer à distance » | oui (net natif) | oui | PASS (serveur SMTP local réel) |
+| `ia` | CONSULTATION | `status`, `ask` (IA externe « chat completions », clé dans le coffre) | « J'ai besoin de consulter une IA externe » (outil, jamais le cerveau) | oui (fetch natif) | oui | PASS (endpoint simulé local) |
 
 ## Détails par outil
 
@@ -56,10 +57,24 @@ Révocation = révocation de permission + libération de la capacité.
 - Limites honnêtes : réception (IMAP), AUTH SMTP et STARTTLS **non
   implémentés** ; connecteurs Gmail/Drive prévus (PHASE 4-5), non faits.
 
+### ia (`tools/ia/`) — v0.3.10, IA externe comme outil
+- Consulte une IA externe compatible « chat completions » (ex. OpenAI) par
+  **prompt explicite** (CLI `ia ask` ou API `/api/ia/ask`), 100 % natif
+  (fetch), timeout 20 s, prompt max 4 000 car., réponse max 800 tokens.
+- **Jamais le cerveau** : la réponse est marquée `source: EXTERNAL_IA`, avec
+  l'avertissement « à vérifier » ; elle n'est **jamais mémorisée
+  automatiquement**. Capacité fournie : `CONSULTATION`.
+- **Moindre privilège** : outil bloqué par défaut (liste ci-dessous),
+  autorisation `authorize ia` puis `install ia` exigées ; clé d'API dans le
+  coffre local (`vault put ia.api_key "..."`), base d'API dans
+  `tools/ia/config.json` (hors Git) ; sans clé → refus explicite, pas de réseau.
+- Test réel : serveur HTTP local simulant `/v1/chat/completions` ; Bearer
+  vérifié, réponse+usage lus, refus sans clé, coffre temporaire autonettoyé.
+
 ## Outils bloqués par défaut (liste de moindre privilège)
 
 `powershell, git, github, web, gmail, google_drive, google_docs,
-google_sheets, google_calendar, google_maps, gemini, notebook, camera,
+google_sheets, google_calendar, google_maps, gemini, ia, notebook, camera,
 microphone, voice_synthesis, voice_recognition, cloud_storage, social,
 avatar, hosting, email` — tous `authorized: false` jusqu'à décision
 explicite du tuteur (CLI `authorize` ou bouton web « Autoriser »).

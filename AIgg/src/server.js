@@ -446,6 +446,25 @@ function start() {
           () => Promise.resolve({ ok: true, data: require('../tools/email/email.js').list() }));
         return;
       }
+      if (url.pathname === '/api/ia/status' && req.method === 'GET') {
+        const password = process.env.AIGG_VAULT_PASSWORD;
+        toolCall(res, ident, 'ia', 'ia.status', { source: 'WEB', confidence: 0.9, action: 'status' },
+          () => Promise.resolve({ ok: true, data: require('../tools/ia/ia.js').status(password) }));
+        return;
+      }
+      if (url.pathname === '/api/ia/ask' && req.method === 'POST') {
+        const body = await readBody(req);
+        const password = process.env.AIGG_VAULT_PASSWORD;
+        toolCall(res, ident, 'ia', 'ia.ask', { source: 'WEB', confidence: 0.5, action: 'ask' },
+          () => require('../tools/ia/ia.js').ask({
+            password,
+            prompt: body.prompt,
+            system: body.system,
+            model: body.model,
+            max_tokens: body.max_tokens,
+          }).then((r) => ({ ok: r.ok, data: r })));
+        return;
+      }
     }
 
     // --- Fichiers statiques ---

@@ -18,7 +18,7 @@ const DEFAULT_PERMISSIONS = {
 const DEFAULT_TOOLS_BLOCKED = [
   'powershell', 'git', 'github', 'web', 'gmail', 'google_drive',
   'google_docs', 'google_sheets', 'google_calendar', 'google_maps',
-  'gemini', 'notebook', 'camera', 'microphone', 'voice_synthesis',
+  'gemini', 'ia', 'notebook', 'camera', 'microphone', 'voice_synthesis',
   'voice_recognition', 'cloud_storage', 'social', 'avatar', 'hosting',
   'email',
 ];

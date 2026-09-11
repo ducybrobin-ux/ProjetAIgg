@@ -151,9 +151,12 @@ async function run() {
     const tools = toolkit.discoverAll();
     report('decouverte_outils', tools.length >= 3, `${tools.length} outils`);
     const names = tools.map((t) => t.name);
-    report('outils_essentiels', ['web', 'notebook', 'avatar', 'email', 'gmail'].every((n) => names.includes(n)));
+    report('outils_essentiels', ['web', 'notebook', 'avatar', 'email', 'gmail', 'ia'].every((n) => names.includes(n)));
     report('propositions', !!toolkit.propose('web').proposal);
     report('manifests_valides', tools.every((t) => !!t.manifest.capability && !!t.manifest.version));
+    const iaManifest = tools.find((t) => t.name === 'ia');
+    report('ia_outil_pas_cerveau', !!iaManifest && iaManifest.manifest.requires_external_ai === true && !!iaManifest.manifest.capability,
+      iaManifest ? `capability ${iaManifest.manifest.capability}, requires_external_ai=true` : 'ia absent');
   }
 
   // 10. Contrat Commun
@@ -219,6 +222,13 @@ async function run() {
   const gmailTest = await toolkit.test('gmail');
   report('test_outil_gmail', gmailTest.test.status === 'PASS', gmailTest.test.note || gmailTest.test.status);
   report('gmail_scope_minimal', gmailTest.test.status === 'PASS', 'moindre privilège' );
+
+  toolkit.authorize('ia'); toolkit.install('ia');
+  const iaTest = await toolkit.test('ia');
+  report('test_outil_ia', iaTest.test.status === 'PASS', iaTest.test.note || iaTest.test.status);
+  const iaMod = toolkit.loadModule('ia').module;
+  const iaSansCle = await iaMod.ask({});
+  report('ia_sans_cle_refus', iaSansCle.ok === false && iaSansCle.missing !== undefined, 'ask sans clé → refus explicite, pas de réseau');
 
   // 12. Notebook réel
   console.log('\n12) NOTEBOOK RÉEL');

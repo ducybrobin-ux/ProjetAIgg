@@ -548,6 +548,96 @@ async function runGmail(ident, args) {
   }
 }
 
+const IA_HELP_FR = [
+  'AIgg — aide de `ia` (français)',
+  '',
+  'But : consulter une IA externe comme SIMPLE OUTIL — jamais comme cerveau',
+  'd\'AIgg. Endpoint compatible « chat completions » (ex. OpenAI). Le prompt',
+  'part vers un tiers, la réponse est marquée EXTERNAL_IA, jamais mémorisée',
+  'automatiquement, toujours à vérifier.',
+  '',
+  'PRÉPARATION (par le tuteur, jamais par l\'IA)',
+  '  1. Crée une clé d\'API auprès du fournisseur choisi.',
+  '  2. Range-la dans le coffre local (jamais dans Git) :',
+  '       $env:AIGG_VAULT_PASSWORD="..." ; AIgg.cmd vault put ia.api_key "<clé>"',
+  '  3. Autorise et installe l\'outil :',
+  '       AIgg.cmd authorize ia',
+  '       AIgg.cmd install ia',
+  '  (Pour changer l\'endpoint/modèle par défaut : tools/ia/config.json, ignoré par Git.)',
+  '',
+  'COMMANDES',
+  '  status                     État du connecteur (base API, modèle, clé présente ?).',
+  '  ask --prompt="..." [--system="..."] [--model=...] [--max-tokens=...]',
+  '                             Demande EXTERNE : seule source EXTERNAL_IA, à vérifier.',
+  '',
+  'SECRETS ET SÉCURITÉ',
+  '  - Le mot de passe du coffre est fourni à chaque commande (--password= ou',
+  '    AIGG_VAULT_PASSWORD) ; il n\'est jamais stocké ni journalisé.',
+  '  - Aucune clé d\'API n\'est affichée par ces commandes.',
+  '  - Révoquer : AIgg.cmd revoke ia (permission) ; retirer la clé : vault rm ia.api_key',
+  '',
+  'Limite honnête (v0.3.10) : connecteur testé contre un endpoint simulé local',
+  '(aucun secret réel) ; la clé réelle vient du tuteur.',
+].join('\n');
+
+async function runIa(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const sub = rest[0] || 'help';
+  const iaMod = toolkit.loadModule('ia').module;
+  const password = fl.password !== undefined ? fl.password : process.env.AIGG_VAULT_PASSWORD;
+
+  switch (sub) {
+    case 'status': {
+      const tool = toolkit.findManifest('ia');
+      const out = await contract.executeTool(ident, tool.manifest, 'ia.status', {
+        source: 'CLI',
+        confidence: 0.9,
+        action: 'status',
+        async execute() {
+          return { ok: true, data: iaMod.status(password) };
+        },
+      });
+      if (!out.ok) {
+        showProblem('Statut indisponible.', out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil ia.' : out.reason, 'AIgg.cmd authorize ia ; puis AIgg.cmd install ia', `BLOCKED:${out.blocked}`);
+        return;
+      }
+      console.log(JSON.stringify(out.result.data, null, 2));
+      break;
+    }
+    case 'ask': {
+      const tool = toolkit.findManifest('ia');
+      const out = await contract.executeTool(ident, tool.manifest, 'ia.ask', {
+        source: 'CLI',
+        confidence: 0.5,
+        action: 'ask',
+        async execute() {
+          const r = await iaMod.ask({
+            password,
+            prompt: fl.prompt,
+            system: fl.system,
+            model: fl.model,
+            max_tokens: fl['max-tokens'] ? Number(fl['max-tokens']) : undefined,
+          });
+          return { ok: r.ok, data: r };
+        },
+      });
+      if (!out.ok) {
+        showProblem('Demande impossible.', out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil ia.' : out.reason, 'AIgg.cmd authorize ia ; puis AIgg.cmd install ia', `BLOCKED:${out.blocked}`);
+        return;
+      }
+      const r = out.result.data;
+      if (!r.ok) {
+        showProblem('Demande refusée.', r.error || 'erreur API', 'Vérifie la clé dans le coffre (ia status) et tools/ia/config.json.', 'FAIL');
+        return;
+      }
+      console.log(JSON.stringify(r, null, 2));
+      break;
+    }
+    default:
+      console.log(IA_HELP_FR);
+  }
+}
+
 const APPEARANCE_HELP_FR = [
   'AIgg — aide de `appearance` (français)',
   '',
@@ -1094,6 +1184,9 @@ async function main() {
     case 'gmail':
       await runGmail(ident, args.slice(1));
       break;
+    case 'ia':
+      await runIa(ident, args.slice(1));
+      break;
     case 'appearance':
       await runAppearance(ident, args.slice(1));
       break;
@@ -1109,7 +1202,7 @@ async function main() {
         '  talk <texte>, messages [answer <id> <réponse>],\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check'
       );
   }
 }

@@ -3,6 +3,30 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.10 — 2026-09-11 — ajout : l'IA externe comme OUTIL (jamais comme cerveau)
+
+### Ajouts (premier pas vers EXTAI — « IA externe, outil facultatif »)
+- **Outil `ia` (`tools/ia/`)** : connecteur vers une IA externe compatible
+  « chat completions » (ex. OpenAI). Règle absolue respectée : **une IA externe
+  est un outil que l'on consulte, jamais le cerveau d'AIgg** — capacité
+  `CONSULTATION`, réponse marquée `source: EXTERNAL_IA`, **jamais mémorisée
+  automatiquement**, toujours accompagnée d'un avertissement « à vérifier ».
+- **CLI** : `AIgg.cmd ia status | ask --prompt="…" [--system=…] [--model=…]
+  [--max-tokens=…]` ; routes web `/api/ia/status` et `/api/ia/ask` (aide en
+  français). Outil **bloqué par défaut** : autorisation (authorize) +
+  installation (install) requises.
+- **Secrets jamais publiés** : la clé d'API vit dans le coffre local
+  (`vault put ia.api_key "<clé>"`), la base d'API par défaut se surcharge dans
+  `tools/ia/config.json` (ignoré par Git, comme gmail/web).
+- **Sûreté** : prompt limité (4 000 car.), réponse max 800 tokens, timeout 20 s ;
+  sans clé → refus explicite `missing: KEY/PASSWORD` (aucun réseau touché) ;
+  révocation = `revoke ia` + `vault rm ia.api_key`.
+
+### Tests
+- Suite complète : **195 PASS / 0 FAIL** (3 nouveaux autonettoyants :
+  `ia_outil_pas_cerveau` (manifest), `test_outil_ia` (endpoint `/v1/chat/completions`
+  simulé localement, Bearer vérifié, coffre temporaire), `ia_sans_cle_refus`).
+
 ## v0.3.9 — 2026-09-11 — ajout : la géopolitique du monde (preset `geo`, esprit « Le Dessous des Cartes »)
 
 ### Ajouts (AIgg apprend à décrypter le monde par les cartes)
