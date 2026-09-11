@@ -97,7 +97,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\\AIgg.cmd tests             # auto-diagnostics (186 vérifications)
+.\\AIgg.cmd tests             # auto-diagnostics (192 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

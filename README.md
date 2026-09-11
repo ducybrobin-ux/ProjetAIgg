@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (142 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (192 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,21 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.9
+
+- **La géopolitique par les cartes** : preset `learn geo` — **27 faits
+  vérifiés**, esprit « Le Dessous des Cartes » (ARTE) : plus grand pays
+  (Russie), pays le plus peuplé (Inde), ONU et Conseil de sécurité (P5), UE
+  (27 États), OTAN (32 membres), G20, canal de Suez, détroit de Malacca,
+  capitales méconnues (Canberra, Brasília, Ottawa, Ankara, Berne, Moscou,
+  Wellington), Everest, mer Morte, plus longue frontière (Canada–États-Unis),
+  Brexit, Nigeria, Groenland, Route de la soie, menace océanique sur les petits
+  États insulaires — faits objectifs, sans parti pris, hors sujet → UNKNOWN.
+- **Cohabitation fine des presets** : « qui a peint la Joconde » reste art,
+  « quelle est la capitale… » va vers géo ; relectures croisées testées.
+- CLI : `AIgg.cmd learn geo` (idempotent).
+- Suite de tests : **192 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.8
 

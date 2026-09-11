@@ -1,0 +1,115 @@
+{
+  "domain": "geo",
+  "label": "Géopolitique du monde — inspiré du Dessous des Cartes",
+  "description": "27 connaissances vérifiées de géographie et de géopolitique, à la manière cartographique du « Dessous des Cartes » (ARTE) : drapeau des pays, capitales, démographie, détroits et canaux, institutions internationales, monts et frontières du monde.",
+  "knowledge": [
+    {
+      "question": "qu'est-ce que la géopolitique ?",
+      "answer": "La géopolitique étudie les relations entre la géographie, les cartes, le pouvoir et la politique — c'est le décryptage des enjeux du monde par les cartes, l'esprit même de l'émission « Le Dessous des Cartes » (ARTE)."
+    },
+    {
+      "question": "quel est le plus grand pays du monde ?",
+      "answer": "La Russie est le plus grand pays du monde en superficie, avec environ 17,1 millions de km² — devant le Canada et la Chine."
+    },
+    {
+      "question": "quel est le pays le plus peuplé du monde ?",
+      "answer": "L'Inde est le pays le plus peuplé du monde : environ 1,43 milliard d'habitants (2023), devant la Chine (environ 1,41 milliard)."
+    },
+    {
+      "question": "combien de pays compte l'ONU ?",
+      "answer": "L'ONU (créée en 1945, siège à New York) compte 193 États membres, plus deux États observateurs : le Vatican et la Palestine."
+    },
+    {
+      "question": "quels sont les cinq membres permanents du Conseil de sécurité ?",
+      "answer": "Les cinq membres permanents du Conseil de sécurité de l'ONU sont les États-Unis, la Russie, la Chine, la France et le Royaume-Uni (les « P5 »). Chacun dispose d'un droit de veto."
+    },
+    {
+      "question": "où se trouve l'Union européenne ?",
+      "answer": "L'Union européenne réunit 27 États membres. Ses institutions siègent à Bruxelles (Commission, Conseil), à Strasbourg (Parlement) et à Luxembourg. Vingt pays partagent l'euro (zone euro)."
+    },
+    {
+      "question": "qu'est-ce que l'OTAN ?",
+      "answer": "L'OTAN est une alliance militaire transatlantique fondée en 1949, qui compte 32 membres depuis 2024 (Finlande 2023, Suède 2024). Son article 5 prévoit la défense collective des alliés."
+    },
+    {
+      "question": "qu'est-ce que le G20 ?",
+      "answer": "Le G20 est un forum créé en 1999 qui réunit les 19 principales économies du monde, l'Union européenne et, depuis 2023, l'Union africaine."
+    },
+    {
+      "question": "où se trouve la Corne de l'Afrique ?",
+      "answer": "La Corne de l'Afrique est l'extrémité orientale du continent : principalement l'Éthiopie, la Somalie, Djibouti et l'Érythrée. Elle surplombe les routes maritimes vers le canal de Suez."
+    },
+    {
+      "question": "qui contrôle le canal de Suez ?",
+      "answer": "L'Égypte contrôle le canal de Suez, ouvert en 1869 : environ 193 km relient la mer Méditerranée à la mer Rouge et évitent de contourner toute l'Afrique."
+    },
+    {
+      "question": "qu'est-ce que le détroit de Malacca ?",
+      "answer": "Le détroit de Malacca, entre la Malaisie et l'Indonésie, relie l'océan Indien à l'océan Pacifique. C'est l'un des passages maritimes les plus fréquentés du commerce mondial."
+    },
+    {
+      "question": "quelle est la capitale de l'Australie ?",
+      "answer": "La capitale de l'Australie est Canberra — et non Sydney. Choisie en 1913 comme compromis entre Sydney et Melbourne, le parlement y siège depuis 1927."
+    },
+    {
+      "question": "quelle est la capitale du Brésil ?",
+      "answer": "La capitale du Brésil est Brasília, ville entièrement planifiée, inaugurée en 1960, au centre du pays."
+    },
+    {
+      "question": "quelle est la capitale du Canada ?",
+      "answer": "La capitale du Canada est Ottawa, dans la province de l'Ontario — entre Montréal et Toronto."
+    },
+    {
+      "question": "quelle est la capitale de la Turquie ?",
+      "answer": "La capitale de la Turquie est Ankara, depuis 1923 — et non Istanbul, qui est la plus grande ville du pays."
+    },
+    {
+      "question": "quelle est la capitale de la Suisse ?",
+      "answer": "La capitale de la Suisse est Berne, la « ville fédérale » — et non Genève ni Zurich."
+    },
+    {
+      "question": "quelle est la capitale de la Russie ?",
+      "answer": "La capitale de la Russie est Moscou — et non Saint-Pétersbourg."
+    },
+    {
+      "question": "quel est le plus haut sommet du monde ?",
+      "answer": "Le plus haut sommet du monde est l'Everest, 8 849 mètres, à la frontière entre le Népal et la Chine (Tibet)."
+    },
+    {
+      "question": "quel est le point le plus bas de la surface terrestre ?",
+      "answer": "Le point le plus bas de la surface terrestre est la rive de la mer Morte, à environ 430 mètres sous le niveau de la mer, entre Israël et la Jordanie."
+    },
+    {
+      "question": "quel est le plus grand désert du monde ?",
+      "answer": "Le plus grand désert est l'Antarctique, un désert de glace d'environ 14 millions de km². Le Sahara (environ 9 millions de km²) est le plus grand désert « chaud »."
+    },
+    {
+      "question": "quelle est la plus longue frontière du monde ?",
+      "answer": "La plus longue frontière du monde est celle entre le Canada et les États-Unis : environ 8 890 km, dont environ 2 475 km entre le Canada et l'Alaska."
+    },
+    {
+      "question": "qu'est-ce que le Brexit ?",
+      "answer": "Le Brexit est la sortie du Royaume-Uni de l'Union européenne : résultat du référendum de 2016, effective le 31 janvier 2020. L'UE compte désormais 27 États membres."
+    },
+    {
+      "question": "quel est le pays le plus peuplé d'Afrique ?",
+      "answer": "Le pays le plus peuplé d'Afrique est le Nigeria, avec environ 220 millions d'habitants."
+    },
+    {
+      "question": "qu'est-ce que le Groenland ?",
+      "answer": "Le Groenland est la plus grande île du monde, territoire autonome du Danemark, recouvert à plus de 80 % de glace, entre l'océan Atlantique et l'océan Arctique. Sa capitale est Nuuk."
+    },
+    {
+      "question": "qu'est-ce que la Route de la soie ?",
+      "answer": "La Route de la soie désigne les anciennes routes commerciales terrestres reliant la Chine, l'Asie centrale, le Moyen-Orient et l'Europe (soie, épices, mais aussi idées et techniques)."
+    },
+    {
+      "question": "quelle menace pèse sur les petits États insulaires ?",
+      "answer": "La montée des océans liée au réchauffement climatique est une menace existentielle pour les petits États insulaires de faible altitude, comme les Maldives ou Tuvalu."
+    },
+    {
+      "question": "quelle est la capitale de la Nouvelle-Zélande ?",
+      "answer": "La capitale de la Nouvelle-Zélande est Wellington — et non Auckland, la plus grande ville."
+    }
+  ]
+}

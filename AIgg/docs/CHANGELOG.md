@@ -3,6 +3,31 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.9 — 2026-09-11 — ajout : la géopolitique du monde (preset `geo`, esprit « Le Dessous des Cartes »)
+
+### Ajouts (AIgg apprend à décrypter le monde par les cartes)
+- **Preset `geo` (27 connaissances vérifiées)** de géographie et de
+  géopolitique, dans l'esprit cartographique du « Dessous des Cartes » (ARTE) :
+  définition de la géopolitique, Russie (plus grand pays), Inde (pays le plus
+  peuplé), ONU (193 membres) et Conseil de sécurité (les « P5 », droit de veto),
+  Union européenne (27 États, Bruxelles/Strasbourg/Luxembourg), OTAN (1949,
+  32 membres), G20, Corne de l'Afrique, canal de Suez (Égypte, 1869), détroit de
+  Malacca, capitales souvent mal connues (Canberra, Brasília, Ottawa, Ankara,
+  Berne, Moscou, Wellington), Everest, mer Morte, plus grand désert (Antarctique),
+  plus longue frontière (Canada–États-Unis), Brexit, Nigeria (pays le plus
+  peuplé d'Afrique), Groenland, Route de la soie, menace des océans sur les
+  petits États insulaires.
+- **CLI** : `AIgg.cmd learn geo` (idempotent).
+- **Sûreté** : faits objectifs et vérifiables uniquement, aucun parti pris ;
+  hors sujet → UNKNOWN. Relectures croisées intactes (ex. « qui a peint la
+  Joconde » reste art, « quelle est la capitale… » va vers géo).
+
+### Tests
+- Suite complète : **192 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+  `geo_preset_liste`, `geo_preset_load`, `geo_recall_capitale`,
+  `geo_recall_detroit`, `geo_honnete`, `geo_aucune_derive_art` ; les entrées géo
+  pré-existantes sont préservées).
+
 ## v0.3.8 — 2026-09-11 — ajout : la culture des arts (preset `art`, histoire de l'art)
 
 ### Ajouts (AIgg approfondit la culture visuelle du tuteur)

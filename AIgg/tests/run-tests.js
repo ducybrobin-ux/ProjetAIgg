@@ -945,6 +945,66 @@ async function run() {
     }
   }
 
+  // 27. v0.3.9 : preset geo (géopolitique, esprit Le Dessous des Cartes)
+  console.log('\n27) PRÉSET GÉO (GÉOPOLITIQUE — LE DESSOUS DES CARTES)');
+  if (ident) {
+    const presets = require('../src/presets');
+    const talk = require('../src/talk');
+    const fsX = require('fs');
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedConv = fsX.existsSync(config.PATHS.conversation) ? fsX.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    const preExisting = new Set(
+      memory.allFamilies()
+        .filter((r) => ((r.entry && r.entry.CONTEXT) || '').startsWith('preset:geo'))
+        .map((r) => r.entry.ID)
+    );
+    try {
+      const needsX = require('../src/needs');
+      needsX.deleteAllForTest && needsX.deleteAllForTest();
+      const list = presets.listPresets();
+      report('geo_preset_liste', list.some((p) => p.id === 'geo'), `${list.length} preset(s)`);
+
+      const result = presets.loadPreset('geo', ident);
+      report('geo_preset_load', result.ok === true && result.domain === 'geo' && result.total >= 10,
+        `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
+
+      report('geo_recall_capitale', (() => {
+        const r = talk.respond('quelle est la capitale de l\'Australie ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Canberra');
+      })(), 'réponse depuis la mémoire (Canberra)');
+
+      report('geo_recall_detroit', (() => {
+        const r = talk.respond('qu\'est-ce que le détroit de Malacca ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Malaisie');
+      })(), 'réponse depuis la mémoire (détroit de Malacca)');
+
+      const honn = talk.respond('combien de marches a la tour Eiffel ?', ident);
+      report('geo_honnete', honn.intents.includes('UNKNOWN'), 'hors géo → honnête UNKNOWN');
+
+      report('geo_aucune_derive_art', (() => {
+        const r = talk.respond('qui a peint la Joconde ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard de Vinci');
+      })(), 'relectures croisées intactes (art/culture)');
+    } finally {
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      if (savedConv !== null) { try { fsX.writeFileSync(config.PATHS.conversation, savedConv, 'utf8'); } catch {} }
+      else { try { require('../src/conversation').clear(); } catch {} }
+      for (const ent of memory.allFamilies()) {
+        const ctx = (ent.entry && ent.entry.CONTEXT) || '';
+        if (ctx.startsWith('preset:geo') && !preExisting.has(ent.entry.ID)) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
