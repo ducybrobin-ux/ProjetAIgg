@@ -56,7 +56,14 @@ function acquireCapacity(name, toolName, description) {
 function releaseCapacity(name) {
   const data = loadCapabilities();
   const cap = data.capabilities.find((c) => c.name === name);
-  if (cap) cap.acquired = false;
+  if (!cap) return cap;
+  const isBase = BASE_CAPABILITIES.some((b) => b.name === name);
+  if (isBase) {
+    cap.acquired = false;
+  } else {
+    const idx = data.capabilities.indexOf(cap);
+    if (idx !== -1) data.capabilities.splice(idx, 1);
+  }
   data.updated = util.nowIso();
   util.writeJson(PATHS.capabilities, data);
   return cap;
