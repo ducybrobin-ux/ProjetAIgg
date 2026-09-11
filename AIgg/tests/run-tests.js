@@ -888,6 +888,63 @@ async function run() {
     }
   }
 
+  // 26. v0.3.8 : preset art (histoire de l'art, esprit ARTE)
+  console.log('\n26) PRÉSET ART (HISTOIRE DE L\'ART)');
+  if (ident) {
+    const presets = require('../src/presets');
+    const talk = require('../src/talk');
+    const fsX = require('fs');
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedConv = fsX.existsSync(config.PATHS.conversation) ? fsX.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    const preExisting = new Set(
+      memory.allFamilies()
+        .filter((r) => ((r.entry && r.entry.CONTEXT) || '').startsWith('preset:art'))
+        .map((r) => r.entry.ID)
+    );
+    try {
+      const needsX = require('../src/needs');
+      needsX.deleteAllForTest && needsX.deleteAllForTest();
+      const list = presets.listPresets();
+      report('art_preset_liste', list.some((p) => p.id === 'art'), `${list.length} preset(s)`);
+
+      const result = presets.loadPreset('art', ident);
+      report('art_preset_load', result.ok === true && result.domain === 'art' && result.total >= 10,
+        `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
+
+      report('art_recall_oeuvre', (() => {
+        const r = talk.respond('qui a peint la Nuit étoilée ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('van Gogh');
+      })(), 'réponse depuis la mémoire (Nuit étoilée)');
+
+      report('art_recall_lieu', (() => {
+        const r = talk.respond('où se trouve la Joconde ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Louvre');
+      })(), 'réponse depuis la mémoire (Louvre)');
+
+      report('art_idempotent', presets.loadPreset('art', ident).loaded === 0, 'double charge = 0 ajout');
+
+      const honn = talk.respond('combien de marches a la tour Eiffel ?', ident);
+      report('art_honnete', honn.intents.includes('UNKNOWN'), 'hors art → honnête UNKNOWN');
+    } finally {
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      if (savedConv !== null) { try { fsX.writeFileSync(config.PATHS.conversation, savedConv, 'utf8'); } catch {} }
+      else { try { require('../src/conversation').clear(); } catch {} }
+      for (const ent of memory.allFamilies()) {
+        const ctx = (ent.entry && ent.entry.CONTEXT) || '';
+        if (ctx.startsWith('preset:art') && !preExisting.has(ent.entry.ID)) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

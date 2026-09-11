@@ -1,0 +1,115 @@
+{
+  "domain": "art",
+  "label": "Histoire de l'art — inspiré d'ARTE",
+  "description": "27 connaissances vérifiées d'histoire de l'art européen : gothique, Renaissance, baroque, romantisme, impressionnisme, modernités, musées — dans l'esprit des documentaires culturels d'ARTE.",
+  "knowledge": [
+    {
+      "question": "qu'est-ce que le gothique ?",
+      "answer": "Le gothique est un style d'architecture européen (XIIe-XVIe siècle) : arcs brisés, voûtes à croisée d'ogives, vitraux et cathédrales très hautes — Notre-Dame de Paris, Chartres ou la cathédrale de Cologne en sont des chefs-d'œuvre."
+    },
+    {
+      "question": "qui a peint la chapelle Sixtine ?",
+      "answer": "Michel-Ange a peint le plafond de la chapelle Sixtine au Vatican entre 1508 et 1512, dont la célèbre « Création d'Adam ». Il est aussi le sculpteur du « David » et de la « Pietà »."
+    },
+    {
+      "question": "qui a peint la Cène ?",
+      "answer": "Léonard de Vinci a peint « La Cène » (1495-1498) sur le mur du réfectoire de Santa Maria delle Grazie, à Milan. C'est l'une des fresques les plus célèbres du monde."
+    },
+    {
+      "question": "qu'est-ce que le clair-obscur ?",
+      "answer": "Le clair-obscur est un procédé pictural qui oppose fortement ombre et lumière. Il est emblématique du Caravage (baroque italien) et de Rembrandt, qui s'en servent pour dramatiser et modeler les visages."
+    },
+    {
+      "question": "qu'est-ce que le baroque ?",
+      "answer": "Le baroque est un mouvement artistique du XVIIe siècle : émotion, mouvement, théâtralité et démesure. Ses figures majeures : le Caravage en peinture, le Bernin en sculpture et en architecture."
+    },
+    {
+      "question": "qui a peint la Ronde de nuit ?",
+      "answer": "Rembrandt a peint « La Ronde de nuit » (1642), l'un des plus grands tableaux du Siècle d'or néerlandais. Il est conservé au Rijksmuseum d'Amsterdam."
+    },
+    {
+      "question": "qui a peint la Jeune Fille à la perle ?",
+      "answer": "Johannes Vermeer a peint « La Jeune Fille à la perle » vers 1665. Surnommée la « Joconde du Nord », elle est conservée au Mauritshuis de La Haye."
+    },
+    {
+      "question": "qu'est-ce que les Ménines ?",
+      "answer": "« Les Ménines » (1656) de Diego Velázquez montre l'infante entourée de ses dames, avec l'artiste en train de peindre et un jeu de miroir. Le tableau est au musée du Prado, à Madrid."
+    },
+    {
+      "question": "qui a peint la Liberté guidant le peuple ?",
+      "answer": "Eugène Delacroix a peint « La Liberté guidant le peuple » (1830), allégorie des Trois Glorieuses. Tableau du romantisme, conservé au musée du Louvre à Paris."
+    },
+    {
+      "question": "qu'est-ce que le romantisme en peinture ?",
+      "answer": "Le romantisme (première moitié du XIXe siècle) met l'émotion, l'exotisme et la liberté au cœur de l'art : Delacroix (« La Liberté guidant le peuple ») et Géricault (« Le Radeau de la Méduse ») en sont les figures françaises."
+    },
+    {
+      "question": "qui a peint le Radeau de la Méduse ?",
+      "answer": "Théodore Géricault a peint « Le Radeau de la Méduse » (1818-1819) après le naufrage de la frégate La Méduse. Roger, monument du romantisme, est conservé au Louvre."
+    },
+    {
+      "question": "qui a peint le Déjeuner sur l'herbe ?",
+      "answer": "Édouard Manet a peint « Le Déjeuner sur l'herbe » (1863), qui provoqua un scandale au Salon. Ce tableau de transition annonce l'impressionnisme."
+    },
+    {
+      "question": "qui a peint la Nuit étoilée ?",
+      "answer": "Vincent van Gogh a peint « La Nuit étoilée » en 1889 pendant son séjour à Saint-Rémy-de-Provence. C'est une icône du post-impressionnisme."
+    },
+    {
+      "question": "qu'est-ce que le cubisme ?",
+      "answer": "Le cubisme (vers 1907-1914) est porté par Picasso et Braque : déconstruction géométrique des formes et points de vue multiples. « Les Demoiselles d'Avignon » (1907) de Picasso marque sa naissance."
+    },
+    {
+      "question": "qui a peint Guernica ?",
+      "answer": "Pablo Picasso a peint « Guernica » (1937) pour dénoncer le bombardement de la ville basque pendant la guerre d'Espagne. L'œuvre est exposée au musée Reina Sofía de Madrid."
+    },
+    {
+      "question": "qu'est-ce que le surréalisme ?",
+      "answer": "Le surréalisme, théorisé par André Breton en 1924, explore l'inconscient, le rêve et l'irrationnel. Salvador Dalí, René Magritte et Joan Miró en sont des figures majeures."
+    },
+    {
+      "question": "qui a peint la Persistance de la mémoire ?",
+      "answer": "Salvador Dalí a peint « La Persistance de la mémoire » (1931), célèbre pour ses montres molles. C'est l'une des images les plus connues du surréalisme."
+    },
+    {
+      "question": "qui a peint Ceci n'est pas une pipe ?",
+      "answer": "René Magritte a peint « La Trahison des images » (1929), le tableau « Ceci n'est pas une pipe », qui interroge le rapport entre image, mot et réalité. Œuvre surréaliste."
+    },
+    {
+      "question": "qu'est-ce que l'art abstrait ?",
+      "answer": "L'art abstrait renonce à la figuration reconnaissable pour jouer sur les formes, les couleurs et les rythmes. Kandinsky est considéré comme l'un des pionniers de l'abstraction vers 1910."
+    },
+    {
+      "question": "qu'est-ce que le Bauhaus ?",
+      "answer": "Le Bauhaus est une école allemande d'art, de design et d'architecture fondée par Walter Gropius à Weimar en 1919 (fermée par le régime nazi en 1933). Il prône la simplicité géométrique et l'unité de la forme et de la fonction."
+    },
+    {
+      "question": "où se trouve la Joconde ?",
+      "answer": "La Joconde de Léonard de Vinci est exposée au musée du Louvre, à Paris. Le Louvre est l'un des musées les plus visités au monde."
+    },
+    {
+      "question": "où voir les impressionnistes ?",
+      "answer": "Le musée d'Orsay, à Paris, conserve les chefs-d'œuvre de l'impressionnisme et du post-impressionnisme : Manet, Monet, Renoir, Degas, Van Gogh… (il occupe l'ancienne gare d'Orsay)."
+    },
+    {
+      "question": "où sont exposées les Ménines ?",
+      "answer": "« Les Ménines » de Velázquez sont exposées au musée du Prado, à Madrid, l'un des plus grands musées d'art au monde avec les collections royales espagnoles (Velázquez, Goya)."
+    },
+    {
+      "question": "qui a peint la Naissance de Vénus ?",
+      "answer": "Sandro Botticelli a peint « La Naissance de Vénus » vers 1485, durant la Renaissance florentine. Elle est conservée à la Galerie des Offices, à Florence."
+    },
+    {
+      "question": "qu'est-ce que le ready-made ?",
+      "answer": "Le ready-made est un objet industriel ordinaire présenté comme œuvre d'art : Marcel Duchamp a créé « Fontaine » (un urinoir, 1917). C'est un acte fondateur de l'art conceptuel."
+    },
+    {
+      "question": "qui a inventé la photographie ?",
+      "answer": "La photographie s'est développée au XIXe siècle : Nicéphore Niépce réalise le premier cliché connu vers 1826-1827, puis Louis Daguerre met au point le daguerréotype (1839)."
+    },
+    {
+      "question": "qu'est-ce que l'art nouveau ?",
+      "answer": "L'art nouveau (vers 1890-1910) est un mouvement décoratif européen aux lignes organiques et végétales : le mobilier et les entrées du métro de Paris de Guimard, les affiches de Mucha, les architectures de Horta et Gaudi Ámsterdam."
+    }
+  ]
+}

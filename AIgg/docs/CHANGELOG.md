@@ -3,6 +3,28 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.8 — 2026-09-11 — ajout : la culture des arts (preset `art`, histoire de l'art)
+
+### Ajouts (AIgg approfondit la culture visuelle du tuteur)
+- **Preset `art` (27 connaissances vérifiées)** d'histoire de l'art européen,
+  dans l'esprit des documentaires culturels d'ARTE : gothique, chapelle
+  Sixtine et Cène (Michel-Ange, Vinci), clair-obscur et baroque (Caravage,
+  Rembrandt, Bernin), Siècle d'or néerlandais (Ronde de nuit, Jeune Fille à la
+  perle), Velázquez et le Prado, romantisme (Géricault, Delacroix), Manet,
+  post-impressionnisme (van Gogh), cubisme (Picasso, Braque), surréalisme
+  (Dalí, Magritte), abstraction (Kandinsky), Bauhaus, ready-made (Duchamp),
+  invention de la photographie, art nouveau, et où voir les œuvres (Louvre,
+  Orsay, Prado, Offices, Rijksmuseum).
+- **CLI** : `AIgg.cmd learn art` (idempotent). La relecture mémoire distingue
+  bien les doublons thématiques (ex. « qui a peint / où est la Joconde »).
+- **Sûreté** : connaissances seulement, vérifiées ; hors sujet → UNKNOWN.
+
+### Tests
+- Suite complète : **186 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+  `art_preset_liste`, `art_preset_load`, `art_recall_oeuvre`, `art_recall_lieu`,
+  `art_idempotent`, `art_honnete` ; les entrées art pré-existantes sont
+  préservées).
+
 ## v0.3.7 — 2026-09-11 — ajout : la culture du tuteur (preset `culture`, inspiré d'ARTE)
 
 ### Ajouts (AIgg gagne une culture vérifiée)

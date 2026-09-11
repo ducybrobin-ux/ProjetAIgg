@@ -120,6 +120,19 @@ figurer (test automatisé inclus).
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
 
+## Contenu de la release v0.3.8
+
+- **La culture des arts** : preset `learn art` — **27 connaissances vérifiées**
+  d'histoire de l'art européen, esprit ARTE : du gothique à l'art conceptuel
+  (chapelle Sixtine, Cène, Caravage, Rembrandt, Velázquez, Manet, van Gogh,
+  cubisme, surréalisme, abstrait, Bauhaus, ready-made de Duchamp, photographie,
+  art nouveau) et où voir les œuvres (Louvre, Orsay, Prado, Offices,
+  Rijksmuseum).
+- **Relecture précise** : la mémoire distingue finement les questions proches
+  (« qui a peint / où se trouve la Joconde ») — toujours sans invention.
+- CLI : `AIgg.cmd learn art` (idempotent).
+- Suite de tests : **186 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.3.7
 
 - **La culture du tuteur** : preset `learn culture` — **27 connaissances
