@@ -3,6 +3,30 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.11 — 2026-09-11 — amélioration : EXTAI — multi-fournisseurs et traçabilité outbox (outil `ia`)
+
+### Ajouts (l'IA externe reste OUTIL, avec plus de fournisseurs et de transparence)
+- **Multi-fournisseurs** : registre `tools/ia/providers.json` (hors Git, comme
+  web/providers.json) pour ajouter des endpoints compatibles « chat
+  completions » (openai par défaut ; ex. ollama local, openrouter, mistral…).
+  Choix à la demande : `ia ask --provider=<nom>` ; `ia status` liste les
+  fournisseurs, leurs modèles et quelle clé couvre chacun.
+- **Clé par fournisseur** : `vault put ia.api_key.<provider> "<clé>"` (clé
+  propre) sinon clé commune `ia.api_key`. Rien dans Git, l'aide, le journal,
+  la mémoire ni outbox/.
+- **Traçabilité outbox/** : chaque demande (réussie ou non) est tracée
+  (`outbox/…-ia-*.json`) : ID, date, fournisseur, modèle, prompt, statut
+  SENT/FAILED, réponse (bornée) et usage — jamais de clé ni de mot de passe.
+  CLI `ia log`, API `/api/ia/log`. (Le dossier outbox/ est déjà privé.)
+- **Sûreté** : fournisseur inconnu → refus explicite **sans réseau** ; sans
+  clé → `missing`, pas de réseau ; prompt ≤ 4 000 car., réponse ≤ 3 000 car.
+  dans la trace, max_tokens ≤ 800.
+
+### Tests
+- Suite complète : **198 PASS / 0 FAIL** (3 nouveaux autonettoyants :
+  `ia_outbox_tracee` (multi-fournisseurs A+B simulés localement + trace outbox
+  SENT), `ia_provider_inconnu_refus`, `ia_log_sans_cle`).
+
 ## v0.3.10 — 2026-09-11 — ajout : l'IA externe comme OUTIL (jamais comme cerveau)
 
 ### Ajouts (premier pas vers EXTAI — « IA externe, outil facultatif »)

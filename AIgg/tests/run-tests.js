@@ -226,9 +226,15 @@ async function run() {
   toolkit.authorize('ia'); toolkit.install('ia');
   const iaTest = await toolkit.test('ia');
   report('test_outil_ia', iaTest.test.status === 'PASS', iaTest.test.note || iaTest.test.status);
+  report('ia_outbox_tracee', iaTest.test.status === 'PASS' && iaTest.test.detail && iaTest.test.detail.outbox === true && iaTest.test.detail.providers >= 2,
+    iaTest.test.detail ? `multi-fournisseurs=${iaTest.test.detail.providers}, outbox SENT` : 'sans détail');
   const iaMod = toolkit.loadModule('ia').module;
   const iaSansCle = await iaMod.ask({});
   report('ia_sans_cle_refus', iaSansCle.ok === false && iaSansCle.missing !== undefined, 'ask sans clé → refus explicite, pas de réseau');
+  const iaProvInconnu = await iaMod.ask({ provider: 'inexistant', prompt: 'X' });
+  report('ia_provider_inconnu_refus', iaProvInconnu.ok === false && /inconnu/i.test(iaProvInconnu.error || ''), 'provider inconnu → refus explicite, pas de réseau');
+  const iaLogVide = iaMod.list().every((r) => r.CHANNEL === 'ia' && !/test-key/i.test(JSON.stringify(r)));
+  report('ia_log_sans_cle', iaLogVide, 'outbox ia : jamais de clé exposée');
 
   // 12. Notebook réel
   console.log('\n12) NOTEBOOK RÉEL');

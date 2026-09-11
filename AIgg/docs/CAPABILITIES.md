@@ -29,7 +29,7 @@
 | LABORATOIRE | `notebook` | Expériences reproductibles en local |
 | REPRESENTATION | `avatar` | Représentation visuelle SVG (apparence, pas identité) |
 | COMMUNICATION | `email` | Envoi e-mail SMTP natif (v0.3.0, tracé outbox/) |
-| CONSULTATION | `ia` | Consulter une IA externe en OUTIL (v0.3.10) — réponse EXTERNAL_IA, jamais mémorisée automatiquement |
+| CONSULTATION | `ia` | Consulter une IA externe en OUTIL (v0.3.10 ; multi-fournisseurs + outbox/ en v0.3.11) — réponse EXTERNAL_IA, jamais mémorisée automatiquement |
 
 ## Capacités prévues, non acquises (honnête)
 

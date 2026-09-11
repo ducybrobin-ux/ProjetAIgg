@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (195 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (198 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,23 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.11
+
+- **EXTAI, suite** : l'outil `ia` gagne **multi-fournisseurs** et
+  **traçabilité outbox/**.
+  - **Multi-fournisseurs** : registre `tools/ia/providers.json` (hors Git) pour
+    ajouter des endpoints « chat completions » (openai par défaut, ollama
+    local, openrouter, mistral…) ; `ia ask --provider=<nom>` ; `ia status`
+    liste fournisseurs, modèles et couverture des clés. Clé par fournisseur
+    (`vault put ia.api_key.<provider>`) ou clé commune `ia.api_key`.
+  - **Traçabilité** : chaque demande tracée dans `outbox/` (ID, date,
+    fournisseur, modèle, prompt, statut, réponse bornée, usage) — jamais de
+    clé ; CLI `ia log`, API `/api/ia/log`.
+  - Toujours **jamais cerveau** : réponse `EXTERNAL_IA`, jamais mémorisée
+    automatiquement ; fournisseur inconnu ou clé absente → refus explicite sans
+    réseau.
+- Suite de tests : **198 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.10
 

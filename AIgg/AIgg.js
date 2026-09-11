@@ -554,30 +554,36 @@ const IA_HELP_FR = [
   'But : consulter une IA externe comme SIMPLE OUTIL — jamais comme cerveau',
   'd\'AIgg. Endpoint compatible « chat completions » (ex. OpenAI). Le prompt',
   'part vers un tiers, la réponse est marquée EXTERNAL_IA, jamais mémorisée',
-  'automatiquement, toujours à vérifier.',
+  'automatiquement, toujours à vérifier. Chaque demande est tracée dans',
+  'outbox/ (sans clé).',
   '',
   'PRÉPARATION (par le tuteur, jamais par l\'IA)',
   '  1. Crée une clé d\'API auprès du fournisseur choisi.',
   '  2. Range-la dans le coffre local (jamais dans Git) :',
   '       $env:AIGG_VAULT_PASSWORD="..." ; AIgg.cmd vault put ia.api_key "<clé>"',
+  '       (clé propre à un fournisseur : vault put ia.api_key.<provider> "<clé>")',
   '  3. Autorise et installe l\'outil :',
   '       AIgg.cmd authorize ia',
   '       AIgg.cmd install ia',
-  '  (Pour changer l\'endpoint/modèle par défaut : tools/ia/config.json, ignoré par Git.)',
+  '  (Config : tools/ia/config.json pour la base/modèle par défaut ; fournisseurs',
+  '  additionnels dans tools/ia/providers.json — tous deux ignorés par Git,',
+  '  jamais de clé dedans.)',
   '',
   'COMMANDES',
-  '  status                     État du connecteur (base API, modèle, clé présente ?).',
-  '  ask --prompt="..." [--system="..."] [--model=...] [--max-tokens=...]',
+  '  status                     État (fournisseurs, config des clés présentes ?).',
+  '  ask --prompt="..." [--provider=...] [--system="..."] [--model=...] [--max-tokens=...]',
   '                             Demande EXTERNE : seule source EXTERNAL_IA, à vérifier.',
+  '                             (provider : nom d\'un fournisseur de providers.json)',
+  '  log                        Tracé outbox/ des demandes (prompt, fournisseur, statut).',
   '',
   'SECRETS ET SÉCURITÉ',
   '  - Le mot de passe du coffre est fourni à chaque commande (--password= ou',
   '    AIGG_VAULT_PASSWORD) ; il n\'est jamais stocké ni journalisé.',
-  '  - Aucune clé d\'API n\'est affichée par ces commandes.',
+  '  - Aucune clé d\'API n\'est affichée par ces commandes ni écrite dans outbox/.',
   '  - Révoquer : AIgg.cmd revoke ia (permission) ; retirer la clé : vault rm ia.api_key',
   '',
-  'Limite honnête (v0.3.10) : connecteur testé contre un endpoint simulé local',
-  '(aucun secret réel) ; la clé réelle vient du tuteur.',
+  'Limite honnête (v0.3.11) : connecteur testé contre des endpoints simulés',
+  'locaux (aucun secret réel) ; les clés réelles viennent du tuteur.',
 ].join('\n');
 
 async function runIa(ident, args) {
@@ -615,6 +621,7 @@ async function runIa(ident, args) {
             password,
             prompt: fl.prompt,
             system: fl.system,
+            provider: fl.provider,
             model: fl.model,
             max_tokens: fl['max-tokens'] ? Number(fl['max-tokens']) : undefined,
           });
@@ -627,10 +634,28 @@ async function runIa(ident, args) {
       }
       const r = out.result.data;
       if (!r.ok) {
-        showProblem('Demande refusée.', r.error || 'erreur API', 'Vérifie la clé dans le coffre (ia status) et tools/ia/config.json.', 'FAIL');
+        showProblem('Demande refusée.', r.error || 'erreur API', 'Vérifie la clé dans le coffre (ia status), le fournisseur (providers.json) et tools/ia/config.json.', 'FAIL');
         return;
       }
       console.log(JSON.stringify(r, null, 2));
+      console.log(`Tracé outbox : ${r.filename || '(none)'}`);
+      break;
+    }
+    case 'log': {
+      const tool = toolkit.findManifest('ia');
+      const out = await contract.executeTool(ident, tool.manifest, 'ia.log', {
+        source: 'CLI',
+        confidence: 1.0,
+        action: 'log',
+        async execute() {
+          return { ok: true, data: iaMod.list() };
+        },
+      });
+      if (!out.ok) {
+        showProblem('Journal indisponible.', out.blocked === 'PERMISSION' ? 'Permission refusée pour l\'outil ia.' : out.reason, 'AIgg.cmd authorize ia ; puis AIgg.cmd install ia', `BLOCKED:${out.blocked}`);
+        return;
+      }
+      console.log(JSON.stringify(out.result.data, null, 2));
       break;
     }
     default:

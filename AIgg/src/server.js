@@ -452,6 +452,11 @@ function start() {
           () => Promise.resolve({ ok: true, data: require('../tools/ia/ia.js').status(password) }));
         return;
       }
+      if (url.pathname === '/api/ia/log' && req.method === 'GET') {
+        toolCall(res, ident, 'ia', 'ia.log', { source: 'WEB', confidence: 1.0, action: 'log' },
+          () => Promise.resolve({ ok: true, data: require('../tools/ia/ia.js').list() }));
+        return;
+      }
       if (url.pathname === '/api/ia/ask' && req.method === 'POST') {
         const body = await readBody(req);
         const password = process.env.AIGG_VAULT_PASSWORD;
@@ -460,6 +465,7 @@ function start() {
             password,
             prompt: body.prompt,
             system: body.system,
+            provider: body.provider,
             model: body.model,
             max_tokens: body.max_tokens,
           }).then((r) => ({ ok: r.ok, data: r })));

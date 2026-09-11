@@ -20,7 +20,7 @@ Révocation = révocation de permission + libération de la capacité.
 | `notebook` | LABORATOIRE | `add`, `list`, `get`, `setResult`, `remove` | « J'ai besoin d'expérimenter » | oui | oui | PASS |
 | `avatar` | REPRESENTATION | `generate` (SVG local déterministe) | « J'ai besoin d'une représentation » | oui | oui | PASS |
 | `email` | COMMUNICATION | `send` (SMTP natif), `log` (outbox), `status` | « J'ai besoin de communiquer à distance » | oui (net natif) | oui | PASS (serveur SMTP local réel) |
-| `ia` | CONSULTATION | `status`, `ask` (IA externe « chat completions », clé dans le coffre) | « J'ai besoin de consulter une IA externe » (outil, jamais le cerveau) | oui (fetch natif) | oui | PASS (endpoint simulé local) |
+| `ia` | CONSULTATION | `status`, `ask`, `log` (IA externe « chat completions », multi-fournisseurs, tracé outbox/) | « J'ai besoin de consulter une IA externe » (outil, jamais le cerveau) | oui (fetch natif) | oui | PASS (endpoints simulés locaux) |
 
 ## Détails par outil
 
@@ -57,19 +57,27 @@ Révocation = révocation de permission + libération de la capacité.
 - Limites honnêtes : réception (IMAP), AUTH SMTP et STARTTLS **non
   implémentés** ; connecteurs Gmail/Drive prévus (PHASE 4-5), non faits.
 
-### ia (`tools/ia/`) — v0.3.10, IA externe comme outil
+### ia (`tools/ia/`) — v0.3.11, IA externe comme outil
 - Consulte une IA externe compatible « chat completions » (ex. OpenAI) par
   **prompt explicite** (CLI `ia ask` ou API `/api/ia/ask`), 100 % natif
   (fetch), timeout 20 s, prompt max 4 000 car., réponse max 800 tokens.
+- **Multi-fournisseurs** : `tools/ia/providers.json` (hors Git) ajoute des
+  endpoints (`ia ask --provider=<nom>` ; clé propre `vault put
+  ia.api_key.<provider>` ou clé commune `ia.api_key`). `ia status` liste les
+  fournisseurs et leur couverture.
 - **Jamais le cerveau** : la réponse est marquée `source: EXTERNAL_IA`, avec
   l'avertissement « à vérifier » ; elle n'est **jamais mémorisée
   automatiquement**. Capacité fournie : `CONSULTATION`.
+- **Traçabilité** : chaque demande tracée dans `outbox/` (`ia log`, API
+  `/api/ia/log`) — prompt, fournisseur, modèle, statut, réponse bornée, usage ;
+  **jamais de clé ni de mot de passe**.
 - **Moindre privilège** : outil bloqué par défaut (liste ci-dessous),
-  autorisation `authorize ia` puis `install ia` exigées ; clé d'API dans le
-  coffre local (`vault put ia.api_key "..."`), base d'API dans
-  `tools/ia/config.json` (hors Git) ; sans clé → refus explicite, pas de réseau.
-- Test réel : serveur HTTP local simulant `/v1/chat/completions` ; Bearer
-  vérifié, réponse+usage lus, refus sans clé, coffre temporaire autonettoyé.
+  autorisation `authorize ia` puis `install ia` exigées ; sans clé ou
+  fournisseur inconnu → refus explicite, pas de réseau.
+- Test réel : serveurs locaux simulant deux endpoints `/chat/completions`
+  (multi-fournisseurs, Bearer vérifié, clé par fournisseur), refus
+  inconnu/sans clé, trace outbox SENT sans clé, coffre + outbox temporaires
+  autonettoyés.
 
 ## Outils bloqués par défaut (liste de moindre privilège)
 
