@@ -39,6 +39,16 @@
   CARTOGRAPHIE, PROGRAMMATION, HÉBERGEMENT, PUBLICATION, MIGRATION autonome :
   **mécanisme prêt** (registre d'outils + capacités), mais **non codées**.
 
+## Réflexe de conscience de soi — Berceau (v0.3.12)
+
+Hors registre (ce n'est pas une capacité acquise à la demande, mais une
+**introspection constante**, comme percevoir son âge) :
+
+- AIgg mesure son poids réel (`src/berceau.js`) et l'espace libre du disque
+  (`fs.statfs`) — réponse de fait en conversation (« quelle est ta taille ? »).
+- Quota « Berceau » alloué par le tuteur (1 Go par défaut, `core/berceau.json`).
+- À l'étroit → besoin `AGRANDIR` (demande d'aide, jamais d'action autonome).
+
 ## Principes d'acquisition
 
 - Une capacité s'acquiert par `capabilities.acquireCapacity()` (utilisé par

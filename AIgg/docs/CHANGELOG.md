@@ -3,6 +3,40 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.12 — 2026-09-11 — ajout : le Berceau — AIgg se connaît en taille et demande de l'aide quand il est à l'étroit
+
+### Ajouts (conscience de soi : poids, espace, quota — la « maison » allouée par le tuteur)
+- **Module `src/berceau.js`** : mesure réelle de son propre poids
+  (`measureSelf` : données vivantes de l'incubateur — `core`, `memory`,
+  `journal`, `senses`, `inbox`, `outbox`, `notebook`, `libraries`, `vault`,
+  `src`, `web`, `docs`, `tools`, `templates`… ; **exclues** : `backups/`
+  (archives de protection), `node_modules/`, `.git/`).
+- **Quota « Berceau » alloué par le tuteur** : 1 Go par défaut, persisté dans
+  `core/berceau.json` (privé, comme tout `core/`). **Jamais d'action
+  automatique** : le tuteur décide toujours (`AIgg.cmd berceau set <taille>`
+  ou `AIgg.cmd migrate <dest>`).
+- **Sonde d'espace libre réelle** du disque (`fs.statfs`, natif) ; si la sonde
+  est indisponible → honnêtement indiqué « inconnu » (jamais un chiffre inventé).
+- **Seuil `tight`** : ≥ 85 % du quota franchi (ou disque trop plein) → AIgg
+  crée un besoin **`AGRANDIR`** unique : « Je suis à l'étroit : je pèse X… —
+  peux-tu agrandir mon berceau ou me migrer ? ». Journalisé `BERCEAU_TIGHT`.
+- **Conversation** : « quelle est ta taille ? / ton berceau ? / combien
+  pèses-tu ? » → réponse **réelle** (poids mesuré, quota, espace libre) ;
+  la conscience de sa taille devient une réponse de fait, pas une simulation.
+- **Proactivité honnête** : au réveil, un besoin `AGRANDIR` actif est rappelé
+  au tuteur comme les questions/confirmations (`messages` / digest).
+- **CLI `berceau`** : `berceau` (statut), `berceau set <taille>` (ex. `2G`,
+  `1500M`, `1,5Go`, `1073741824`), `berceau check` (mesure + demande si à
+  l'étroit) ; aide en français. **API web** : `/api/berceau`, et champs
+  `berceau` dans `/api/state`.
+
+### Tests
+- Suite complète : **207 PASS / 0 FAIL** (9 nouveaux autonettoyants :
+  `berceau_mesure`, `berceau_human`, `berceau_alloc_defaut`,
+  `berceau_parse_taille`, `berceau_statut`, `berceau_libre` (sonde réelle),
+  `berceau_demande_unique`, `berceau_conversation`, `berceau_proactif` ;
+  snapshot/restore de `core/berceau.json`, besoins, journal, conversation).
+
 ## v0.3.11 — 2026-09-11 — amélioration : EXTAI — multi-fournisseurs et traçabilité outbox (outil `ia`)
 
 ### Ajouts (l'IA externe reste OUTIL, avec plus de fournisseurs et de transparence)

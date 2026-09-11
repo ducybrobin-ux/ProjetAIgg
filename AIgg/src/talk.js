@@ -64,8 +64,8 @@ function ageAnswer(ident) {
 }
 
 function helpText() {
-  return 'Je sais répondre simplement à quelques questions (qui es-tu, ton âge, tes capacités, ton tuteur), ' +
-    'et tu peux m\'apprendre des choses en disant « apprends que … ». ' +
+  return 'Je sais répondre simplement à quelques questions (qui es-tu, ton âge, tes capacités, ton tuteur, ' +
+    'ma taille / mon berceau), et tu peux m\'apprendre des choses en disant « apprends que … ». ' +
     'Pour le reste, je réponds honnêtement : « Je ne sais pas encore faire cela. »';
 }
 
@@ -144,11 +144,13 @@ function tutorAnswer(ident, rawAnswer) {
  * initié au tuteur. S'il n'y a rien, il garde le silence (aucune illusion).
  */
 function proactiveDigest(ident) {
-  const waiting = needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION');
+  const waiting = needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION' || n.TYPE === 'AGRANDIR');
   if (!waiting.length) return null;
   try { state.setState('WAITING', ident, 'Proactivité : rappel des besoins en attente'); } catch {}
   const lines = waiting.map((n) => {
-    const kind = n.TYPE === 'QUESTION' ? 'je te demande' : 'j\'attends ta confirmation sur';
+    const kind = n.TYPE === 'QUESTION' ? 'je te demande'
+      : n.TYPE === 'AGRANDIR' ? 'je suis à l\'étroit'
+      : 'j\'attends ta confirmation sur';
     return `— ${kind} : « ${n.DESCRIPTION} » (${n.ID})`;
   });
   const reply = `Bonjour ${ident.TUTOR_NAME}. Pendant que j'étais endormi, j'ai gardé en mémoire ces demandes en attente de toi :\n${lines.join('\n')}`;
@@ -161,7 +163,7 @@ function openQuestionNeeds() {
 }
 
 function listPendingMessages() {
-  return needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION');
+  return needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION' || n.TYPE === 'AGRANDIR');
 }
 
 function respond(rawText, identity) {
@@ -173,6 +175,7 @@ function respond(rawText, identity) {
   const asksTutor = saysAny(text, ['ton tuteur', 'qui est ton tuteur', 'ton créateur', 'qui est ton maître']);
   const asksAge = saysAny(text, ['ton âge', 'quel âge', 'âge as-tu', 'depuis combien de temps tu vis', 'quand es-tu né', 'date de naissance']);
   const asksCaps = saysAny(text, ['que sais-tu faire', 'tu sais faire', 'tes capacités', 'ce que tu sais faire', 'tu peux faire']);
+  const asksSize = saysAny(text, ['quelle est ta taille', 'quel est ton poids', 'combien pèses', 'tu pèses', 'ta taille', 'ton berceau', 'ton quota', 'espace disque', 'espace libre', 'à l\'étroit', 'plus de place', 'combien de place']);
   const asksHelp = saysAny(text, ['aide', 'tu peux m\'aider', 'explique-moi', 'comment tu fonctionnes', 'comment fonctionnes-tu']);
   const saysHi = saysAny(text, ['bonjour', 'salut', 'coucou', 'bonsoir', 'bonsoire', 'hey', 'hello', 'yo']);
   const asksSleep = saysAny(text, ['va dormir', 'endors-toi', 'dors', 'fais dodo']);
@@ -203,6 +206,7 @@ function respond(rawText, identity) {
   if (asksTutor) return respondWith(ident, `Mon tuteur est ${ident.TUTOR_NAME}. Je le respecte, et c'est lui qui contrôle mes permissions.`, ['TUTOR']);
   if (asksAge) return respondWith(ident, ageAnswer(ident), ['TIME']);
   if (asksCaps) return respondWith(ident, listCapabilities(ident), ['CAPABILITIES']);
+  if (asksSize) return respondWith(ident, require('./berceau').statusText(ident), ['TAILLE']);
   if (asksSleep) {
     state.sleep(ident);
     return respondWith(ident, 'Je m\'endors doucement. À bientôt. (Sauvegarde et continuité conservées.)', ['SLEEP']);

@@ -1049,6 +1049,67 @@ async function runAppearance(ident, args) {
   }
 }
 
+const BERCEAU_HELP_FR = [
+  'AIgg — le Berceau (espace alloué par le tuteur) — aide (français)',
+  '',
+  'But : AIgg se connaît en taille (mesure réelle de ses données) et connaît',
+  'l\'espace libre du disque. Le berceau est le QUOTA que le tuteur lui alloue',
+  'pour grandir (1 Go par défaut depuis v0.3.12). S\'il devient à l\'étroit',
+  '(≥ 85 % du quota, ou disque presque plein), AIgg DEMANDE de l\'aide par un',
+  'besoin AGRANDIR — il n\'agit jamais de lui-même.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd berceau                     Statut : quota, poids mesuré, espace libre.',
+  '  AIgg.cmd berceau set <taille>        Resserre/agrandit le quota (ex. 2G, 1500M, 1073741824).',
+  '  AIgg.cmd berceau check               Mesure et, si à l\'étroit, crée la demande AGRANDIR.',
+  '  AIgg.cmd berceau ask                 Alias de check (demander de l\'aide).',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd berceau',
+  '  AIgg.cmd berceau set 2G',
+  '  AIgg.cmd berceau check',
+  '',
+  'Notes : la demande AGRANDIR apparaît dans « AIgg.cmd messages » et au réveil.',
+  'Répondre au tuteur : AIgg.cmd messages answer <id> <réponse>, ou migrer :',
+  'AIgg.cmd migrate <dest> (le berceau suit la migration, core/berceau.json).',
+].join('\n');
+
+function runBerceau(ident, args) {
+  const berceau = require('./src/berceau');
+  const sub = args[0];
+  switch (sub) {
+    case 'set': {
+      if (!args[1]) {
+        showProblem('Taille manquante.', 'berceau set exige une taille.', 'Ex : AIgg.cmd berceau set 2G (ou 1500M, 1073741824).', 'FAIL');
+        return;
+      }
+      const bytes = berceau.parseSize(args[1]);
+      if (bytes === null) {
+        showProblem('Taille illisible.', `« ${args[1]} » incompréhensible.`, 'Ex : 2G, 1500M, 1073741824 (octets).', 'FAIL');
+        return;
+      }
+      const record = berceau.setAllocation(bytes, ident, { note: args.slice(2).join(' ') || 'Allocation par le tuteur.' });
+      console.log(JSON.stringify(record, null, 2));
+      break;
+    }
+    case 'check':
+    case 'ask': {
+      const r = berceau.checkAndAsk(ident);
+      console.log(JSON.stringify({
+        tight: r.status.tight,
+        used_pct: r.status.usedPct,
+        created: r.created,
+        need: r.need ? { ID: r.need.ID, TYPE: r.need.TYPE, DESCRIPTION: r.need.DESCRIPTION } : null,
+        status: r.status,
+      }, null, 2));
+      break;
+    }
+    default:
+      if (sub === 'help') console.log(BERCEAU_HELP_FR);
+      else console.log(JSON.stringify(berceau.status(), null, 2));
+  }
+}
+
 async function runTalk(ident, text) {
   if (!text) {
     console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
@@ -1215,6 +1276,9 @@ async function main() {
     case 'appearance':
       await runAppearance(ident, args.slice(1));
       break;
+    case 'berceau':
+      runBerceau(ident, args.slice(1));
+      break;
     case 'vault':
       runVault(args.slice(1));
       break;
@@ -1227,7 +1291,8 @@ async function main() {
         '  talk <texte>, messages [answer <id> <réponse>],\n' +
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
-        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check'
+        '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check\n' +
+        '  berceau [set <taille> | check] — quota d\'espace alloué par le tuteur (aide : AIgg.cmd berceau help)'
       );
   }
 }

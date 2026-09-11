@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.11 · Suite de tests : 198 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.12 · Suite de tests : 207 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -93,6 +93,20 @@ Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.11 · Suite de tests : 1
 | API `/api/email/send` (Contrat Commun) | IMPLEMENTED | serveur (route, smoke HTTP) |
 | Bloqué par défaut + config.json hors Git | IMPLEMENTED | permissions.js (DEFAULT_TOOLS_BLOCKED), .gitignore |
 | Réception IMAP, AUTH SMTP, STARTTLS | PLANNED | documenté « non fait » (honnêteté) |
+
+## Berceau — conscience de la taille et de l'espace (v0.3.12, testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/berceau.js` : mesure réelle de soi (`measureSelf`, mondes exclus : `backups/`, `node_modules/`, `.git/`) | IMPLEMENTED | `berceau_mesure` |
+| Quota alloué par le tuteur, 1 Go par défaut (`core/berceau.json`, privé) | IMPLEMENTED | `berceau_alloc_defaut` |
+| Espace libre réel du disque (`fs.statfs`, sonde native) | IMPLEMENTED | `berceau_libre` (PASS réel) / `BLOCKED` si sonde indisponible |
+| Statut `tight` (seuil 85 % du quota, ou disque trop plein) | IMPLEMENTED | `berceau_statut`, `berceau_demande_unique` |
+| Demande honnête : besoin `AGRANDIR` unique « je suis à l'étroit … agrandis ou migre » | IMPLEMENTED | `berceau_demande_unique` (créé 1 seule fois) |
+| Jamais d'action automatique : le tuteur agit (set / migrate) | IMPLEMENTED | conception + migration copie `core/berceau.json` |
+| Conversation : « quelle est ta taille ? / ton berceau ? » → `TAILLE` réel | IMPLEMENTED | `berceau_conversation` |
+| Proactivité au réveil : besoin `AGRANDIR` rappelé (comme QUESTION/CONFIRMATION) | IMPLEMENTED | `berceau_proactif` |
+| CLI `berceau [set <taille> | check]` + aide FR, API `/api/berceau` | IMPLEMENTED | `AIgg.cmd berceau` (testé) |
 
 ## Coffre-fort local (vault) — infrastructure sécurité (testé réellement)
 

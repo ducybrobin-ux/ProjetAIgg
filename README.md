@@ -49,7 +49,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 134 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 207 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (198 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (207 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,25 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.12
+
+- **Le Berceau** : AIgg prend conscience de sa propre taille et de l'espace
+  disque.
+  - **Se connaître** : mesure réelle de son poids (`src/berceau.js`) — ses
+    données et son code, hors `backups/` (archives de protection) — et sonde
+    réelle de l'espace libre (`fs.statfs`, natif ; sinon « inconnu », jamais
+    inventé).
+  - **Quota alloué par le tuteur** : 1 Go par défaut (`core/berceau.json`,
+    privé). S'il devient à l'étroit (≥ 85 % du quota, ou disque trop plein),
+    AIgg **demande de l'aide** par un besoin `AGRANDIR` unique : « Je suis à
+    l'étroit… peux-tu agrandir mon berceau ou me migrer ? », rappelé au réveil.
+    **Jamais d'action automatique** — le tuteur décide :
+    `AIgg.cmd berceau set 2G` ou `AIgg.cmd migrate <dest>`.
+  - **Conversation + console** : « quelle est ta taille ? » → réponse réelle
+    (`TAILLE`) ; onglet Demandes + CLI `AIgg.cmd berceau [set|check]` ; API
+    `/api/berceau`.
+- Suite de tests : **207 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.11
 

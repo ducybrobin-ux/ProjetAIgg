@@ -1021,6 +1021,101 @@ async function run() {
     }
   }
 
+  // 28. v0.3.12 : Berceau — AIgg se connaît en taille, quota alloué par le tuteur, demande AGRANDIR
+  console.log('\n28) BERCEAU (conscience de la taille et de l\'espace — v0.3.12)');
+  if (ident) {
+    const berceau = require('../src/berceau');
+    const talk = require('../src/talk');
+    const fsX = require('fs');
+    const savedAlloc = fsX.existsSync(berceau.BERCEAU_FILE) ? fsX.readFileSync(berceau.BERCEAU_FILE, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    const savedConv = fsX.existsSync(config.PATHS.conversation) ? fsX.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    const prevState = state.status(ident).state;
+    try {
+      // Mesure réelle de soi
+      const self = berceau.measureSelf();
+      report('berceau_mesure', self.bytes > 0 && self.files > 0
+        && self.dirs.core && self.dirs.memory && self.dirs.journal,
+        `${berceau.humanBytes(self.bytes)} / ${self.files} fichiers`);
+      report('berceau_human', berceau.humanBytes(1073741824) === '1 Go' && berceau.humanBytes(3072) === '3 Ko',
+        berceau.humanBytes(1073741824));
+
+      // Allocation par défaut (1 Go) — vérifée sur un registre vierge
+      const without = !fsX.existsSync(berceau.BERCEAU_FILE);
+      try { if (!without) fsX.unlinkSync(berceau.BERCEAU_FILE); } catch {}
+      const fresh = berceau.loadAllocation();
+      report('berceau_alloc_defaut', fresh.allocBytes === berceau.DEFAULT_ALLOCATION_BYTES,
+        `${berceau.humanBytes(fresh.allocBytes)} par défaut`);
+
+      // Parse des tailles (CLI berceau set)
+      report('berceau_parse_taille',
+        berceau.parseSize('2G') === 2 * 1024 * 1024 * 1024
+        && berceau.parseSize('1500M') === 1500 * 1024 * 1024
+        && berceau.parseSize('1,5Go') === Math.floor(1.5 * 1024 * 1024 * 1024)
+        && berceau.parseSize('512ko') === 512 * 1024
+        && berceau.parseSize('zzz') === null
+        && berceau.parseSize('1024') === 1024);
+
+      // Statut cohérent
+      const st = berceau.status();
+      report('berceau_statut', st.allocationBytes > 0 && st.usedBytes > 0
+        && typeof st.usedPct === 'number' && typeof st.tight === 'boolean'
+        && st.thresholdPct === Math.round(berceau.TIGHT_PCT * 100),
+        `${berceau.humanBytes(st.usedBytes)} / ${berceau.humanBytes(st.allocationBytes)} — ${st.usedPct}%`);
+
+      // Espace libre réel du disque (sonde système)
+      const free = berceau.freeSpace();
+      report3('berceau_libre', typeof free === 'number' && free > 0 ? 'PASS' : 'BLOCKED',
+        free === null ? 'sonde indisponible' : `${berceau.humanBytes(free)} libres`);
+
+      // Demande AGRANDIR : unique tant que sans réponse, jamais d'action automatique
+      const before = berceau.status();
+      berceau.setAllocation(1, ident, { note: 'test v0.3.12' });
+      const r1 = berceau.checkAndAsk(ident);
+      const r2 = berceau.checkAndAsk(ident);
+      const active = require('../src/needs').listActiveNeeds().filter((n) => n.TYPE === berceau.NEED_TYPE).length;
+      report('berceau_demande_unique', r1.status.tight === true && r1.created === true
+        && r2.created === false && active === 1,
+        `tight=${r1.status.tight} créé=${r1.created}/${r2.created} actifs=${active}`);
+      berceau.setAllocation(before.allocationBytes || 1, ident, { note: 'restauration test' });
+
+      // Conversation : « quelle est ta taille ? » → TAILLE réel
+      const c = talk.respond('quelle est ta taille ?', ident);
+      report('berceau_conversation', c.intents.includes('TAILLE')
+        && /pèse/.test(c.reply) && /(Mo|Ko|Go|octets)/.test(c.reply), c.intents.join(','));
+
+      // Proactivité au réveil : un besoin AGRANDIR réel est rappelé au tuteur
+      const need = require('../src/needs').createNeed(ident, {
+        type: berceau.NEED_TYPE,
+        description: 'Je suis à l\'étroit : test proactif du berceau.',
+      });
+      const digest = talk.proactiveDigest(ident);
+      report('berceau_proactif', digest !== null && digest.reply.includes('à l\'étroit')
+        && digest.reply.includes('test proactif du berceau') && digest.needs.some((n) => n.ID === need.ID),
+        'rappel au réveil du besoin AGRANDIR');
+    } finally {
+      try {
+        if (savedAlloc !== null) fsX.writeFileSync(berceau.BERCEAU_FILE, savedAlloc, 'utf8');
+        else if (fsX.existsSync(berceau.BERCEAU_FILE)) fsX.unlinkSync(berceau.BERCEAU_FILE);
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+      if (savedConv !== null) { try { fsX.writeFileSync(config.PATHS.conversation, savedConv, 'utf8'); } catch {} }
+      else { try { require('../src/conversation').clear(); } catch {} }
+      try {
+        if (prevState && prevState !== state.status(ident).state) {
+          state.setState(prevState, ident, 'Restauration état après tests berceau');
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

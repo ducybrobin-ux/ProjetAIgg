@@ -21,6 +21,7 @@ const talk = require('./talk');
 const library = require('./library');
 const conversation = require('./conversation');
 const util = require('./util');
+const berceau = require('./berceau');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -49,6 +50,7 @@ function apiData() {
     active_questions: activeQuestions,
     appearance: appearance.status(),
     libraries: library.list(),
+    berceau: berceau.status(),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
   };
 }
@@ -248,6 +250,12 @@ function start() {
         const resolved = needs.rejectNeed(body.id, ident, body.resolution);
         if (!resolved) sendError(res, 'Besoin introuvable', 404);
         else sendJson(res, resolved);
+        return;
+      }
+
+      // --- Berceau : quota d'espace alloué par le tuteur (v0.3.12) ---
+      if (url.pathname === '/api/berceau' && req.method === 'GET') {
+        sendJson(res, berceau.status());
         return;
       }
 
