@@ -1,0 +1,115 @@
+{
+  "domain": "culture",
+  "label": "Culture du tuteur — inspiré de la ligne éditoriale d'ARTE",
+  "description": "Connaissances culturelles vérifiées (ARTE, Europe, art, cinéma, sciences, histoire, idées, société) dans l'esprit de la chaîne culturelle européenne ARTE.",
+  "knowledge": [
+    {
+      "question": "qu'est-ce qu'ARTE ?",
+      "answer": "ARTE (Association Relative à la Télévision Européenne) est une chaîne de télévision culturelle et de service public franco-allemande, forme juridique d'un groupement européen d'intérêt économique (G.E.I.E.). Sa plateforme est « la plateforme culturelle européenne »."
+    },
+    {
+      "question": "quand ARTE a-t-elle été créée ?",
+      "answer": "ARTE a été instituée par un traité interétatique entre la France et l'Allemagne, signé en 1991 ; la chaîne a commencé à émettre simultanément dans les deux pays le 30 mai 1992."
+    },
+    {
+      "question": "où se trouve le siège d'ARTE ?",
+      "answer": "Le siège d'ARTE est à Strasbourg, 4 quai du Chanoine Winterer. La chaîne a aussi des directions à Paris (France) et à Berlin et Baden-Baden (Allemagne). ARTE émet en plusieurs langues (français, allemand, anglais, espagnol, italien, polonais, roumain)."
+    },
+    {
+      "question": "quelle chaîne française a précédé ARTE ?",
+      "answer": "La chaîne culturelle « La Sept » (Société d'édition de la 7), créée en 1989, a préparé le terrain culturel d'ARTE dans les années 1989-1993. ARTE a pris sa suite, avec le soutien des radiodiffuseurs allemands ARD et ZDF."
+    },
+    {
+      "question": "quel est le programme d'ARTE qui explique la géopolitique avec des cartes ?",
+      "answer": "« Le Dessous des Cartes », créé par Jean-Christophe Victor, décrypte les relations internationales et la géopolitique à l'aide de cartes désambiguïsées. C'est un programme emblématique d'ARTE depuis 1990."
+    },
+    {
+      "question": "quel magazine d'ARTE explique les petites différences franco-allemandes ?",
+      "answer": "« Karambolage » : ce magazine court, présenté par Claire Doutriaux, éclaire les mots, objets et coutumes du quotidien côté français et côté allemand — chaque épisode pose une question qui révèle une différence culturelle entre les deux pays."
+    },
+    {
+      "question": "quel programme d'ARTE couvre l'actualité en début de soirée ?",
+      "answer": "« 28 minutes » est un magazine quotidien d'actualité d'une demi-heure diffusé en début de soirée sur ARTE, qui mélange débat d'actualité et culture."
+    },
+    {
+      "question": "quel magazine d'ARTE suit les cultures urbaines et la musique ?",
+      "answer": "« Tracks » est le magazine d'ARTE consacré aux cultures urbaines, à la musique, aux tendances et à la création — une vitrine de la scène créative contemporaine."
+    },
+    {
+      "question": "quel couronnement de l'an 800 est lié à l'Europe ?",
+      "answer": "Le 25 décembre 800, Charlemagne, roi des Francs, est couronné empereur à Rome par le pape Léon III. Depuis le Moyen Âge, sa figure symbolise l'idée d'une Europe unie — on l'appelle parfois le « père de l'Europe »."
+    },
+    {
+      "question": "quel traité symbolise la réconciliation franco-allemande après 1945 ?",
+      "answer": "Le traité de l'Élysée, signé le 22 janvier 1963 par le général de Gaulle et le chancelier Konrad Adenauer, scelle la réconciliation franco-allemande, fondement de la construction européenne après la Seconde Guerre mondiale."
+    },
+    {
+      "question": "quel événement de 1957 a lancé la Communauté européenne ?",
+      "answer": "Le traité de Rome, signé le 25 mars 1957 par six pays (dont la France et l'Allemagne), crée la Communauté économique européenne (CEE) et la Communauté européenne de l'énergie atomique (Euratom)."
+    },
+    {
+      "question": "pourquoi Strasbourg est-elle un symbole de la réconciliation européenne ?",
+      "answer": "Strasbourg, ville frontalière disputée entre la France et l'Allemagne, est devenue un symbole de réconciliation : elle abrite le Parlement européen, le Conseil de l'Europe et la Cour européenne des droits de l'homme, et sa cathédrale gothique est un chef-d'œuvre classé au patrimoine mondial."
+    },
+    {
+      "question": "qu'est-ce que la Renaissance ?",
+      "answer": "La Renaissance est un mouvement artistique et intellectuel européen des XVe et XVIe siècles : redécouverte de l'Antiquité gréco-romaine, nouvelle vision de l'homme et de la nature, de Vinci en Italie à l'École de Fontainebleau en France."
+    },
+    {
+      "question": "qui a peint la Joconde ?",
+      "answer": "Léonard de Vinci (1452-1519) a peint la Joconde (Portrait de Mona Lisa) au début du XVIe siècle. L'œuvre est conservée au musée du Louvre, à Paris."
+    },
+    {
+      "question": "qu'est-ce que l'impressionnisme ?",
+      "answer": "L'impressionnisme est un mouvement de peinture français des années 1860-1880 : couleurs claires, lumière changeante, touche apparente et peinture en plein air. Monet, Renoir, Pissarro ou Degas en sont les figures majeures ; le mot vient du tableau « Impression, soleil levant » de Monet (1872)."
+    },
+    {
+      "question": "qui a écrit À la recherche du temps perdu ?",
+      "answer": "Marcel Proust (1871-1922) a écrit « À la recherche du temps perdu », publié de 1913 à 1927. C'est l'un des romans majeurs de la littérature française, qui explore la mémoire involontaire (la fameuse madeleine)."
+    },
+    {
+      "question": "quel philosophe a dit je pense donc je suis ?",
+      "answer": "René Descartes (1596-1650) a formulé « Je pense, donc je suis » (cogito ergo sum) dans le « Discours de la méthode ». C'est la première vérité certaine de sa méthode de doute : penser prouve son existence."
+    },
+    {
+      "question": "quel philosophe allemand a écrit la Critique de la raison pure ?",
+      "answer": "Emmanuel Kant (1724-1804), né à Königsberg, a écrit la « Critique de la raison pure » (1781). Son criticisme a révolutionné la philosophie en interrogeant les limites de la raison et les conditions de la connaissance."
+    },
+    {
+      "question": "qui a formulé la théorie de la relativité ?",
+      "answer": "Albert Einstein a publié la théorie de la relativité restreinte en 1905 puis la relativité générale en 1915. Elle a bouleversé la physique en liant espace, temps, matière et énergie (E = mc²)."
+    },
+    {
+      "question": "qui a défendu que la Terre tourne autour du Soleil ?",
+      "answer": "Nicolas Copernic (1543) a proposé le système héliocentrique, puis Galilée (1564-1642) l'a défendu avec ses observations de la lunette, ce qui lui valut une condamnation par l'Inquisition — l'Église catholique l'a « réhabilité » au XXe siècle."
+    },
+    {
+      "question": "qui a inventé l'imprimerie en Europe ?",
+      "answer": "Johannes Gutenberg, de Mayence, a mis au point l'imprimerie à caractères mobiles vers le milieu du XVe siècle (vers 1445-1455). La Bible « à 42 lignes » est son chef-d'œuvre ; l'imprimerie a révolutionné la diffusion des savoirs en Europe."
+    },
+    {
+      "question": "qu'est-ce que la Nouvelle Vague ?",
+      "answer": "La Nouvelle Vague est un mouvement du cinéma français des années 1950-1960 : Jean-Luc Godard, François Truffaut, Alain Resnais… tournaient hors des studios, en décors naturels, avec un propos original et personnel sur le cinéma."
+    },
+    {
+      "question": "quel festival européen décerne la Palme d'or ?",
+      "answer": "Le Festival de Cannes, en France, décerne la Palme d'or depuis 1955. Fondé en 1946, c'est l'un des festivals de cinéma les plus prestigieux au monde, avec la Mostra de Venise et la Berlinale."
+    },
+    {
+      "question": "qu'est-ce qu'un documentaire ?",
+      "answer": "Un documentaire est un film qui présente une réalité réelle, documentée et vérifiable — plutôt qu'une fiction. Diffusé en salles, à la télévision (ARTE en est l'une des grandes vitrines) ou sur les plateformes."
+    },
+    {
+      "question": "quel hymne symbolise l'Europe ?",
+      "answer": "L'hymne européen est l'« Ode à la joie », extrait de la Neuvième Symphonie de Ludwig van Beethoven (1824). Il a été adopté comme hymne officiel de l'Europe par le Conseil de l'Europe en 1972 puis par les Communautés européennes en 1985."
+    },
+    {
+      "question": "qu'est-ce que le siècle des Lumières ?",
+      "answer": "Le siècle des Lumières (XVIIIe siècle) est un mouvement européen de pensée : raison, tolérance, progrès et lutte contre l'obscurantisme. Ses monuments intellectuels : l'« Encyclopédie » de Diderot et d'Alembert, les écrits de Voltaire, Montesquieu ou Rousseau."
+    },
+    {
+      "question": "pourquoi l'Europe se passionne-t-elle pour la question climatique ?",
+      "answer": "L'Europe, continent industrialisé et dense, est à la fois responsable et exposée au dérèglement climatique. Le Pacte vert européen et les alertes scientifiques répétées depuis le XIXe siècle (le sujet de documentaires comme « Fuck la planète ») en font un enjeu central de sa culture politique et scientifique."
+    }
+  ]
+}

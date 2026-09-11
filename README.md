@@ -120,6 +120,20 @@ figurer (test automatisé inclus).
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
 
+## Contenu de la release v0.3.7
+
+- **La culture du tuteur** : preset `learn culture` — **27 connaissances
+  vérifiées** inspirées de la ligne éditoriale d'ARTE (la chaîne : création
+  1991, Strasbourg, Karambolage, Le Dessous des Cartes, Tracks, 28 minutes ;
+  l'Europe : Charlemagne, traité de l'Élysée, traité de Rome ; l'art : Joconde,
+  impressionnisme, Nouvelle Vague, Cannes ; les idées : Descartes, Kant,
+  Lumières ; les sciences : Einstein, Galilée, Copernic, Gutenberg).
+- **Relecture enrichie** : mots-outils interrogatifs (`quel`, `quelle`,
+  `combien`…) ajoutés — les questions « quel… ? » répondent plus justement
+  depuis la mémoire, toujours sans invention.
+- CLI : `AIgg.cmd learn culture` (idempotent).
+- Suite de tests : **180 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.3.6
 
 - **Apprentissage continu** : module `src/review.js` — relecture de la mémoire

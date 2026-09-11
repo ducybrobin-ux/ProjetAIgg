@@ -234,6 +234,7 @@ const STOP_WORDS_FR = new Set([
   'tous', 'toute', 'peut', 'comment', 'pourquoi', 'quand', 'et', 'ou', 'en',
   'sur', 'par', 'de', 'la', 'le', 'je', 'tu', 'il', 'elle', 'on', 'un', 'une',
   'est', 'son', 'sa', 'ses', 'pas', 'ne', 'du', 'au', 'aux', 'où',
+  'quel', 'quelle', 'quels', 'quelles', 'combien', 'ce',
 ]);
 
 // Relecture honnête de la mémoire : si la question du tuteur ressemble à une

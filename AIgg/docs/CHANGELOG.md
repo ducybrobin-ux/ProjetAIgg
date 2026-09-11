@@ -3,6 +3,29 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.7 — 2026-09-11 — ajout : la culture du tuteur (preset `culture`, inspiré d'ARTE)
+
+### Ajouts (AIgg gagne une culture vérifiée)
+- **Preset `culture` (27 connaissances vérifiées)** dans l'esprit de la ligne
+  éditoriale d'ARTE (« la plateforme culturelle européenne ») : la chaîne ARTE
+  elle-même (création 1991, premieres émissions 30 mai 1992, siège de
+  Strasbourg, précurseur « La Sept », Le Dessous des Cartes, Karambolage,
+  28 minutes, Tracks), l'Europe (Charlemagne, traité de l'Élysée, traité de
+  Rome, Strasbourg), l'art (Renaissance, Joconde, impressionnisme, Nouvelle
+  Vague, Festival de Cannes), les idées (Descartes, Kant, Lumières), les
+  sciences (Einstein, Galilée, Copernic, Gutenberg) et le documentaire.
+- **Relecture enrichie** : mots-outils interrogatifs ajoutés (`quel`, `quelle`,
+  `quels`, `quelles`, `combien`, `ce`) pour que les questions en « quel… »
+  répondent plus justement depuis la mémoire — toujours sans invention (sinon
+  UNKNOWN).
+- **CLI** : `AIgg.cmd learn culture` (idempotent comme Python).
+
+### Tests
+- Suite complète : **180 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+  `culture_preset_liste`, `culture_preset_load`, `culture_recall_arte`,
+  `culture_recall_oeuvre`, `culture_idempotent`, `culture_honnete` — les
+  entrées culture pré-existantes du tuteur sont préservées).
+
 ## v0.3.6 — 2026-09-10 — ajout : apprentissage continu (relecture au réveil, révision des acquis, boucle journal→mémoire)
 
 ### Ajouts (AIgg apprend seul, honnêtement, sur données réelles)

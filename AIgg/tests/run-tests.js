@@ -832,6 +832,62 @@ async function run() {
     }
   }
 
+  // 25. v0.3.7 : preset culture (ARTE) — la culture du tuteur
+  console.log('\n25) PRÉSET CULTURE (ARTE)');
+  if (ident) {
+    const presets = require('../src/presets');
+    const talk = require('../src/talk');
+    const fsX = require('fs');
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedConv = fsX.existsSync(config.PATHS.conversation) ? fsX.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    const preExisting = new Set(
+      memory.allFamilies()
+        .filter((r) => ((r.entry && r.entry.CONTEXT) || '').startsWith('preset:culture'))
+        .map((r) => r.entry.ID)
+    );
+    try {
+      const needsX = require('../src/needs');
+      needsX.deleteAllForTest && needsX.deleteAllForTest(); // aucune question ouverte : la relecture n'est pas détournée
+      const list = presets.listPresets();
+      report('culture_preset_liste', list.some((p) => p.id === 'culture'), `${list.length} preset(s)`);
+
+      const result = presets.loadPreset('culture', ident);
+      report('culture_preset_load', result.ok === true && result.domain === 'culture' && result.total >= 10,
+        `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
+
+      report('culture_recall_arte', talk.respond('qu\'est-ce qu\'ARTE ?', ident).intents.includes('KNOWLEDGE_RECALL'),
+        'KNOWLEDGE_RECALL sur définition ARTE');
+      report('culture_recall_oeuvre', (() => {
+        const r = talk.respond('qui a peint la Joconde ?', ident);
+        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard');
+      })(), 'réponse depuis la mémoire (Joconde)');
+
+      const idem = presets.loadPreset('culture', ident);
+      report('culture_idempotent', idem.loaded === 0, 'double charge = 0 ajout');
+
+      const honn = talk.respond('quelle est la recette du cassoulet ?', ident);
+      report('culture_honnete', honn.intents.includes('UNKNOWN'), 'question hors culture → honnête UNKNOWN');
+    } finally {
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      if (savedConv !== null) { try { fsX.writeFileSync(config.PATHS.conversation, savedConv, 'utf8'); } catch {} }
+      else { try { require('../src/conversation').clear(); } catch {} }
+      // nettoie uniquement les entrées culture ajoutées par CE test (les pré-existantes du tuteur restent)
+      for (const ent of memory.allFamilies()) {
+        const ctx = (ent.entry && ent.entry.CONTEXT) || '';
+        if (ctx.startsWith('preset:culture') && !preExisting.has(ent.entry.ID)) {
+          try { memory.deleteEntry(ent.family, ent.entry.ID); } catch {}
+        }
+      }
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
