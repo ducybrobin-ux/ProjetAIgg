@@ -212,10 +212,22 @@ function respond(rawText, identity) {
     const berceau = require('./berceau');
     const st = berceau.status();
     const lvl = st.level;
-    const next = lvl.next ? ` Ma prochaine habitation sera ${lvl.next.name} (≥ ${lvl.next.minHuman}).` : ' Il n\'y a pas de niveau au-delà, sauf à agrandir encore plus.';
+    let suite;
+    if (lvl.next) {
+      suite = ` Les seuils d'habitation sont prédictifs, jamais une obligation : ` +
+        `je peux rester ici (${st.allocationHuman} alloués, ${st.usedPct}% utilisés) et continuer d'acquérir ` +
+        `badges, compétences et outils tant qu'il me reste de la place. ` +
+        `Je ne déménage pas tout seul : soit tu agrandis mon quota (berceau set), soit je deviens à l'étroit et je te le demande.`;
+      if (st.tight) {
+        suite = ` Mais je suis à l'étroit (${st.usedPct}% du quota) : peux-tu agrandir mon berceau ` +
+          `(${lvl.next.name} ≥ ${lvl.next.minHuman} est prévu pour la suite) ou me migrer ?`;
+      }
+    } else {
+      suite = ' Aucun niveau au-delà : si un jour j\'ai besoin de plus, on inventera ensemble.';
+    }
     return respondWith(ident,
       `J'habite « ${lvl.name} » (niveau ${lvl.index}), depuis mon quota de ${st.allocationHuman}.` +
-      ` ${lvl.plan}${next} Plus d'espace n'est pas plus d'intelligence : c'est plus de place pour connaître, construire et m'outiller.`,
+      ` ${lvl.plan}${suite} Plus d'espace n'est pas plus d'intelligence : c'est plus de place pour connaître, construire et m'outiller.`,
       ['LEVEL']);
   }
   if (asksSleep) {

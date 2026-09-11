@@ -55,7 +55,12 @@ Hors registre (ce n'est pas une capacité acquise à la demande, mais une
   — Graine 100 Mo → Berceau 1 Go → Studio 2 Go → Appartement 5 Go → Maison
   10 Go → Atelier 20 Go → Laboratoire 50 Go → Centre 100 Go → Écosystème
   250 Go et plus. L'équipement listé par niveau est le **plan** du tuteur,
-  jamais annoncé comme acquis ; plus d'espace ≠ plus intelligent.
+  jamais annoncé comme acquis ; plus d'espace ≠ plus intelligent. Les seuils
+  sont **prédictifs et jamais une obligation** : AIgg reste dans son habitation
+  et continue d'acquérir badges, compétences et outils tant qu'il a de la
+  place ; il ne « déménage » jamais tout seul — soit le tuteur réalloue un
+  quota plus grand (`berceau set`), soit AIgg devient à l'étroit (≥ 85 %) et
+  demande (`AGRANDIR`).
 - **Santé du système** (`src/health.js`) : introspection consolidée réellement
   mesurée (les 14 points du plan) — état, niveau, espace, bibliothèques, outils,
   compétences, permissions, sens, tâches, erreurs récentes, sauvegardes.

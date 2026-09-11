@@ -52,7 +52,10 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   automatique ; le tuteur décide (`berceau set <taille>` ou `migrate <dest>`).
 - **Habitations** : le quota nomme le niveau d'espace (Graine → Berceau →
   Studio → Appartement → Maison → Atelier → Laboratoire → Centre → Écosystème),
-  du plus simple au plus fourni (`berceau level`). Plus d'espace
+  du plus simple au plus fourni (`berceau level`). Les seuils sont **prédictifs,
+  jamais une obligation** : AIgg ne déménage pas tout seul, continue d'acquérir
+  badges, compétences et outils tant qu'il a de la place ; le tuteur décide
+  (`berceau set`) ou AIgg demande à l'étroit (`AGRANDIR`). Plus d'espace
   ≠ plus intelligent ; l'équipement listé est le plan, jamais annoncé acquis.
 - **Santé du système** (`AIgg.cmd health`, `/api/health`, onglet web « Santé ») :
   vue consolidée réellement mesurée — espace total/utilisé/libre, bibliothèques,
@@ -114,7 +117,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (218 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (220 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

@@ -1054,17 +1054,22 @@ const BERCEAU_HELP_FR = [
   '',
   'But : AIgg se connaît en taille (mesure réelle de ses données) et connaît',
   'l\'espace libre du disque. Le berceau est le QUOTA que le tuteur lui alloue',
-  'pour grandir (1 Go par défaut depuis v0.3.12). Chaque quota atteint nomme une',
+  'pour grandir (1 Go par défaut depuis v0.3.12). Le quota alloué nomme son',
   'HABITATION (Graine 100 Mo, Berceau 1 Go, Studio 2 Go, Appartement 5 Go, Maison',
   '10 Go, Atelier 20 Go, Laboratoire 50 Go, Centre 100 Go, Écosystème 250 Go et',
-  'plus). Plus d\'espace ≠ plus intelligent : l\'espace permet plus de',
-  'connaissances, projets et outils. La santé consolidée du système se consulte',
-  'avec « AIgg.cmd health » (espace, bibliothèques, outils, compétences,',
-  'permissions, sens, état, tâches, erreurs récentes, sauvegardes — §18 du plan).',
+  'plus). Les seuils sont PRÉDICTIFS, jamais une obligation : AIgg ne déménage',
+  'pas tout seul et continue d\'acquérir badges, compétences et outils tant',
+  'qu\'il a de la place ; soit le tuteur réalloue un quota plus grand (set),',
+  'soit AIgg devient à l\'étroit (≥ 85 %) et DEMANDE (AGRANDIR). Plus d\'espace',
+  '≠ plus intelligent : l\'espace permet plus de connaissances, projets et',
+  'outils. La santé consolidée du système se consulte avec « AIgg.cmd health »',
+  '(espace, bibliothèques, outils, compétences, permissions, sens, état, tâches,',
+  'erreurs récentes, sauvegardes — §18 du plan).',
   '',
   'COMMANDES',
   '  AIgg.cmd berceau                     Statut : quota, habitation, poids mesuré, espace libre.',
   '  AIgg.cmd berceau level               Niveau/habitation atteinte (nom + plan d\'équipement).',
+  '                                       Prédictif : ce seuil n\'oblige jamais au déménagement.',
   '  AIgg.cmd berceau set <taille>        Resserre/agrandit le quota (ex. 2G, 1500M, 1073741824).',
   '  AIgg.cmd berceau check               Mesure et, si à l\'étroit, crée la demande AGRANDIR.',
   '  AIgg.cmd berceau ask                 Alias de check (demander de l\'aide).',
@@ -1102,13 +1107,14 @@ function runBerceau(ident, args) {
     }
     case 'level': {
       const lvl = berceau.level(berceau.loadAllocation().allocBytes);
-      const next = lvl.next ? ` — prochaine habitation : ${lvl.next.name} (≥ ${lvl.next.minHuman})` : '';
+      const next = lvl.next ? ` — prochaine habitation prévue : ${lvl.next.name} (≥ ${lvl.next.minHuman})` : '';
       console.log(JSON.stringify({
         niveau: lvl.index,
         habitation: lvl.name,
         allocationMin: lvl.minHuman,
         plan: lvl.plan,
         suivant: next ? lvl.next : null,
+        predictif: 'ce seuil n\'oblige jamais au déménagement : tant qu\'il reste de la place, AIgg continue d\'acquérir badges, compétences et outils (AGRANDIR seulement quand à l\'étroit).',
       }, null, 2));
       break;
     }

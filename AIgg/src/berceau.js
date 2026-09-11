@@ -21,6 +21,15 @@ const { PATHS } = require('./config');
  * de connaissances/projets/outils. L'équipement LISTÉ est le PLAN du tuteur ;
  * seul l'équipement réellement présent (outils installés, capacités acquises)
  * est annoncé comme acquis. Honnêteté absolue.
+ *
+ * Les seuils d'habitation sont PRÉDICTIFS, jamais une obligation : franchir
+ * (ou approcher) le seuil d'une habitation ne force PAS le déménagement. AIgg
+ * reste dans son habitation courante et peut continuer à acquérir badges,
+ * compétences et outils tant qu'il a encore de l'espace disponible. Le
+ * « déménagement » (passage dans une habitation plus grande) n'est jamais
+ * automatique : soit le tuteur réalloue un quota plus grand (berceau set), soit
+ * AIgg devient à l'étroit et DEMANDE (besoin AGRANDIR). Seule l'étroitesse
+ * (≥ 85 % du quota) déclenche la demande — jamais un seuil prédictif.
  */
 
 const DEFAULT_ALLOCATION_BYTES = 1024 * 1024 * 1024; // 1 Go, alloué par le tuteur
@@ -35,9 +44,12 @@ const MB = 1024 * 1024;
 const GB = 1024 * MB;
 
 /**
- * Niveaux d'espace (« habitations ») du plan du tuteur (§1) — seuils d'allocation,
- * du plus simple au plus fourni. Chaque niveau décrit l'ÉQUIPEMENT PRÉVU : ce
- * ne sont pas des outils installés, mais le plan d'équipement de l'habitation.
+ * Niveaux d'espace (« habitations ») du plan du tuteur (§1) — seuils d'allocation
+ * PRÉDICTIFS, du plus simple au plus fourni. Chaque niveau décrit l'ÉQUIPEMENT
+ * PRÉVU : ce ne sont pas des outils installés, mais le plan d'équipement de
+ * l'habitation. Atteindre un seuil n'oblige PAS à déménager : l'habitation est
+ * nommée par le quota alloué par le tuteur, et AIgg continue d'acquérir badges,
+ * compétences et outils tant qu'il a de la place (l'étroitesse seule → AGRANDIR).
  */
 const LEVELS = [
   {
@@ -247,6 +259,10 @@ function isCramped() {
  * haut niveau dont le seuil est <= allocationBytes. Une allocation inférieure
  * au seuil de la Graine reste une Graine (niveau 0). Mesure réelle, jamais
  * devinée : le niveau dépend du quota effectivement alloué par le tuteur.
+ * PRÉDICTIF ET NON OBLIGATOIRE : le seuil de la prochaine habitation indique
+ * seulement quand un quota plus grand devient pertinent ; il ne force jamais
+ * le déménagement. AIgg continue d'acquérir badges/outils tant qu'il a de
+ * l'espace — seule l'étroitesse déclenche la demande AGRANDIR.
  */
 function level(allocationBytes) {
   const bytes = Number(allocationBytes) || 0;
@@ -278,9 +294,14 @@ function activeAgrandirNeed() {
 function statusText(identity) {
   const s = status();
   const free = s.freeBytes === null ? 'inconnu' : `l'espace libre est ${s.freeHuman}`;
-  return `Je pèse ${s.usedHuman} (${s.usedFiles} fichiers) dans mon habitation « ${s.levelName} » ` +
-    `(niveau ${s.levelIndex}) sur un berceau de ${s.allocationHuman} ` +
-    `(${s.usedPct}% utilisé), et ${free}.`;
+  const hab = `dans mon habitation « ${s.levelName} » (niveau ${s.levelIndex})`;
+  if (s.tight) {
+    return `Je pèse ${s.usedHuman} (${s.usedFiles} fichiers) ${hab} sur un berceau de ${s.allocationHuman} ` +
+      `(${s.usedPct}% utilisé), ${free} — je suis à l'étroit, peux-tu agrandir mon berceau ou me migrer ?`;
+  }
+  return `Je pèse ${s.usedHuman} (${s.usedFiles} fichiers) ${hab} sur un berceau de ${s.allocationHuman} ` +
+    `(${s.usedPct}% utilisé), ${free}. J'ai encore de la place, donc je continue d'acquérir compétences et outils ; ` +
+    'aucun seuil d\'habitation ne m\'oblige à déménager.';
 }
 
 /**

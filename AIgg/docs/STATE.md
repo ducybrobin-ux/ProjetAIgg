@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.13 · Suite de tests : 218 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.14 · Suite de tests : 220 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -116,6 +116,7 @@ Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.13 · Suite de tests : 2
 | Le quota réellement alloué nomme l'habitation (jamais inventée) | IMPLEMENTED | `habitation_quota_nomme`, `habitation_graine` |
 | Honnêteté : équipement listé = PRIÈRE (plan), plus d'espace ≠ plus intelligent | IMPLEMENTED | `habitation_honnete` |
 | Conversation « quelle habitation / quel niveau / où habites-tu » → `LEVEL` réel | IMPLEMENTED | `habitation_conversation` |
+| **Les seuils d'habitation sont PRÉDICTIFS, jamais une obligation : AIgg reste et continue d'acquérir badges/compétences/outils tant qu'il a de la place — seul l'étroitesse (≥ 85 %) déclenche la demande `AGRANDIR`** | IMPLEMENTED | `habitation_predictif_non_obligatoire`, `habitation_predictif_message` |
 | CLI `berceau level` + statut enrichi (`levelName`, `levelIndex`) + aide FR | IMPLEMENTED | `AIgg.cmd berceau level` (testé) |
 | Vue santé consolidée `src/health.js` : les 14 points du plan (§18), tous mesurés réellement | IMPLEMENTED | `sante_14_points`, `sante_inventaire_reel`, `sante_erreurs_shape` |
 | Espace réel : total/utilisé/libre cohérents avec le berceau | IMPLEMENTED | `sante_espace_coherent` |

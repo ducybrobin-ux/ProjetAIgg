@@ -3,6 +3,28 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.14 — 2026-09-11 — clarification : les seuils d'habitation sont prédictifs, jamais une obligation
+
+### Amélioration (rester avec de la place : on ne « déménage » pas parce qu'un seuil approche)
+- **Principe §1 clarifié** : franchir (ou approcher) le seuil d'une habitation
+  ne force PAS AIgg à déménager. Les seuils (Graine 100 Mo → Écosystème 250 Go+)
+  sont PRÉDICTIFS : ils indiquent seulement quand un quota plus grand devient
+  pertinent.
+- **AIgg reste et continue** : tant qu'il a encore de l'espace disponible dans
+  son quota, il continue d'acquérir badges, compétences et outils, quelle que
+  soit sa proximité du seuil suivant. Le niveau n'est nommé que par le quota
+  réellement alloué par le tuteur.
+- **Seul déclencheur** : le déménagement n'est jamais automatique — soit le
+  tuteur réalloue un quota plus grand (`berceau set`), soit AIgg devient à
+  l'étroit (≥ 85 % du quota) et DEMANDE (besoin `AGRANDIR`).
+- **Textes alignés** : réponse de conversation (`LEVEL`), `statusText()`,
+  `AIgg.cmd berceau level` (champ `predictif` explicite), aide `berceau` ;
+  toujours la même règle : « je peux rester ici et continuer d'acquérir ».
+
+### Tests
+- Suite complète : **220 PASS / 0 FAIL** (nouveaux autonettoyants §29 :
+  `habitation_predictif_non_obligatoire`, `habitation_predictif_message`).
+
 ## v0.3.13 — 2026-09-11 — ajout : les Habitations (niveaux d'espace) et la Santé du système
 
 ### Ajouts (nommer sa maison : quota → habitation ; connaître sa santé réelle)

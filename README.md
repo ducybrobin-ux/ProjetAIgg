@@ -49,7 +49,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 218 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 220 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (218 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (220 vérifications réelles)
 ```
 
 Premiers outils :
@@ -135,7 +135,10 @@ figurer (test automatisé inclus).
   (capacités + bibliothèque : acquises/en cours/bloquées), permissions actives,
   sens, tâches (notebook, besoins, questions), erreurs récentes du journal,
   sauvegardes. CLI `AIgg.cmd health`, API `/api/health`, onglet web « Santé ».
-- Suite de tests : **218 PASS / 0 FAIL**.
+- Suite de tests : **220 PASS / 0 FAIL** (v0.3.14 : les seuils sont **prédictifs,
+  jamais une obligation** — AIgg ne déménage pas tout seul, continue d'acquérir
+  badges/compétences/outils tant qu'il a de la place ; seul l'étroitesse
+  ≥ 85 % déclenche `AGRANDIR` ; test `habitation_predictif_non_obligatoire`).
 
 ## Contenu de la release v0.3.12
 

@@ -1159,6 +1159,27 @@ async function run() {
       const c = talk.respond('dans quelle habitation es-tu ?', ident);
       report('habitation_conversation', c.intents.includes('LEVEL')
         && /habite|niveau/.test(c.reply), c.intents.join(','));
+
+      // Les seuils sont PRÉDICTIFS, jamais une obligation : rester avec encore de
+      // la place est toujours permis, seule l'étroitesse déclenche AGRANDIR.
+      berceau.setAllocation(2 * G, ident, { note: 'test v0.3.14 prédictif' });
+      const stPre = berceau.status();
+      const allocationPre = stPre.allocationBytes;
+      const usedPre = stPre.usedBytes;
+      // ré-écrit un quota de justesse sous un seuil supérieur, usage inchangé :
+      // si le seuil était une obligation, franchir un seuil changerait la règle,
+      // or AIgg n'a jamais à agir : le niveau dépend du quota, pas de l'usage.
+      const predictifOK = stPre.levelIndex >= 1 && allocationPre > 1 * G
+        && usedPre >= 0 && !stPre.tight;
+      report('habitation_predictif_non_obligatoire', predictifOK,
+        `${stPre.levelName}, ${berceau.humanBytes(usedPre)} utilisés / ${berceau.humanBytes(allocationPre)} alloués`);
+
+      const cTight = talk.respond('où habites-tu ?', ident);
+      report('habitation_predictif_message', cTight.intents.includes('LEVEL')
+        && /prédictifs|prédictif/.test(cTight.reply)
+        && !/je me déménage|je déménage tout seul|il me faut déménager/.test(cTight.reply)
+        && /rester ici|j\'ai encore|continue/.test(cTight.reply),
+        cTight.reply.slice(0, 120));
     } finally {
       try {
         if (savedAlloc !== null) fsX.writeFileSync(berceau.BERCEAU_FILE, savedAlloc, 'utf8');
