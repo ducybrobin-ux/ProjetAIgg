@@ -49,6 +49,19 @@ Hors registre (ce n'est pas une capacité acquise à la demande, mais une
 - Quota « Berceau » alloué par le tuteur (1 Go par défaut, `core/berceau.json`).
 - À l'étroit → besoin `AGRANDIR` (demande d'aide, jamais d'action autonome).
 
+## Habitations et Santé (v0.3.13)
+
+- **Habitations** : le quota alloué nomme le niveau d'espace (`berceau.level()`)
+  — Graine 100 Mo → Berceau 1 Go → Studio 2 Go → Appartement 5 Go → Maison
+  10 Go → Atelier 20 Go → Laboratoire 50 Go → Centre 100 Go → Écosystème
+  250 Go et plus. L'équipement listé par niveau est le **plan** du tuteur,
+  jamais annoncé comme acquis ; plus d'espace ≠ plus intelligent.
+- **Santé du système** (`src/health.js`) : introspection consolidée réellement
+  mesurée (les 14 points du plan) — état, niveau, espace, bibliothèques, outils,
+  compétences, permissions, sens, tâches, erreurs récentes, sauvegardes.
+  Accessible par CLI (`health`), API (`/api/health`) et console web (onglet
+  « Santé »).
+
 ## Principes d'acquisition
 
 - Une capacité s'acquiert par `capabilities.acquireCapacity()` (utilisé par

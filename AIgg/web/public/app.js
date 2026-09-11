@@ -88,6 +88,72 @@ function render(data) {
   renderNeedsBadge(data.needs, data.active_questions);
   renderChatEntries(data.conversation);
   applyAppearance(data.appearance);
+  renderHabitation(data);
+  renderHealth(data.health);
+}
+
+function renderHabitation(data) {
+  const box = $('habitation-detail');
+  if (!box) return;
+  const b = data.berceau || {};
+  const lvl = b.level || {};
+  const next = lvl.next ? ` — prochaine habitation : ${esc(lvl.next.name)} (≥ ${esc(lvl.next.minHuman)})` : '';
+  box.innerHTML =
+    `<div class="card">` +
+    `<h3>${esc(b.levelName || '?')} <span class="badge">niveau ${b.levelIndex ?? '?'}</span></h3>` +
+    `<p>Quota alloué : <b>${esc(b.allocationHuman || '?')}</b> — j'y occupe <b>${esc(b.usedHuman || '?')}</b> (${b.usedPct ?? '?'}% utilisé).</p>` +
+    `<p class="meta">${esc(b.level.plan || '')}${next}</p>` +
+    `<p class="meta">équipement prévu (plan du tuteur) : ${esc((lvl.plan || ''))}</p>` +
+    `</div>`;
+}
+
+function renderHealth(h) {
+  const box = $('health');
+  if (!box) return;
+  if (!h) { box.textContent = 'Indisponible.'; return; }
+  const lines = [];
+  lines.push(`version : ${h.version}`);
+  lines.push('');
+  lines.push(`ÉTAT — ${h.etat.courant} (réveils ${h.etat.reveils}, sommeils ${h.etat.sommeils})`);
+  lines.push('');
+  lines.push('ESPACE');
+  lines.push(`  total     : ${h.espace.total_human} (alloué)`);
+  lines.push(`  utilisé   : ${h.espace.utilise_human} (${h.espace.pourcent_utilise}%)`);
+  lines.push(`  disponible: ${h.espace.disponible_human ?? 'inconnu'}${h.espace.a_l_etroit ? ' — À L\'ÉTROIT (demande AGRANDIR)' : ''}`);
+  lines.push('');
+  lines.push(`HABITATION : ${h.niveau.name} (niveau ${h.niveau.index}) — ${h.niveau.plan}`);
+  if (h.niveau.suivant) lines.push(`  prochaine habitation : ${h.niveau.suivant.name} (≥ ${h.niveau.suivant.minHuman})`);
+  lines.push('');
+  lines.push(`BIBLIOTHÈQUES : ${h.bibliotheques.presentes} présente(s) (${h.bibliotheques.actives} active(s), ${h.bibliotheques.archivees} archivée(s))`);
+  if (h.bibliotheques.noms.length) lines.push('  ' + h.bibliotheques.noms.join(', '));
+  lines.push('');
+  lines.push(`OUTILS : ${h.outils.presents} présent(s) — ${h.outils.installes} installé(s), ${h.outils.autorises} autorisé(s), ${h.outils.tests_en_echec} en échec de test`);
+  if (h.outils.noms.length) lines.push('  ' + h.outils.noms.join(', '));
+  lines.push('');
+  lines.push('COMPÉTENCES');
+  lines.push(`  capacités (core)        : ${h.competences.capabilities_acquires} / ${h.competences.capabilities_total} acquises`);
+  lines.push(`  compétences bibliothèque : ${h.competences.competencies_acquises} acquises, ${h.competences.competencies_en_cours} en cours, ${h.competences.competencies_bloquees} bloquées`);
+  lines.push('');
+  lines.push(`PERMISSIONS actives : ${h.permissions.actives} (${h.permissions.tools_autorises} outil(s) autorisé(s), ${h.permissions.scope_actifs} portée(s))`);
+  lines.push('');
+  lines.push(`SENS : ${h.sens.disponibles} disponibles / ${h.sens.total} (${h.sens.inconnus} indéterminés)`);
+  lines.push('');
+  lines.push('TÂCHES');
+  lines.push(`  expériences (notebook) : ${h.taches.experiences_notebook}`);
+  lines.push(`  besoins actifs         : ${h.taches.besoins_actifs}`);
+  lines.push(`  questions ouvertes     : ${h.taches.questions_ouvertes}`);
+  lines.push('');
+  if (h.erreurs_recentes && h.erreurs_recentes.length) {
+    lines.push('ERREURS RÉCENTES (journal)');
+    for (const e of h.erreurs_recentes) {
+      lines.push(`  ${e.TIMESTAMP} [${e.EVENT}] ${e.ERROR ? '— ' + e.ERROR : ''}${e.TOOL_NAME ? ' (' + e.TOOL_NAME + ')' : ''}`);
+    }
+  } else {
+    lines.push('ERREURS RÉCENTES : aucune marqueur d\'échec dans le journal récent.');
+  }
+  lines.push('');
+  lines.push(`SAUVEGARDES : ${h.sauvegardes.count} — dernières : ${h.sauvegardes.recentes.length ? h.sauvegardes.recentes.join(', ') : 'aucune'}`);
+  box.textContent = lines.join('\n');
 }
 
 function renderTools(tools) {

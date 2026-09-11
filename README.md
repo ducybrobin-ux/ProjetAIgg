@@ -49,7 +49,7 @@ d'autres tuteurs.
   tuteur (sources, documents jamais exécutés, connaissances avec provenance,
   compétences jamais MASTERED automatiquement, contradictions, recherche,
   export/import) — privées par défaut.
-- Console tuteur web (http://127.0.0.1:8070/) + 207 auto-diagnostics.
+- Console tuteur web (http://127.0.0.1:8070/) + 218 auto-diagnostics.
 
 ## Démarrage rapide
 
@@ -59,7 +59,7 @@ Prérequis : Node.js ≥ 18 (pas de dépendance npm).
 cd AIgg
 .\AIgg.cmd birth        # naissance : nom, tuteur → acte de naissance
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (207 vérifications réelles)
+.\AIgg.cmd tests        # auto-diagnostics (218 vérifications réelles)
 ```
 
 Premiers outils :
@@ -119,6 +119,23 @@ figurer (test automatisé inclus).
 - Bloqué par défaut (moindre privilège) ; secrets/config hors Git.
 - Limites honnêtes : réception IMAP, AUTH et STARTTLS non faits.
 - Suite de tests : **123 PASS / 0 FAIL**.
+
+## Contenu de la release v0.3.13
+
+- **Les Habitations** : le quota alloué par le tuteur nomme l'habitation d'AIgg,
+  du plus simple au plus fourni (Graine 100 Mo, Berceau 1 Go, Studio 2 Go,
+  Appartement 5 Go, Maison 10 Go, Atelier 20 Go, Laboratoire 50 Go,
+  Centre 100 Go, Écosystème 250 Go et plus). Chaque niveau porte son plan
+  d'équipement **prévu** (jamais annoncé comme acquis). Plus d'espace
+  ≠ plus intelligent. Conversation « où habites-tu ? » → `LEVEL` ; CLI
+  `AIgg.cmd berceau level`.
+- **La Santé du système** (§18 du plan) : vue consolidée réellement mesurée —
+  état, niveau, espace (total/utilisé/libre), bibliothèques, outils
+  (présents/installés/autorisations/tests en échec), compétences
+  (capacités + bibliothèque : acquises/en cours/bloquées), permissions actives,
+  sens, tâches (notebook, besoins, questions), erreurs récentes du journal,
+  sauvegardes. CLI `AIgg.cmd health`, API `/api/health`, onglet web « Santé ».
+- Suite de tests : **218 PASS / 0 FAIL**.
 
 ## Contenu de la release v0.3.12
 

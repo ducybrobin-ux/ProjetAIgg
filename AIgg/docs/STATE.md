@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.12 · Suite de tests : 207 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.13 · Suite de tests : 218 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -107,6 +107,21 @@ Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.12 · Suite de tests : 2
 | Conversation : « quelle est ta taille ? / ton berceau ? » → `TAILLE` réel | IMPLEMENTED | `berceau_conversation` |
 | Proactivité au réveil : besoin `AGRANDIR` rappelé (comme QUESTION/CONFIRMATION) | IMPLEMENTED | `berceau_proactif` |
 | CLI `berceau [set <taille> | check]` + aide FR, API `/api/berceau` | IMPLEMENTED | `AIgg.cmd berceau` (testé) |
+
+## Habitations et Santé du système (v0.3.13, testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| Niveaux d'espace (`berceau.level()` depuis le quota réel, §1 du plan tuteur) : Graine 100 Mo → Berceau 1 Go → Studio 2 Go → Appartement 5 Go → Maison 10 Go → Atelier 20 Go → Laboratoire 50 Go → Centre 100 Go → Écosystème 250 Go+ | IMPLEMENTED | `habitation_seuils` |
+| Le quota réellement alloué nomme l'habitation (jamais inventée) | IMPLEMENTED | `habitation_quota_nomme`, `habitation_graine` |
+| Honnêteté : équipement listé = PRIÈRE (plan), plus d'espace ≠ plus intelligent | IMPLEMENTED | `habitation_honnete` |
+| Conversation « quelle habitation / quel niveau / où habites-tu » → `LEVEL` réel | IMPLEMENTED | `habitation_conversation` |
+| CLI `berceau level` + statut enrichi (`levelName`, `levelIndex`) + aide FR | IMPLEMENTED | `AIgg.cmd berceau level` (testé) |
+| Vue santé consolidée `src/health.js` : les 14 points du plan (§18), tous mesurés réellement | IMPLEMENTED | `sante_14_points`, `sante_inventaire_reel`, `sante_erreurs_shape` |
+| Espace réel : total/utilisé/libre cohérents avec le berceau | IMPLEMENTED | `sante_espace_coherent` |
+| Inventaire réel : bibliothèques et outils comptés depuis le disque, jamais fantômes | IMPLEMENTED | `sante_inventaire_reel` |
+| Compétences : capacités (core) + compétences de bibliothèque (acquises/en cours/bloquées) | IMPLEMENTED | `sante_human_seuils` |
+| CLI `AIgg.cmd health`, API `/api/health`, champ `health` dans `/api/state`, onglet web « Santé » | IMPLEMENTED | `AIgg.cmd health` (testé) + smoke web |
 
 ## Coffre-fort local (vault) — infrastructure sécurité (testé réellement)
 

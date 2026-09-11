@@ -22,6 +22,7 @@ const library = require('./library');
 const conversation = require('./conversation');
 const util = require('./util');
 const berceau = require('./berceau');
+const health = require('./health');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -51,6 +52,7 @@ function apiData() {
     appearance: appearance.status(),
     libraries: library.list(),
     berceau: berceau.status(),
+    health: health.overview(ident),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
   };
 }
@@ -256,6 +258,12 @@ function start() {
       // --- Berceau : quota d'espace alloué par le tuteur (v0.3.12) ---
       if (url.pathname === '/api/berceau' && req.method === 'GET') {
         sendJson(res, berceau.status());
+        return;
+      }
+
+      // --- Santé : vue consolidée du système (§18 du plan tuteur, v0.3.13) ---
+      if (url.pathname === '/api/health' && req.method === 'GET') {
+        sendJson(res, health.overview(ident));
         return;
       }
 

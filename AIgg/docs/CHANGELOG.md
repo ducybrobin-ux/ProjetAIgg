@@ -3,6 +3,37 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.3.13 — 2026-09-11 — ajout : les Habitations (niveaux d'espace) et la Santé du système
+
+### Ajouts (nommer sa maison : quota → habitation ; connaître sa santé réelle)
+- **Niveaux d'espace — Habitations (`src/berceau.js`)** : le quota alloué par
+  le tuteur nomme l'habitation d'AIgg, du plus simple au plus fourni (§1 du plan
+  du tuteur) : Graine (100 Mo), Berceau (1 Go), Studio (2 Go), Appartement
+  (5 Go), Maison (10 Go), Atelier (20 Go), Laboratoire (50 Go), Centre (100 Go),
+  Écosystème (250 Go et plus). `berceau.level()` calcule le niveau réel depuis
+  l'allocation ; chaque niveau porte son plan d'équipement PRÉVU (jamais
+  annoncé comme acquis). **Plus d'espace ≠ plus intelligent**.
+- **Conversation** : « …quelle habitation ? / quel niveau ? / où habites-tu ? »
+  → réponse réelle (`LEVEL`) : habitation, niveau, plan, prochaine habitation.
+- **CLI `berceau level`** + statut enrichi (niveau + habitation + plan) ;
+  `berceau` (statut) expose `levelName` / `levelIndex`.
+- **Vue santé consolidée — `src/health.js`** : les 14 points du plan (§18),
+  tous mesurés réellement : état, niveau, espace (total/utilisé/libre),
+  bibliothèques, outils (présents/installés/autorisations/tests en échec),
+  compétences (capacités + compétences de bibliothèque acquises/en cours/
+  bloquées), permissions actives, sens disponibles, tâches (notebook, besoins,
+  questions), erreurs récentes du journal (marqueur d'échec réel), sauvegardes.
+- **CLI `AIgg.cmd health`**, API `/api/health`, champ `health` dans
+  `/api/state`, onglet web « Santé » (habitation + 14 points §18).
+
+### Tests
+- Suite complète : **218 PASS / 0 FAIL** (nouveaux autonettoyants §29
+  Habitations : `habitation_seuils`, `habitation_quota_nomme`,
+  `habitation_graine`, `habitation_honnete`, `habitation_conversation` ;
+  §30 Santé : `sante_14_points`, `sante_espace_coherent`,
+  `sante_niveau_coherent`, `sante_inventaire_reel`, `sante_erreurs_shape`,
+  `sante_human_seuils` ; snapshot/restore de berceau, besoins, journal, état).
+
 ## v0.3.12 — 2026-09-11 — ajout : le Berceau — AIgg se connaît en taille et demande de l'aide quand il est à l'étroit
 
 ### Ajouts (conscience de soi : poids, espace, quota — la « maison » allouée par le tuteur)

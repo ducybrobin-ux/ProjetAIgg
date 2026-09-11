@@ -1116,6 +1116,120 @@ async function run() {
     }
   }
 
+  // 29. v0.3.13 : Habitations (niveaux d'espace) — nommés depuis le quota réel
+  console.log('\n29) HABITATIONS (niveaux d\'espace, du plus simple au plus fourni — v0.3.13)');
+  if (ident) {
+    const berceau = require('../src/berceau');
+    const fsX = require('fs');
+    const savedAlloc = fsX.existsSync(berceau.BERCEAU_FILE) ? fsX.readFileSync(berceau.BERCEAU_FILE, 'utf8') : null;
+    const savedNeeds = util.readJson(config.PATHS.needs, null);
+    const savedState = util.readJson(config.PATHS.state, null);
+    try {
+      // Seuils exacts du plan du tuteur (§1)
+      const M = 1024 * 1024, G = M * 1024;
+      const lvl = berceau.level;
+      const names = [
+        [100 * M, 'Graine'], [1024 * 1024 * 1024, 'Berceau'], [2 * G, 'Studio'],
+        [5 * G, 'Appartement'], [10 * G, 'Maison'], [20 * G, 'Atelier'],
+        [50 * G, 'Laboratoire'], [100 * G, 'Centre'], [250 * G, 'Écosystème'],
+      ];
+      const seuilsOK = names.every(([bytes, name]) => lvl(bytes).name === name)
+        && lvl(500 * G).name === 'Écosystème' && lvl(0).name === 'Graine' && lvl(50 * M).name === 'Graine';
+      report('habitation_seuils', seuilsOK, names.map(([, n]) => n).join(' → '));
+
+      // L'habitation est nommée depuis le QUOTA réellement alloué (jamais inventé)
+      berceau.setAllocation(2 * G, ident, { note: 'test v0.3.13 studio' });
+      const stStudio = berceau.status();
+      report('habitation_quota_nomme', stStudio.levelIndex === 2 && stStudio.levelName === 'Studio',
+        `${stStudio.levelName} (${berceau.humanBytes(stStudio.allocationBytes)})`);
+      berceau.setAllocation(100 * M, ident, { note: 'test v0.3.13 graine' });
+      const stGraine = berceau.status();
+      report('habitation_graine', stGraine.levelIndex === 0 && stGraine.levelName === 'Graine'
+        && stGraine.level.next && stGraine.level.next.name === 'Berceau',
+        `${stGraine.levelName} → prochaine ${stGraine.level.next.name}`);
+
+      // Honnêteté : le niveau n'augmente pas l'intelligence, seulement l'équipement permis
+      const lvlBerceau = lvl(1 * G);
+      report('habitation_honnete', lvlBerceau.next !== null && typeof lvlBerceau.plan === 'string'
+        && Array.isArray(lvlBerceau.equipment) && lvlBerceau.equipment.length > 0,
+        lvlBerceau.plan);
+
+      // Conversation : « dans quelle habitation habites-tu ? » → LEVEL réel
+      const talk = require('../src/talk');
+      const c = talk.respond('dans quelle habitation es-tu ?', ident);
+      report('habitation_conversation', c.intents.includes('LEVEL')
+        && /habite|niveau/.test(c.reply), c.intents.join(','));
+    } finally {
+      try {
+        if (savedAlloc !== null) fsX.writeFileSync(berceau.BERCEAU_FILE, savedAlloc, 'utf8');
+        else if (fsX.existsSync(berceau.BERCEAU_FILE)) fsX.unlinkSync(berceau.BERCEAU_FILE);
+      } catch {}
+      try {
+        if (savedNeeds) util.writeJson(config.PATHS.needs, savedNeeds);
+        else if (fsX.existsSync(config.PATHS.needs)) fsX.unlinkSync(config.PATHS.needs);
+      } catch {}
+      try {
+        if (savedState) util.writeJson(config.PATHS.state, savedState);
+        else { const s = state.status(ident); if (s && s.state) state.setState('AWAKE', ident, 'Restauration après tests hitations'); }
+      } catch {}
+    }
+  }
+
+  // 30. v0.3.13 : Santé du système — vue consolidée réelle (§18 du plan)
+  console.log('\n30) SANTÉ DU SYSTÈME (vue consolidée — v0.3.13)');
+  if (ident) {
+    const fsX = require('fs');
+    const berceau = require('../src/berceau');
+    const health = require('../src/health');
+    const savedAlloc = fsX.existsSync(berceau.BERCEAU_FILE) ? fsX.readFileSync(berceau.BERCEAU_FILE, 'utf8') : null;
+    const savedJournal = fsX.existsSync(config.PATHS.journalFile) ? fsX.readFileSync(config.PATHS.journalFile, 'utf8') : null;
+    try {
+      const h = health.overview(ident);
+
+      // 14 points du plan : espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes
+      const shapeOK = h && h.etat && h.etat.courant
+        && h.espace && typeof h.espace.total_bytes === 'number' && typeof h.espace.utilise_bytes === 'number'
+        && ('disponible_bytes' in h.espace)
+        && ('bibliotheques' in h) && ('outils' in h) && ('competences' in h)
+        && ('permissions' in h) && ('sens' in h) && ('taches' in h)
+        && ('erreurs_recentes' in h) && ('sauvegardes' in h) && ('niveau' in h);
+      report('sante_14_points', shapeOK, `${Object.keys(h).join(', ')}`);
+
+      // Cohérence : espace = allocation réelle, et pourcentage calculé honnêtement
+      const st = berceau.status();
+      report('sante_espace_coherent', h.espace.total_bytes === st.allocationBytes
+        && h.espace.utilise_bytes === st.usedBytes && h.espace.pourcent_utilise === st.usedPct,
+        `${h.espace.utilise_human} / ${h.espace.total_human} (${h.espace.pourcent_utilise}%)`);
+
+      // Niveau cohérent avec le statut berceau
+      report('sante_niveau_coherent', h.niveau.index === st.levelIndex && h.niveau.name === st.levelName,
+        `${h.niveau.name} (niveau ${h.niveau.index})`);
+
+      // Outils et bibliothèques : nombres réels (0..N), jamais fantômes
+      const tools = require('../src/toolkit').discoverAll();
+      const libs = require('../src/library').list();
+      report('sante_inventaire_reel', h.outils.presents === tools.length && h.bibliotheques.presentes === libs.length,
+        `${h.outils.presents} outils, ${h.bibliotheques.presentes} bibliothèques`);
+
+      // Erreurs récentes : liste aplatie, chaque entrée a timestamp + événement
+      const errorsOK = Array.isArray(h.erreurs_recentes) && h.erreurs_recentes.every((e) => e.TIMESTAMP && e.EVENT);
+      report('sante_erreurs_shape', errorsOK, `${h.erreurs_recentes.length} erreur(s) récente(s)`);
+
+      // Suffixes de taille acceptés pour les seuils : humanBytes cohérent avec level
+      report('sante_human_seuils', health.scoreCompetencies(ident).capabilities_total
+        === require('../src/capabilities').detectCapabilities().length,
+        health.scoreCompetencies(ident).capabilities_acquires + ' capacités acquises');
+    } finally {
+      try {
+        if (savedAlloc !== null) fsX.writeFileSync(berceau.BERCEAU_FILE, savedAlloc, 'utf8');
+        else if (fsX.existsSync(berceau.BERCEAU_FILE)) fsX.unlinkSync(berceau.BERCEAU_FILE);
+      } catch {}
+      try {
+        if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

@@ -65,8 +65,8 @@ function ageAnswer(ident) {
 
 function helpText() {
   return 'Je sais répondre simplement à quelques questions (qui es-tu, ton âge, tes capacités, ton tuteur, ' +
-    'ma taille / mon berceau), et tu peux m\'apprendre des choses en disant « apprends que … ». ' +
-    'Pour le reste, je réponds honnêtement : « Je ne sais pas encore faire cela. »';
+    'ma taille / mon berceau / mon habitation, ma santé), et tu peux m\'apprendre des choses en disant ' +
+    '« apprends que … ». Pour le reste, je réponds honnêtement : « Je ne sais pas encore faire cela. »';
 }
 
 function handleLearn(ident, content) {
@@ -176,6 +176,7 @@ function respond(rawText, identity) {
   const asksAge = saysAny(text, ['ton âge', 'quel âge', 'âge as-tu', 'depuis combien de temps tu vis', 'quand es-tu né', 'date de naissance']);
   const asksCaps = saysAny(text, ['que sais-tu faire', 'tu sais faire', 'tes capacités', 'ce que tu sais faire', 'tu peux faire']);
   const asksSize = saysAny(text, ['quelle est ta taille', 'quel est ton poids', 'combien pèses', 'tu pèses', 'ta taille', 'ton berceau', 'ton quota', 'espace disque', 'espace libre', 'à l\'étroit', 'plus de place', 'combien de place']);
+  const asksLevel = saysAny(text, ['quelle habitation', 'quel niveau', 'ton niveau', 'habitation es-tu', 'où habites-tu', 'dans quelle maison', 'ta maison', 'ton studio', 'ta graine', 'ton laboratoire', 'ton atelier', 'ton centre', 'ton écosystème', 'niveau es-tu']);
   const asksHelp = saysAny(text, ['aide', 'tu peux m\'aider', 'explique-moi', 'comment tu fonctionnes', 'comment fonctionnes-tu']);
   const saysHi = saysAny(text, ['bonjour', 'salut', 'coucou', 'bonsoir', 'bonsoire', 'hey', 'hello', 'yo']);
   const asksSleep = saysAny(text, ['va dormir', 'endors-toi', 'dors', 'fais dodo']);
@@ -207,6 +208,16 @@ function respond(rawText, identity) {
   if (asksAge) return respondWith(ident, ageAnswer(ident), ['TIME']);
   if (asksCaps) return respondWith(ident, listCapabilities(ident), ['CAPABILITIES']);
   if (asksSize) return respondWith(ident, require('./berceau').statusText(ident), ['TAILLE']);
+  if (asksLevel) {
+    const berceau = require('./berceau');
+    const st = berceau.status();
+    const lvl = st.level;
+    const next = lvl.next ? ` Ma prochaine habitation sera ${lvl.next.name} (≥ ${lvl.next.minHuman}).` : ' Il n\'y a pas de niveau au-delà, sauf à agrandir encore plus.';
+    return respondWith(ident,
+      `J'habite « ${lvl.name} » (niveau ${lvl.index}), depuis mon quota de ${st.allocationHuman}.` +
+      ` ${lvl.plan}${next} Plus d'espace n'est pas plus d'intelligence : c'est plus de place pour connaître, construire et m'outiller.`,
+      ['LEVEL']);
+  }
   if (asksSleep) {
     state.sleep(ident);
     return respondWith(ident, 'Je m\'endors doucement. À bientôt. (Sauvegarde et continuité conservées.)', ['SLEEP']);

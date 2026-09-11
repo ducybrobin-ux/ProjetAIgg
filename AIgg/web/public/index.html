@@ -35,6 +35,7 @@
     <button class="tab" data-tab="libraries">Bibliothèques</button>
     <button class="tab" data-tab="notebook">Notebook</button>
     <button class="tab" data-tab="journal">Journal</button>
+    <button class="tab" data-tab="health">Santé <span class="badge needs-badge" id="health-badge" style="display:none"></span></button>
     <button class="tab" data-tab="backups">Sauvegardes</button>
   </nav>
 
@@ -209,6 +210,19 @@
 
     <section id="tab-journal" class="tabpane">
       <div class="panel"><h2>Journal</h2><pre id="journal">chargement…</pre></div>
+    </section>
+
+    <section id="tab-health" class="tabpane">
+      <div class="panel">
+        <h2>Habitation d'AIgg (niveau d'espace)</h2>
+        <p class="hint">Le quota que le tuteur alloue nomme l'habitation : Graine 100 Mo, Berceau 1 Go, Studio 2 Go, Appartement 5 Go, Maison 10 Go, Atelier 20 Go, Laboratoire 50 Go, Centre 100 Go, Écosystème 250 Go et plus. <b>Plus d'espace ≠ plus intelligent</b> : l'espace permet plus de connaissances, projets et outils. L'équipement listé est le <b>plan</b> de l'habitation ; seuls les outils réellement installés sont annoncés comme acquis.</p>
+        <div id="habitation-detail">chargement…</div>
+      </div>
+      <div class="panel">
+        <h2>Santé du système (§18 du plan)</h2>
+        <p class="hint">Vue consolidée mesurée réellement : espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes.</p>
+        <pre id="health">chargement…</pre>
+      </div>
     </section>
 
     <section id="tab-backups" class="tabpane">

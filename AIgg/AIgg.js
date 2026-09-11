@@ -1050,24 +1050,32 @@ async function runAppearance(ident, args) {
 }
 
 const BERCEAU_HELP_FR = [
-  'AIgg — le Berceau (espace alloué par le tuteur) — aide (français)',
+  'AIgg — le Berceau (espace alloué par le tuteur) et les Habitations — aide (français)',
   '',
   'But : AIgg se connaît en taille (mesure réelle de ses données) et connaît',
   'l\'espace libre du disque. Le berceau est le QUOTA que le tuteur lui alloue',
-  'pour grandir (1 Go par défaut depuis v0.3.12). S\'il devient à l\'étroit',
-  '(≥ 85 % du quota, ou disque presque plein), AIgg DEMANDE de l\'aide par un',
-  'besoin AGRANDIR — il n\'agit jamais de lui-même.',
+  'pour grandir (1 Go par défaut depuis v0.3.12). Chaque quota atteint nomme une',
+  'HABITATION (Graine 100 Mo, Berceau 1 Go, Studio 2 Go, Appartement 5 Go, Maison',
+  '10 Go, Atelier 20 Go, Laboratoire 50 Go, Centre 100 Go, Écosystème 250 Go et',
+  'plus). Plus d\'espace ≠ plus intelligent : l\'espace permet plus de',
+  'connaissances, projets et outils. La santé consolidée du système se consulte',
+  'avec « AIgg.cmd health » (espace, bibliothèques, outils, compétences,',
+  'permissions, sens, état, tâches, erreurs récentes, sauvegardes — §18 du plan).',
   '',
   'COMMANDES',
-  '  AIgg.cmd berceau                     Statut : quota, poids mesuré, espace libre.',
+  '  AIgg.cmd berceau                     Statut : quota, habitation, poids mesuré, espace libre.',
+  '  AIgg.cmd berceau level               Niveau/habitation atteinte (nom + plan d\'équipement).',
   '  AIgg.cmd berceau set <taille>        Resserre/agrandit le quota (ex. 2G, 1500M, 1073741824).',
   '  AIgg.cmd berceau check               Mesure et, si à l\'étroit, crée la demande AGRANDIR.',
   '  AIgg.cmd berceau ask                 Alias de check (demander de l\'aide).',
+  '  AIgg.cmd health                      Vue santé consolidée du système (§18).',
   '',
   'EXEMPLES',
   '  AIgg.cmd berceau',
-  '  AIgg.cmd berceau set 2G',
+  '  AIgg.cmd berceau level',
+  '  AIgg.cmd berceau set 2G      (débloque l\'habitation Studio)',
   '  AIgg.cmd berceau check',
+  '  AIgg.cmd health',
   '',
   'Notes : la demande AGRANDIR apparaît dans « AIgg.cmd messages » et au réveil.',
   'Répondre au tuteur : AIgg.cmd messages answer <id> <réponse>, ou migrer :',
@@ -1090,6 +1098,18 @@ function runBerceau(ident, args) {
       }
       const record = berceau.setAllocation(bytes, ident, { note: args.slice(2).join(' ') || 'Allocation par le tuteur.' });
       console.log(JSON.stringify(record, null, 2));
+      break;
+    }
+    case 'level': {
+      const lvl = berceau.level(berceau.loadAllocation().allocBytes);
+      const next = lvl.next ? ` — prochaine habitation : ${lvl.next.name} (≥ ${lvl.next.minHuman})` : '';
+      console.log(JSON.stringify({
+        niveau: lvl.index,
+        habitation: lvl.name,
+        allocationMin: lvl.minHuman,
+        plan: lvl.plan,
+        suivant: next ? lvl.next : null,
+      }, null, 2));
       break;
     }
     case 'check':
@@ -1211,6 +1231,9 @@ async function main() {
     case 'docs-check':
       require('./src/docscheck').runCli();
       break;
+    case 'health':
+      console.log(JSON.stringify(require('./src/health').overview(ident), null, 2));
+      break;
 
     case 'discover':
       printToolsList();
@@ -1292,7 +1315,8 @@ async function main() {
         '  discover, propose <outil>, authorize <outil>, install <outil>, test <outil>, revoke <outil>\n' +
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
         '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check\n' +
-        '  berceau [set <taille> | check] — quota d\'espace alloué par le tuteur (aide : AIgg.cmd berceau help)'
+        '  berceau [set <taille> | check | level] — quota d\'espace / habitation (aide : AIgg.cmd berceau help)\n' +
+        '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }
 }

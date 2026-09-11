@@ -50,6 +50,16 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   défaut, `core/berceau.json`). S'il est à l'étroit (≥ 85 %), il **demande**
   de l'aide (besoin `AGRANDIR`, rappelé au réveil) — jamais d'action
   automatique ; le tuteur décide (`berceau set <taille>` ou `migrate <dest>`).
+- **Habitations** : le quota nomme le niveau d'espace (Graine → Berceau →
+  Studio → Appartement → Maison → Atelier → Laboratoire → Centre → Écosystème),
+  du plus simple au plus fourni (`berceau level`). Plus d'espace
+  ≠ plus intelligent ; l'équipement listé est le plan, jamais annoncé acquis.
+- **Santé du système** (`AIgg.cmd health`, `/api/health`, onglet web « Santé ») :
+  vue consolidée réellement mesurée — espace total/utilisé/libre, bibliothèques,
+  outils (présents/installés/autorisations/tests en échec), compétences
+  (acquises/en cours/bloquées), permissions actives, sens disponibles, état,
+  tâches (notebook, besoins, questions), erreurs récentes du journal,
+  sauvegardes (§18 du plan du tuteur).
 - **Apparence** : proposition → validation → application → journalisation ;
   le HTML est le corps visible d'AIgg (variables CSS pilotées).
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
@@ -87,7 +97,8 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd notebook-del <id>  # supprime une expérience (révocable)
 .\AIgg.cmd avatar            # générer la représentation
 .\AIgg.cmd needs             # liste des demandes d'AIgg
-.\AIgg.cmd berceau [set <taille>|check]  # quota d'espace alloué par le tuteur
+.\AIgg.cmd berceau [set <taille>|check|level]  # quota d'espace alloué par le tuteur / habitation
+.\AIgg.cmd health          # vue santé consolidée du système
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
@@ -103,7 +114,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\\AIgg.cmd tests             # auto-diagnostics (207 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (218 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution
