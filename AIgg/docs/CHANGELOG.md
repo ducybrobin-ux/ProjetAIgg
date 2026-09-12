@@ -3,6 +3,39 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.4.2 — 2026-09-12 — ajout : les Intérêts (priorités internes + centres d'intérêt natifs)
+
+### Ajout (Prompt Maître — « des envies, des intérêts, des buts… » abordé par phases)
+- **Module `src/interests.js`** : source **`interests/interests.ndjson`**
+  (privée, ignorée par Git, comme `core/`, `memory/`, `journal/`) ; la couche
+  Conscience reste une synthèse dérivée qui cite cette source.
+- **7 priorités internes** (`PRIORITES`) : `APPRENDRE`, `COMPRENDRE`,
+  `INTEGRITE` (maintenir mon intégrité), `EXPLORER`, `COMMUNIQUER`,
+  `COMPETENCES` (développer des compétences), `OBJECTIFS`.
+- **Centre d'intérêt** = sujet + priorité + intensité **EXPLICITE,
+  PROGRESSIVE et TRACABLE** : 0 non exprimé → 1 intérêt déclaré → 2 intérêt
+  approfondi → 3 intérêt engagé, plafond 3 ; chaque action est consignée dans
+  `TRANSACTIONS` (`CREATION`, `INTENSITE:N`, `ARCHIVE`, `RESTORE`) et
+  journalisée (`INTEREST_ADDED`, `INTEREST_INTENSIFIED`, `INTEREST_ARCHIVED`,
+  `INTEREST_RESTORED`) + souvenir en mémoire famille `knowledge`.
+- **Règle d'or** : les priorités/intérêts ne contournent **jamais** les
+  permissions du tuteur (capacité ≠ permission) et ne peuvent jamais
+  déclencher automatiquement une reproduction ni une action externe.
+- **Réversibilité** : archivage et restauration tracés.
+- **CLI** `AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]`
+  + aide FR ; **API** `/api/interests` (GET : statut + liste + priorités ;
+  POST : add/intensify/rm/restore/log) + champ `interests` dans `/api/state`.
+- **Conscience intégrée** : `Conscience/Besoins.json` (`PRIORITES_INTERNES` +
+  `REGLE`), `Conscience/CentresInterets.json` (intérêts natifs +
+  `POIDS_REELS_PAR_DOMAINE`), Intentions, Objectifs et `Moi.json`
+  (`BESOINS_ET_CENTRES_D_INTERET`) citent cette source native — jamais une 2e
+  base.
+
+### Tests
+- Suite complète : **254 PASS / 0 FAIL** (12 nouveaux autonettoyants §33,
+  fichier temp + mémoire `knowledge` et journal restaurés, `interests/` du
+  dépôt jamais modifié).
+
 ## v0.4.1 — 2026-09-12 — ajout : la fonction native Relations (confiance explicite, progressive, traçable)
 
 ### Ajout (Prompt Maître — RELATIONS, jamais une confiance automatique)

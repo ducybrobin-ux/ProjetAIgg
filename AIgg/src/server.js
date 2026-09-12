@@ -56,7 +56,15 @@ function apiData() {
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
     conscience: conscienceStatusSafe(ident),
     relations: relationsStatusSafe(),
+    interests: interestsStatusSafe(),
   };
+}
+
+function interestsStatusSafe() {
+  try {
+    const i = require('./interests');
+    return { status: i.status(), total: i.list().length };
+  } catch { return null; }
 }
 
 function relationsStatusSafe() {
@@ -312,6 +320,26 @@ function start() {
           else if (body.action === 'restore') sendJson(res, r.restore(ident, body.id, body));
           else if (body.action === 'log') sendJson(res, r.log(body.id));
           else sendError(res, 'Action inconnue. Permis : add, trust, rm, restore, log.');
+        } catch (e) { sendError(res, e.message); }
+        return;
+      }
+
+      // --- Intérêts : priorités internes + centres d'intérêt natifs (v0.4.2, jamais de contournement des permissions) ---
+      if (url.pathname === '/api/interests' && req.method === 'GET') {
+        const i = require('./interests');
+        sendJson(res, { status: i.status(), priorities: i.PRIORITES, interests: i.list() });
+        return;
+      }
+      if (url.pathname === '/api/interests' && req.method === 'POST') {
+        const body = await readBody(req);
+        const i = require('./interests');
+        try {
+          if (body.action === 'add') sendJson(res, i.add(ident, body));
+          else if (body.action === 'intensify') sendJson(res, i.intensify(ident, body.id, body));
+          else if (body.action === 'rm' || body.action === 'remove') sendJson(res, i.remove(ident, body.id, body));
+          else if (body.action === 'restore') sendJson(res, i.restore(ident, body.id, body));
+          else if (body.action === 'log') sendJson(res, i.log(body.id));
+          else sendError(res, 'Action inconnue. Permis : add, intensify, rm, restore, log.');
         } catch (e) { sendError(res, e.message); }
         return;
       }

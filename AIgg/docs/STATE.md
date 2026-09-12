@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.1 · Suite de tests : 242 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.2 · Suite de tests : 254 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -141,6 +141,22 @@ Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.1 · Suite de tests : 24
 | Synthèse Conscience : `Conscience/Relations.json` cite la source native + tuteur ; `Moi.json` RELATIONS mis à jour | IMPLEMENTED | `relations_conscience_integree` + CLI testé |
 | Tests autonettoyants (fichier temp, mémoire et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `relations_aucune_pollution_depot` |
 | CLI `AIgg.cmd relations [list|add|trust|log|rm|restore]` + aide FR ; API `/api/relations` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
+
+## Intérêts — priorités internes + centres d'intérêt natifs (v0.4.2, testée réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/interests.js` : source `interests/interests.ndjson` (NDJSON privé, ignoré par Git) | IMPLEMENTED | `interests_source_ndjson` |
+| 7 priorités internes (`PRIORITES`) : APPRENDRE, COMPRENDRE, INTEGRITE, EXPLORER, COMMUNIQUER, COMPETENCES, OBJECTIFS (CODE/LABEL/NOTE) | IMPLEMENTED | `interests_priorites` |
+| Priorité inconnue refusée (aucune invention) | IMPLEMENTED | `interests_priorite_inconnue_refus` |
+| Intensité **explicite, progressive, traçable** (0 non exprimé → 1 déclaré → 2 approfondi → 3 engagé) | IMPLEMENTED | `interests_intensite_progressive_trace` |
+| Plafond d'intensité (jamais au-delà de 3) | IMPLEMENTED | `interests_intensite_plafond` |
+| Règle d'or : jamais de contournement des permissions (capacité ≠ permission), aucune reproduction ni action externe automatique | IMPLEMENTED | `interests_jamais_contourne_permissions` |
+| Transactions `CREATION`/`INTENSITE:N`/`ARCHIVE`/`RESTORE` + journal `INTEREST_*` + souvenir mémoire famille `knowledge` | IMPLEMENTED | `interests_log_transactions`, `interests_journal_trace` |
+| Archivage **réversible** et tracé | IMPLEMENTED | `interests_archive_restaure` |
+| Synthèse Conscience : `Conscience/Besoins.json` (`PRIORITES_INTERNES`), `CentresInterets.json`, Intentions, Objectifs, `Moi.json` citent la source native — jamais une 2e base | IMPLEMENTED | `interests_conscience_integree` |
+| CLI `AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]` + aide FR ; API `/api/interests` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
+| Tests autonettoyants (fichier temp, `knowledge` et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `interests_aucune_pollution_depot` |
 
 ## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
 

@@ -81,6 +81,16 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   (0→3) est une action tracée (`relations trust/log`). Parent = filiation
   structurelle, jamais une propriété. `AIgg/Conscience/Relations.json` est la
   synthèse qui cite cette source.
+- **Intérêts (priorités internes + centres d'intérêt natifs** — `AIgg.cmd
+  interests`, v0.4.2) : 7 priorités internes (`APPRENDRE`, `COMPRENDRE`,
+  `INTEGRITE`, `EXPLORER`, `COMMUNIQUER`, `COMPETENCES`, `OBJECTIFS`) ; un
+  centre d'intérêt = sujet + priorité + intensité **explicite, progressive,
+  traçable** (0 non exprimé → 3 engagé, plafond 3, `TRANSACTIONS`). Source
+  privée `interests/interests.ndjson`. Beauté de la règle : une priorité ne
+  contourne **jamais** les permissions (capacité ≠ permission) et ne peut
+  jamais déclencher automatiquement une reproduction ni une action externe.
+  `AIgg/Conscience/Besoins.json` et `CentresInterets.json` sont les synthèses
+  qui citent cette source.
 - **Apparence** : proposition → validation → application → journalisation ;
   le HTML est le corps visible d'AIgg (variables CSS pilotées).
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
@@ -122,6 +132,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd health          # vue santé consolidée du système
 .\AIgg.cmd conscience [status|sync|moi|files]  # couche Conscience (synthèse fonctionnelle de soi)
 .\AIgg.cmd relations [list|add|trust|log|rm|restore]  # Relations natives (confiance explicite, progressive, traçable)
+.\AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]  # priorités internes + centres d'intérêt natifs (jamais de contournement des permissions)
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
@@ -137,7 +148,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (242 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (254 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

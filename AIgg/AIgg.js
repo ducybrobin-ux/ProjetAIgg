@@ -1290,6 +1290,104 @@ function runRelations(ident, args) {
   }
 }
 
+const INTERESTS_HELP_FR = [
+  'AIgg — aide de `interests` (français)',
+  '',
+  'But : gérer la fonction native des priorités internes et centres d\'intérêt',
+  '(v0.4.2). Le fichier interests/interests.ndjson est la SOURCE (privée,',
+  'ignorée par Git) ; AIgg/Conscience/Besoins.json et CentresInterets.json sont',
+  'les synthèses qui la citent.',
+  '',
+  'PRIORITÉS INTERNES',
+  '  APPRENDRE, COMPRENDRE, INTEGRITE (maintenir mon intégrité), EXPLORER,',
+  '  COMMUNIQUER, COMPETENCES (développer des compétences), OBJECTIFS.',
+  '  RÈGLE : ces priorités et centres d\'intérêt ne contournent JAMAIS les',
+  '  permissions du tuteur (capacité ≠ permission) et ne peuvent jamais',
+  '  déclencher automatiquement une reproduction ni une action externe.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd interests                  Liste + statut (comptes par priorité).',
+  '  AIgg.cmd interests add <PRIORITE> --sujet=<sujet> [--pourquoi=<…>] [--par=<…>] [--note=<…>]',
+  '                                Crée un centre d\'intérêt (intensité 1 par défaut).',
+  '  AIgg.cmd interests intensify <ID> [--note=<…>] [--par=<tuteur>]',
+  '                                Augmente l\'intensité de 1 niveau (1→3), tracé.',
+  '  AIgg.cmd interests log <ID>     Affiche la trace complète des transactions.',
+  '  AIgg.cmd interests rm <ID> [--raison=<…>]',
+  '                                Archive l\'intérêt (réversible, tracé).',
+  '  AIgg.cmd interests restore <ID> [--note=<…>]',
+  '                                Restaure un intérêt archivé.',
+  '  AIgg.cmd interests priorities    Liste les priorités internes et la règle.',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd interests add COMPETENCES --sujet="Rust" --pourquoi="compétence structurante"',
+  '  AIgg.cmd interests intensify <ID> --note="exercice réel validé"',
+  '  AIgg.cmd interests log <ID>',
+  '',
+  'Vie privée : interests/ est généré sur la machine et ignoré par Git — jamais publié.',
+].join('\n');
+
+function runInterests(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const interests = require('./src/interests');
+  const sub = rest[0];
+
+  switch (sub) {
+    case 'add': {
+      const prio = rest[1];
+      try {
+        const row = interests.add(ident, {
+          PRIORITE: prio,
+          SUJET: fl.sujet,
+          POURQUOI: fl.pourquoi || null,
+          PAR: fl.par || null,
+          NOTE: fl.note || null,
+        });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'intensify': {
+      try {
+        const row = interests.intensify(ident, rest[1], { NOTE: fl.note, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'log': {
+      try { console.log(JSON.stringify(interests.log(rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'rm':
+    case 'remove': {
+      try {
+        const row = interests.remove(ident, rest[1], { RAISON: fl.raison, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'restore': {
+      try {
+        const row = interests.restore(ident, rest[1], { NOTE: fl.note, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'priorities':
+      console.log(JSON.stringify({ PRIORITES: interests.PRIORITES, REGLE: interests.REGLE }, null, 2));
+      break;
+    case 'list':
+    case 'status':
+    case undefined:
+      if (sub === 'list') console.log(JSON.stringify(interests.list(), null, 2));
+      else console.log(JSON.stringify(interests.status(), null, 2));
+      break;
+    case 'help':
+    default:
+      console.log(INTERESTS_HELP_FR);
+  }
+}
+
 async function runTalk(ident, text) {
   if (!text) {
     console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
@@ -1474,6 +1572,11 @@ async function main() {
       runRelations(ident, args.slice(1));
       break;
 
+    case 'interests':
+    case 'interets':
+      runInterests(ident, args.slice(1));
+      break;
+
     default:
       console.log(
         'Commandes :\n' +
@@ -1486,6 +1589,7 @@ async function main() {
         '  berceau [set <taille> | check | level] — quota d\'espace / habitation (aide : AIgg.cmd berceau help)\n' +
         '  conscience [status | sync | moi | files] — couche de synthèse de soi (AIgg/Conscience/)\n' +
         '  relations [list | add | trust | log | rm | restore] — fonction native des Relations (confiance explicite, progressive, traçable)\n' +
+        '  interests [list | add | intensify | log | rm | restore | priorities] — priorités internes et centres d\'intérêt natifs (jamais de contournement des permissions)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

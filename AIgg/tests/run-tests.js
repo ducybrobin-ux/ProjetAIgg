@@ -1468,6 +1468,150 @@ async function run() {
     }
   }
 
+  console.log('\n33) INTÉRÊTS (priorités internes + centres d\'intérêt natifs — v0.4.2)');
+  if (ident) {
+    const osX = require('os');
+    const pathX = require('path');
+    const interests = require('../src/interests');
+    const tmpDir = pathX.join(osX.tmpdir(), `aigg-interests-test-${Date.now()}`);
+    const tmpFile = pathX.join(tmpDir, 'interests.ndjson');
+    const memDir = config.PATHS.memoryFamilies.knowledge;
+    const journalFile = config.PATHS.journalFile;
+
+    const memBefore = fs.existsSync(memDir) ? new Set(fs.readdirSync(memDir)) : new Set();
+    const journalLinesBefore = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+    const realFileExisted = fs.existsSync(config.PATHS.interestsFile);
+    const realFileBefore = realFileExisted ? fs.readFileSync(config.PATHS.interestsFile, 'utf8') : null;
+    const permsBefore = JSON.stringify(require('../src/permissions').loadPermissions());
+
+    try {
+      interests._setFile(tmpFile);
+
+      // 1) Priorités internes du Prompt Maître, toutes présentes + règle de non-contournement
+      const codes = interests.PRIORITE_CODES;
+      const expectedP = ['APPRENDRE', 'COMPRENDRE', 'INTEGRITE', 'EXPLORER', 'COMMUNIQUER', 'COMPETENCES', 'OBJECTIFS'];
+      report('interests_priorites',
+        codes.length === expectedP.length && expectedP.every((c) => codes.includes(c))
+          && interests.PRIORITES.length === 7 && interests.REGLE.includes('permissions'),
+        codes.join(', '));
+
+      // 2) AJOUT d'un centre d'intérêt : intensité 1 par défaut, ACTIF, priorité validée, tracé CREATION
+      const it1 = interests.add(ident, {
+        PRIORITE: 'COMPETENCES',
+        SUJET: 'Rust',
+        POURQUOI: 'compétence structurante',
+        PAR: 'tuteur',
+      });
+      const it2 = interests.add(ident, { PRIORITE: 'COMMUNIQUER', SUJET: 'Langue et communication' });
+      report('interests_add',
+        it1.PRIORITE === 'COMPETENCES' && it1.INTENSITE === 1 && it1.INTENSITE_LABEL === interests.NIVEAUX[1]
+          && it1.ACTIF === true && it1.TRANSACTIONS[0].ACTION === 'CREATION' && it1.AIgg_ID === ident.AIgg_ID
+          && it2.PRIORITE === 'COMMUNIQUER',
+        `${it1.SUJET} (${it1.PRIORITE}, intensité ${it1.INTENSITE})`);
+
+      // 3) Priorité inconnue : refus explicite (aucune invention de priorité)
+      let refusP = false;
+      try { interests.add(ident, { PRIORITE: 'INCONNUE', SUJET: 'X' }); }
+      catch (e) { refusP = String(e.message).includes('Priorité inconnue'); }
+      report('interests_priorite_inconnue_refus', refusP, refusP ? 'refusée' : 'ne refuse pas');
+
+      // 4) Intensité PROGRESSIVE et TRACÉE (1→2→3, INTENSITE:N)
+      const up1 = interests.intensify(ident, it1.ID, { PAR: ident.AIgg_NAME, NOTE: 'exercice réel validé' });
+      const up2 = interests.intensify(ident, it1.ID, { PAR: ident.AIgg_NAME, NOTE: 'projet abouti' });
+      const itrOk = up2.TRANSACTIONS.some((t) => t.ACTION === 'INTENSITE:2')
+        && up2.TRANSACTIONS.some((t) => t.ACTION === 'INTENSITE:3');
+      report('interests_intensite_progressive_trace',
+        up1.INTENSITE === 2 && up2.INTENSITE === 3 && up2.INTENSITE_LABEL === interests.NIVEAUX[3] && itrOk,
+        `intensité ${up2.INTENSITE} (${up2.INTENSITE_LABEL}), ${up2.TRANSACTIONS.length} transactions`);
+
+      // 5) Plafond d'intensité : jamais au-delà de 3
+      let plafondErreur = false;
+      try { interests.intensify(ident, it1.ID, { PAR: ident.AIgg_NAME }); }
+      catch (e) { plafondErreur = String(e.message).includes('maximum'); }
+      report('interests_intensite_plafond', plafondErreur, plafondErreur ? 'niveau max atteint, refus' : 'devrait refuser');
+
+      // 6) Le fichier de la source est bien un NDJSON privé (ligne par intérêt)
+      const ndjsonLines = fs.readFileSync(tmpFile, 'utf8').split('\n').filter(Boolean);
+      const ndjsonOK = ndjsonLines.every((l) => { try { const o = JSON.parse(l); return !!o.ID && !!o.SUJET && !!o.PRIORITE; } catch { return false; } });
+      report('interests_source_ndjson', ndjsonLines.length === 2 && ndjsonOK,
+        `${ndjsonLines.length} intérêt(s) dans interests/interests.ndjson`);
+
+      // 7) log() : trace complète consultable
+      const trace = interests.log(it1.ID);
+      report('interests_log_transactions', trace.TRANSACTIONS.length >= 3
+        && trace.INTENSITE.ORIGINE === 'explicite',
+        `${trace.TRANSACTIONS.length} transactions dans la trace`);
+
+      // 8) Archivage RÉVERSIBLE et tracé (jamais de perte silencieuse)
+      interests.remove(ident, it2.ID, { PAR: ident.AIgg_NAME, RAISON: 'test archivage' });
+      const horsListe = !interests.list().some((r) => r.ID === it2.ID);
+      interests.restore(ident, it2.ID, { PAR: ident.AIgg_NAME });
+      const deRetour = interests.list().some((r) => r.ID === it2.ID);
+      const archLog = interests.log(it2.ID).TRANSACTIONS.some((t) => t.ACTION === 'ARCHIVE')
+        && interests.log(it2.ID).TRANSACTIONS.some((t) => t.ACTION === 'RESTORE');
+      report('interests_archive_restaure', horsListe && deRetour && archLog,
+        'archivage réversible, ARCHIVE/RESTORE tracés');
+
+      // 9) Jamais de contournement des permissions : intensifier ne modifie AUCUNE permission
+      const permsAfter = JSON.stringify(require('../src/permissions').loadPermissions());
+      report('interests_jamais_contourne_permissions',
+        permsAfter === permsBefore && interests.REGLE.toLowerCase().includes('permissions'),
+        'permissions inchangées, règle portée par le registre');
+
+      // 10) Journal : opérations tracées (INTEREST_ADDED / INTEREST_INTENSIFIED)
+      const recentEvents = require('../src/journal').recentJournal(10).map((e) => e.EVENT);
+      report('interests_journal_trace',
+        recentEvents.includes('INTEREST_ADDED') && recentEvents.includes('INTEREST_INTENSIFIED'),
+        recentEvents.join(', '));
+
+      // 11) Conscience : Besoins.json expose les priorités ; CentresInterets.json la synthèse native citée
+      const tmpConscience = pathX.join(osX.tmpdir(), `aigg-interests-conscience-${Date.now()}`);
+      try {
+        const c = require('../src/conscience');
+        c.synthesize(ident, { dir: tmpConscience });
+        const besoinsDoc = util.readJson(pathX.join(tmpConscience, 'Besoins.json'), null);
+        const ciDoc = util.readJson(pathX.join(tmpConscience, 'CentresInterets.json'), null);
+        const ciData = ciDoc.DATA;
+        report('interests_conscience_integree',
+          ciDoc.SOURCES.includes('interests/ (priorités internes et centres d\'intérêt natifs)')
+            && besoinsDoc.DATA.PRIORITES_INTERNES.length === 7
+            && besoinsDoc.DATA.REGLE.includes('permissions')
+            && ciData.INTERETS.some((i) => i.SUJET === 'Rust' && i.PRIORITE === 'COMPETENCES')
+            && ciData.REGLE.includes('permissions'),
+          `${ciData.INTERETS.length} intérêt(s) natif(s) synthétisés + 7 priorités`);
+      } finally {
+        try { fs.rmSync(tmpConscience, { recursive: true, force: true }); } catch {}
+      }
+
+      // 12) Vie privée : le dépôt réel n'est JAMAIS touché par les tests
+      const realUnchanged = realFileExisted
+        ? fs.readFileSync(config.PATHS.interestsFile, 'utf8') === realFileBefore
+        : !fs.existsSync(config.PATHS.interestsFile);
+      report('interests_aucune_pollution_depot', realUnchanged, 'interests/ non modifié');
+    } finally {
+      interests._setFile(null);
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+      // Nettoyage des entrées mémoire « knowledge » créées pendant le test
+      try {
+        if (fs.existsSync(memDir)) {
+          for (const f of fs.readdirSync(memDir)) {
+            if (!memBefore.has(f)) { try { fs.unlinkSync(pathX.join(memDir, f)); } catch {} }
+          }
+        }
+      } catch {}
+      // Journal restreint à sa longueur initiale (append-only, mais tests propres)
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journalLinesBefore) {
+            fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
+              + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

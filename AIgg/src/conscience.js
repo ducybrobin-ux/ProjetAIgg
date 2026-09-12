@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * CONS​CIENCE (v0.4.1) — couche de synthèse fonctionnelle.
+ * CONSCIENCE (v0.4.2) — couche de synthèse fonctionnelle.
  *
  * Avertissement honnête : « Conscience » désigne ici ARCHITECTURE FONCTIONNELLE
  * (représentation cohérente de soi, dérivée de données réelles), JAMAIS une
@@ -10,7 +10,8 @@
  *
  * Principe d'or : le dossier AIgg/Conscience/ est une SYNTHÈSE calculée depuis
  * les vraies sources (identity, state, capabilities, permissions, senses,
- * memory, journal, libraries, needs, berceau, toolkit). Ce n'est JAMAIS une
+ * memory, journal, libraries, needs, interests, berceau, toolkit). Ce n'est
+ * JAMAIS une
  * seconde base de données : chaque section cite ses sources (SOURCES), et
  * aucune valeur n'est inventée. Régénérer = lire les sources + réécrire.
  *
@@ -70,6 +71,7 @@ function sources() {
     capabilities: 'core/capabilities.json',
     permissions: 'core/permissions.json',
     needs: 'core/needs.json',
+    interests: 'interests/ (priorités internes et centres d\'intérêt natifs)',
     berceau: 'core/berceau.json',
     senses: 'senses/ (sondes réelles)',
     memory: 'memory/ (4 familles)',
@@ -223,11 +225,12 @@ function sectionMoi(ident) {
       en_cours: comps.filter((c) => c.STATE === 'LEARNING' || c.STATE === 'PRACTICED' || c.STATE === 'PARTIALLY_MASTERED')
         .map((c) => `${c.NAME} (${c.LIBRARY_NAME}, ${c.STATE})`),
       besoins_actifs: activeNeeds.map((n) => `${n.TYPE} — ${n.DESCRIPTION}`),
-      centres_d_interet: interests.INTERETS.map((i) => i.domaine),
+      centres_d_interet: interests.INTERETS.map((i) => `${i.SUJET} (${i.PRIORITE_LABEL})`),
     },
     BESOINS_ET_CENTRES_D_INTERET: {
       besoins_actifs: activeNeeds.map((n) => ({ TYPE: n.TYPE, DESCRIPTION: n.DESCRIPTION, ID: n.ID })),
       centres_d_interet: interests.INTERETS,
+      priorites_internes: interests.PRIORITES,
     },
     RELATIONS: sectionRelations(ident).RELATIONS,
     OUTILS_DISPO_ET_AUTORITE: tools.map((t) => ({
@@ -303,6 +306,7 @@ function sectionMemoire(ident) {
 
 function sectionBesoins(ident) {
   const needs = require('./needs');
+  const interests = require('./interests');
   const all = needs.listNeeds();
   return {
     ACTIFS: all.filter((n) => n.STATUS === 'ACTIVE').map((n) => ({
@@ -311,11 +315,14 @@ function sectionBesoins(ident) {
     RESOLUS_RECENTS: all.filter((n) => n.STATUS !== 'ACTIVE').slice(-10).map((n) => ({
       ID: n.ID, TYPE: n.TYPE, DESCRIPTION: n.DESCRIPTION, STATUT: n.STATUS,
     })),
+    PRIORITES_INTERNES: interests.PRIORITES,
+    REGLE: interests.REGLE,
   };
 }
 
 function sectionIntentions(ident) {
   const needs = require('./needs');
+  const interests = require('./interests');
   const state = require('./state');
   const active = needs.listActiveNeeds();
   const st = state.status(ident);
@@ -327,11 +334,16 @@ function sectionIntentions(ident) {
   }
   if (!intentions.length && st.state === 'AWAKE') intentions.push(`rester disponible pour le tuteur`);
   if (st.state === 'SLEEPING') intentions = ['en veille — expérience conservée'];
-  return { INTENTIONS: intentions, ETAT: st.state };
+  return {
+    INTENTIONS: intentions,
+    PRIORITES_INTERNES: interests.PRIORITE_CODES,
+    ETAT: st.state,
+  };
 }
 
 function sectionObjectifs(ident) {
   const compt = competenciesAll();
+  const interests = require('./interests');
   const objectifs = [];
   for (const c of compt.filter((x) => x.STATE === 'LEARNING' || x.STATE === 'PRACTICED' || x.STATE === 'PARTIALLY_MASTERED')) {
     objectifs.push(`consolider ${c.NAME} (${c.LIBRARY_NAME})`);
@@ -341,12 +353,15 @@ function sectionObjectifs(ident) {
   }
   return {
     OBJECTIFS: objectifs,
+    PRIORITES_REFERENCE: 'Centres d\'intérêt natifs (interests/) : priorités internes structurées, jamais de contournement des permissions.',
     HONNETETE: 'Objectifs dérivés des compétences réellement en cours ou à réviser — aucune promesse non fondée.',
   };
 }
 
 function sectionCentresInterets(ident) {
   const library = require('./library');
+  const interests = require('./interests');
+  const natifs = interests.list();
   const byDomain = {};
   for (const l of library.list()) {
     const domains = l.meta.domains || [];
@@ -355,12 +370,21 @@ function sectionCentresInterets(ident) {
   for (const c of competenciesAll()) {
     if (c.DOMAIN) byDomain[c.DOMAIN] = (byDomain[c.DOMAIN] || 0) + 1;
   }
-  const interets = Object.keys(byDomain)
+  const poidsReels = Object.keys(byDomain)
     .map((domaine) => ({ domaine, poids: byDomain[domaine] }))
     .sort((a, b) => b.poids - a.poids);
   return {
-    INTERETS: interets,
-    SOURCES: 'domaines des bibliothèques et compétences réellement référencées (poids = occurrences).',
+    INTERETS: natifs.map((r) => ({
+      SUJET: r.SUJET,
+      PRIORITE: r.PRIORITE,
+      PRIORITE_LABEL: r.PRIORITE_LABEL,
+      INTENSITE: r.INTENSITE,
+      INTENSITE_LABEL: r.INTENSITE_LABEL,
+    })),
+    POIDS_REELS_PAR_DOMAINE: poidsReels,
+    PRIORITES_DISPONIBLES: interests.PRIORITES,
+    REGLE: interests.REGLE,
+    SOURCES: 'interests/ (intérêts natifs, intensité explicite) + bibliothèques/compétences (poids réel par domaine).',
   };
 }
 
@@ -610,10 +634,10 @@ function readme(ident) {
     '| `Etats.json` | État courant + historique des transitions. |',
     '| `Perceptions.json` | Sens réellement détectés + environnement. |',
     '| `Memoire.json` | Comptes des familles + rappels récents + bibliothèques. |',
-    '| `Besoins.json` | Besoins actifs et résolus récents. |',
-    '| `Intentions.json` | Intentions dérivées des besoins actifs. |',
-    '| `Objectifs.json` | Objectifs dérivés des compétences en cours. |',
-    '| `CentresInterets.json` | Domaines réellement référencés (bibliothèques/compétences). |',
+    '| `Besoins.json` | Besoins actifs et résolus récents + priorités internes structurées (jamais de contournement des permissions). |',
+    '| `Intentions.json` | Intentions dérivées des besoins actifs + priorités internes. |',
+    '| `Objectifs.json` | Objectifs dérivés des compétences en cours (priorités internes en référence). |',
+    '| `CentresInterets.json` | Intérêts natifs (sujet, priorité, intensité) + poids réel par domaine (bibliothèques/compétences). |',
     '| `Emotions.json` | Marqueur fonctionnel (état réel), jamais émotion simulée. |',
     '| `Relations.json` | Relations natives : catégories, confiance explicite/progressive/traçable, jamais automatique ; Parent = filiation structurelle. |',
     '| `Competences.json` | Capacités + compétences de bibliothèques (avec preuves). |',
@@ -665,10 +689,10 @@ function synthesize(ident, opts) {
     Etats: mergeEnvelope('Etats', identSafe, [sources().state], sectionEtats(identSafe)),
     Perceptions: mergeEnvelope('Perceptions', identSafe, [sources().senses, sources().state], sectionPerceptions(identSafe)),
     Memoire: mergeEnvelope('Memoire', identSafe, [sources().memory, sources().libraries], sectionMemoire(identSafe)),
-    Besoins: mergeEnvelope('Besoins', identSafe, [sources().needs], sectionBesoins(identSafe)),
-    Intentions: mergeEnvelope('Intentions', identSafe, [sources().needs, sources().state], sectionIntentions(identSafe)),
-    Objectifs: mergeEnvelope('Objectifs', identSafe, [sources().libraries], sectionObjectifs(identSafe)),
-    CentresInterets: mergeEnvelope('CentresInterets', identSafe, [sources().libraries], sectionCentresInterets(identSafe)),
+    Besoins: mergeEnvelope('Besoins', identSafe, [sources().needs, sources().interests], sectionBesoins(identSafe)),
+    Intentions: mergeEnvelope('Intentions', identSafe, [sources().needs, sources().state, sources().interests], sectionIntentions(identSafe)),
+    Objectifs: mergeEnvelope('Objectifs', identSafe, [sources().libraries, sources().interests], sectionObjectifs(identSafe)),
+    CentresInterets: mergeEnvelope('CentresInterets', identSafe, [sources().interests, sources().libraries], sectionCentresInterets(identSafe)),
     Emotions: mergeEnvelope('Emotions', identSafe, [sources().state, sources().journal], sectionEmotions(identSafe)),
     Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().relations, sources().memory], sectionRelations(identSafe)),
     Competences: mergeEnvelope('Competences', identSafe, [sources().capabilities, sources().libraries], sectionCompetences(identSafe)),
