@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.2 · Suite de tests : 254 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.3 · Suite de tests : 268 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -157,6 +157,26 @@ Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.2 · Suite de tests : 25
 | Synthèse Conscience : `Conscience/Besoins.json` (`PRIORITES_INTERNES`), `CentresInterets.json`, Intentions, Objectifs, `Moi.json` citent la source native — jamais une 2e base | IMPLEMENTED | `interests_conscience_integree` |
 | CLI `AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]` + aide FR ; API `/api/interests` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
 | Tests autonettoyants (fichier temp, `knowledge` et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `interests_aucune_pollution_depot` |
+
+## Compétences / Badges — arbre natif (v0.4.3, testée réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/badges.js` : l'arbre est du **code** ; source d'état `competences/badges.ndjson` (NDJSON privé, ignoré par Git) — jamais dupliqué | IMPLEMENTED | `badges_source_ndjson` |
+| 8 branches du Prompt Maître (SOCLE, INFORMATIQUE, RAISONNEMENT, DÉVELOPPEMENT, RECHERCHE, COMMUNICATION-SENS, SOCIAL, OUTILS) — 84 compétences | IMPLEMENTED | `badges_arbre_branches` |
+| Niveaux 0→6 (inconnu → transmettre/construire) + chaîne (Connaissance → Exercice → … → Badge → Capacité → Outil → Nouvelles compétences) | IMPLEMENTED | `badges_arbre_branches`, CLI `levels` |
+| Rust structurant sans réécriture : Rust I → II → III → système/réseau → WebAssembly (prérequis) | IMPLEMENTED | `badges_rust_chain` |
+| Règle d'or : **jamais de badge automatique** — preuve + validation explicite du tuteur requises | IMPLEMENTED | `badges_honor_preuve_exigee` |
+| Honor explicite et tracé (`BADGE:N` + `TRANSACTIONS`, `BADGE_HONORED` journalisé, souvenir mémoire `procedures`) | IMPLEMENTED | `badges_honor_explicite_trace`, `badges_journal_trace` |
+| Compétence non validée = niveau 0 INCONNU (aucun badge implicite) | IMPLEMENTED | `badges_aucun_honor_automatique` |
+| **Prérequis non contournables** (honor refusé tant que `REQUIS` non satisfaits) | IMPLEMENTED | `badges_prerequis_refus` |
+| Niveau décroissant refusé (un badge ne se retire pas par surprise) | IMPLEMENTED | `badges_niveau_decroissant_refus` |
+| Proposition d'apprentissage (`propose`) tracée, jamais un badge | IMPLEMENTED | `badges_propose_trace` |
+| `check()` : PRÊT / OBSTACLES calculés depuis les prérequis | IMPLEMENTED | `badges_check` |
+| **Capacité ≠ permission** : honor ne modifie AUCUNE permission ni capacité | IMPLEMENTED | `badges_jamais_contourne_permissions` |
+| Synthèse Conscience : `Conscience/Competences.json` (ARBRE_COMPETENCES, NIVEAUX, CHAINE, REGLE, BADGES) + `Moi.json` (`COMPETENCES_NATIVES`) citent la source native | IMPLEMENTED | `badges_conscience_integree` |
+| CLI `AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]` + aide FR ; API `/api/competences` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
+| Tests autonettoyants (fichier temp, mémoire `procedures` et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `badges_aucune_pollution_depot` |
 
 ## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
 

@@ -91,6 +91,16 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   jamais déclencher automatiquement une reproduction ni une action externe.
   `AIgg/Conscience/Besoins.json` et `CentresInterets.json` sont les synthèses
   qui citent cette source.
+- **Compétences / badges (arbre natif** — `AIgg.cmd competences`, v0.4.3) :
+  l'arbre est du code (`src/badges.js`) — 8 branches minimales du Prompt
+  Maître (Socle, Informatique, Raisonnement, Développement, Recherche,
+  Communication/Sens, Social, Outils), 84 compétences, niveaux **0 inconnu →
+  6 transmettre/construire**, chaîne « Connaissance → … → Badge → Capacité →
+  Outil → Nouvelles compétences ». **Badge jamais automatique** : preuve +
+  validation explicite du tuteur, prérequis non contournables, **capacité ≠
+  permission** (un badge atteste d'une compétence, jamais d'une autorisation).
+  État réel privé `competences/badges.ndjson` ; `AIgg/Conscience/Competences.json`
+  est la synthèse qui cite cette source.
 - **Apparence** : proposition → validation → application → journalisation ;
   le HTML est le corps visible d'AIgg (variables CSS pilotées).
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
@@ -133,6 +143,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd conscience [status|sync|moi|files]  # couche Conscience (synthèse fonctionnelle de soi)
 .\AIgg.cmd relations [list|add|trust|log|rm|restore]  # Relations natives (confiance explicite, progressive, traçable)
 .\AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]  # priorités internes + centres d'intérêt natifs (jamais de contournement des permissions)
+.\AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]  # arbre compétences/badges (niveaux 0→6, prérequis, badge jamais automatique)
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
@@ -148,7 +159,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (254 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (268 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

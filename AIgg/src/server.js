@@ -57,7 +57,15 @@ function apiData() {
     conscience: conscienceStatusSafe(ident),
     relations: relationsStatusSafe(),
     interests: interestsStatusSafe(),
+    competences: competencesStatusSafe(),
   };
+}
+
+function competencesStatusSafe() {
+  try {
+    const b = require('./badges');
+    return { status: b.status(), badges: b.list().filter((r) => r.STATUT === 'BADGE').length };
+  } catch { return null; }
 }
 
 function interestsStatusSafe() {
@@ -340,6 +348,25 @@ function start() {
           else if (body.action === 'restore') sendJson(res, i.restore(ident, body.id, body));
           else if (body.action === 'log') sendJson(res, i.log(body.id));
           else sendError(res, 'Action inconnue. Permis : add, intensify, rm, restore, log.');
+        } catch (e) { sendError(res, e.message); }
+        return;
+      }
+
+      // --- Arbre de compétences/badges (v0.4.3, badge jamais automatique : capacité ≠ permission) ---
+      if (url.pathname === '/api/competences' && req.method === 'GET') {
+        const b = require('./badges');
+        sendJson(res, { status: b.status(), tree: b.tree(), niveaux: b.NIVEAUX, regle: b.REGLE });
+        return;
+      }
+      if (url.pathname === '/api/competences' && req.method === 'POST') {
+        const body = await readBody(req);
+        const b = require('./badges');
+        try {
+          if (body.action === 'propose') sendJson(res, b.propose(ident, body.code, body));
+          else if (body.action === 'honor') sendJson(res, b.honor(ident, body.code, body));
+          else if (body.action === 'check') sendJson(res, b.check(ident, body.code));
+          else if (body.action === 'log') sendJson(res, b.log(body.code));
+          else sendError(res, 'Action inconnue. Permis : propose, honor, check, log.');
         } catch (e) { sendError(res, e.message); }
         return;
       }

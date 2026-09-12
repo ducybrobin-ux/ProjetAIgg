@@ -1388,6 +1388,108 @@ function runInterests(ident, args) {
   }
 }
 
+const COMPETENCES_HELP_FR = [
+  'AIgg — aide de `competences` (français)',
+  '',
+  'But : gérer l\'arbre natif des compétences et badges (v0.4.3). L\'arbre',
+  '(branches, niveaux, prérequis) est du CODE (src/badges.js) ; le fichier',
+  'competences/badges.ndjson est la SOURCE de l\'état réel (privée, ignorée',
+  'par Git) ; AIgg/Conscience/Competences.json est la synthèse qui le cite.',
+  '',
+  'RÈGLES',
+  '  - Chaîne : Connaissance → Exercice → Expérience/Test → Résultat →',
+  '    Validation → Badge → Capacité → Outil → Nouvelles compétences.',
+  '  - Niveaux : 0 inconnu, 1 découverte, 2 compréhension, 3 pratique,',
+  '    4 autonome sous contrôle, 5 maîtrise, 6 transmettre/construire.',
+  '  - RÈGLE D\'OR : un badge ne s\'obtient JAMAIS automatiquement — une',
+  '    preuve réelle (--preuve=) et la validation explicite du tuteur (--par=)',
+  '    sont requises. Les prérequis (REQUIS) ne sont pas contournables.',
+  '  - CAPACITÉ ≠ PERMISSION : un badge atteste d\'une compétence, jamais',
+  '    d\'une autorisation. L\'exécution reste soumise à la sécurité, au',
+  '    sandbox et à l\'autorisation explicite du tuteur.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd competences                Statut (badges, par branche/niveau, règle).',
+  '  AIgg.cmd competences tree           Affiche l\'arbre complet avec niveaux.',
+  '  AIgg.cmd competences branches       Liste les 8 branches.',
+  '  AIgg.cmd competences levels         Niveaux 0→6 + chaîne.',
+  '  AIgg.cmd competences check <CODE>   Prérequis, niveau, prêt à valider.',
+  '  AIgg.cmd competences propose <CODE> [--pourquoi=<…>] [--ressources=<…>] [--experiences=<…>] [--par=<…>]',
+  '                                Propose une compétence en apprentissage.',
+  '  AIgg.cmd competences honor <CODE> --niveau=<1..6> --preuve=<preuve> --par=<tuteur> [--note=<…>]',
+  '                                Valide un badge (jamais automatique).',
+  '  AIgg.cmd competences log <CODE>     Trace complète des transactions.',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd competences propose INF-RUST1 --pourquoi="Démontrer du Rust élémentaire"',
+  '  AIgg.cmd competences honor INF-RUST1 --niveau=2 --preuve="exercice rust relu par le tuteur" --par="Robin Ducyb"',
+  '  AIgg.cmd competences check DEV-PROGRAMMATION2',
+  '',
+  'Vie privée : competences/ est généré sur la machine et ignoré par Git — jamais publié.',
+].join('\n');
+
+function runCompetences(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const badges = require('./src/badges');
+  const sub = rest[0];
+
+  switch (sub) {
+    case 'tree':
+      console.log(JSON.stringify(badges.tree(), null, 2));
+      break;
+    case 'branches':
+      console.log(JSON.stringify(badges.BRANCHES.map((b) => ({ CODE: b.CODE, LIBELLE: b.LIBELLE, COMPETENCES: b.COMPETENCES.length })), null, 2));
+      break;
+    case 'levels':
+      console.log(JSON.stringify({ NIVEAUX: badges.NIVEAUX, MAX_NIVEAU: badges.MAX_NIVEAU, CHAINE: badges.CHAINE }, null, 2));
+      break;
+    case 'check': {
+      try { console.log(JSON.stringify(badges.check(ident, rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'propose': {
+      try {
+        const row = badges.propose(ident, rest[1], {
+          POURQUOI: fl.pourquoi || null,
+          RESSOURCES: fl.ressources || null,
+          EXPERIENCES: fl.experiences || null,
+          PAR: fl.par || null,
+          NOTE: fl.note || null,
+        });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'honor': {
+      try {
+        const row = badges.honor(ident, rest[1], {
+          NIVEAU: fl.niveau !== undefined ? fl.niveau : NaN,
+          PREUVE: fl.preuve,
+          PAR: fl.par,
+          NOTE: fl.note || null,
+        });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'log': {
+      try { console.log(JSON.stringify(badges.log(rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'list':
+    case 'status':
+    case undefined:
+      if (sub === 'list') console.log(JSON.stringify(badges.list(), null, 2));
+      else console.log(JSON.stringify(badges.status(ident), null, 2));
+      break;
+    case 'help':
+    default:
+      console.log(COMPETENCES_HELP_FR);
+  }
+}
+
 async function runTalk(ident, text) {
   if (!text) {
     console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
@@ -1577,6 +1679,11 @@ async function main() {
       runInterests(ident, args.slice(1));
       break;
 
+    case 'competences':
+    case 'badges':
+      runCompetences(ident, args.slice(1));
+      break;
+
     default:
       console.log(
         'Commandes :\n' +
@@ -1590,6 +1697,7 @@ async function main() {
         '  conscience [status | sync | moi | files] — couche de synthèse de soi (AIgg/Conscience/)\n' +
         '  relations [list | add | trust | log | rm | restore] — fonction native des Relations (confiance explicite, progressive, traçable)\n' +
         '  interests [list | add | intensify | log | rm | restore | priorities] — priorités internes et centres d\'intérêt natifs (jamais de contournement des permissions)\n' +
+        '  competences [tree | branches | levels | check | propose | honor | log | status] — arbre des compétences/badges (niveaux 0→6, prérequis, badge jamais automatique : capacité ≠ permission)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

@@ -3,6 +3,48 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.4.3 — 2026-09-12 — ajout : l'Arbre de compétences / badges (branches, niveaux, prérequis, preuves)
+
+### Ajout (Prompt Maître — arbre de compétences/badges, socle d'abord)
+- **Module `src/badges.js`** : l'arbre est du **code** (jamais une 2e base) ;
+  l'état réel est la source privée **`competences/badges.ndjson`** (ignorée par
+  Git, comme `core/`, `memory/`, `journal/`).
+- **8 branches minimales du Prompt Maître** (SOCLE, INFORMATIQUE,
+  RAISONNEMENT, DÉVELOPPEMENT, RECHERCHE, COMMUNICATION-SENS, SOCIAL,
+  OUTILS) — **84 compétences**, chaîne déclarée : Connaissance → Exercice →
+  Expérience/Test → Résultat → Validation → Badge → Capacité → Outil →
+  Nouvelles compétences.
+- **Niveaux 0→6** : 0 inconnu, 1 découverte, 2 compréhension, 3 pratique,
+  4 autonome sous contrôle, 5 maîtrise, 6 capable de transmettre/construire.
+- **Rust structurant sans réécriture** : Rust I → Rust II → Rust III →
+  Rust système/réseau → Rust/WebAssembly (prérequis enchaînés).
+- **PRÉREQUIS non contournables** : un badge de niveau N peut exiger
+  `REQUIS` (autres compétences ≥ niveau minimal) ; honor est refusé tant
+  qu'ils ne sont pas satisfaits.
+- **RÈGLE D'OR — badge jamais automatique** : une PREUVE et la validation
+  explicite du tuteur (`PAR`) sont requises ; chaque badge est tracé
+  (`TRANSACTIONS` : `BADGE:N`, `PROPOSAL`), journalisé (`BADGE_HONORED`,
+  `BADGE_PROPOSED`) et mémorisé (famille `procedures`). Niveau décroissant
+  refusé.
+- **CAPACITÉ ≠ PERMISSION** : un badge atteste d'une compétence, jamais d'une
+  autorisation ; honor ne modifie aucune permission ni capacité.
+- **Proposition d'apprentissage** (`propose`) : AIgg peut proposer ce qu'il
+  veut apprendre, pourquoi et avec quelles ressources — jamais un badge sans
+  validation.
+- **CLI** `AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]`
+  + aide FR ; **API** `/api/competences` (GET : statut + arbre + niveaux +
+  règle ; POST : propose/honor/check/log) + champ `competences` dans `/api/state`.
+- **Conscience intégrée** : `Conscience/Competences.json`
+  (`ARBRE_COMPETENCES`, `NIVEAUX`, `MAX_NIVEAU`, `CHAINE`, `REGLE`, `BADGES`)
+  et `Moi.json` (`badges_natives`, `competences_en_proposition`,
+  `COMPETENCES_NATIVES`) citent cette source
+  native — jamais une 2e base.
+
+### Tests
+- Suite complète : **268 PASS / 0 FAIL** (14 nouveaux autonettoyants §34,
+  fichier temp + mémoire `procedures` et journal restaurés, `competences/` du
+  dépôt jamais modifié).
+
 ## v0.4.2 — 2026-09-12 — ajout : les Intérêts (priorités internes + centres d'intérêt natifs)
 
 ### Ajout (Prompt Maître — « des envies, des intérêts, des buts… » abordé par phases)

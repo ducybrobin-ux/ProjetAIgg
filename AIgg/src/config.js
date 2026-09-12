@@ -5,7 +5,7 @@ const os = require('os');
 
 const ROOT = path.join(__dirname, '..');
 
-const CORE_VERSION = '0.4.2';
+const CORE_VERSION = '0.4.3';
 const MEMORY_VERSION = '0.1.0';
 const AIGG_NAME = 'AIgg';
 const DEFAULT_FIRST_NAME = 'Bob007';
@@ -30,6 +30,8 @@ const PATHS = {
   relationsFile: path.join(ROOT, 'relations', 'relations.ndjson'),
   interests: path.join(ROOT, 'interests'),
   interestsFile: path.join(ROOT, 'interests', 'interests.ndjson'),
+  competences: path.join(ROOT, 'competences'),
+  competencesFile: path.join(ROOT, 'competences', 'badges.ndjson'),
   backups: path.join(ROOT, 'backups'),
   vault: path.join(ROOT, 'vault'),
   vaultFile: path.join(ROOT, 'vault', 'vault.json'),

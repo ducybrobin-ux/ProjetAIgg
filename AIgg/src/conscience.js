@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * CONSCIENCE (v0.4.2) — couche de synthèse fonctionnelle.
+ * CONSCIENCE (v0.4.3) — couche de synthèse fonctionnelle.
  *
  * Avertissement honnête : « Conscience » désigne ici ARCHITECTURE FONCTIONNELLE
  * (représentation cohérente de soi, dérivée de données réelles), JAMAIS une
@@ -10,7 +10,8 @@
  *
  * Principe d'or : le dossier AIgg/Conscience/ est une SYNTHÈSE calculée depuis
  * les vraies sources (identity, state, capabilities, permissions, senses,
- * memory, journal, libraries, needs, interests, berceau, toolkit). Ce n'est
+ * memory, journal, libraries, needs, interests, competences, berceau,
+ * toolkit). Ce n'est
  * JAMAIS une
  * seconde base de données : chaque section cite ses sources (SOURCES), et
  * aucune valeur n'est inventée. Régénérer = lire les sources + réécrire.
@@ -72,6 +73,7 @@ function sources() {
     permissions: 'core/permissions.json',
     needs: 'core/needs.json',
     interests: 'interests/ (priorités internes et centres d\'intérêt natifs)',
+    competences: 'competences/ (arbre natif des compétences/badges)',
     berceau: 'core/berceau.json',
     senses: 'senses/ (sondes réelles)',
     memory: 'memory/ (4 familles)',
@@ -156,6 +158,7 @@ function sectionMoi(ident) {
   const berceau = require('./berceau');
   const toolkit = require('./toolkit');
   const senses = require('./senses');
+  const badges = require('./badges');
 
   const caps = capabilities.detectCapabilities();
   const acquiredCaps = caps.filter((c) => c.acquired);
@@ -195,6 +198,7 @@ function sectionMoi(ident) {
       competences_maitrisees: mastered,
       competences_en_cours: learning,
       competences_bloquees: blockedComp,
+      badges_natives: badges.status().BADGES,
       faits_memorises: knownFactsCount(),
       bibliotheques: libraries.map((l) => l.meta.name),
     },
@@ -224,6 +228,8 @@ function sectionMoi(ident) {
     J_APPRENDS: {
       en_cours: comps.filter((c) => c.STATE === 'LEARNING' || c.STATE === 'PRACTICED' || c.STATE === 'PARTIALLY_MASTERED')
         .map((c) => `${c.NAME} (${c.LIBRARY_NAME}, ${c.STATE})`),
+      competences_en_proposition: badges.list({ statut: 'PROPOSE' })
+        .map((b) => `${b.LIBELLE} (${b.BRANCHE_LIBELLE})`),
       besoins_actifs: activeNeeds.map((n) => `${n.TYPE} — ${n.DESCRIPTION}`),
       centres_d_interet: interests.INTERETS.map((i) => `${i.SUJET} (${i.PRIORITE_LABEL})`),
     },
@@ -231,6 +237,16 @@ function sectionMoi(ident) {
       besoins_actifs: activeNeeds.map((n) => ({ TYPE: n.TYPE, DESCRIPTION: n.DESCRIPTION, ID: n.ID })),
       centres_d_interet: interests.INTERETS,
       priorites_internes: interests.PRIORITES,
+    },
+    COMPETENCES_NATIVES: {
+      badges: badges.status().BADGES,
+      en_proposition: badges.list({ statut: 'PROPOSE' }).length,
+      arbre: {
+        branches: badges.BRANCHES.length,
+        competences: badges.allCodes().length,
+        niveaux: badges.NIVEAUX,
+        regle_capacite_difference_permission: true,
+      },
     },
     RELATIONS: sectionRelations(ident).RELATIONS,
     OUTILS_DISPO_ET_AUTORITE: tools.map((t) => ({
@@ -460,9 +476,23 @@ function sectionRelations(ident) {
 
 function sectionCompetences(ident) {
   const capabilities = require('./capabilities');
+  const badges = require('./badges');
+  const st = badges.status();
   return {
     CAPACITES: capabilities.detectCapabilities().map((c) => ({ CAPACITE: c.name, ACTION: c.description, ACQUISE: c.acquired })),
     COMPETENCES_BIBLIOTHEQUES: competenciesAll(),
+    ARBRE_COMPETENCES: badges.tree(),
+    NIVEAUX: badges.NIVEAUX,
+    MAX_NIVEAU: badges.MAX_NIVEAU,
+    CHAINE: badges.CHAINE,
+    REGLE: badges.REGLE,
+    BADGES: {
+      total: st.BADGES,
+      en_proposition: st.EN_PROPOSITION,
+      par_branche: st.PAR_BRANCHE,
+      par_niveau: st.PAR_NIVEAU,
+      recents: st.BADGES_RECENTS,
+    },
   };
 }
 
@@ -695,7 +725,7 @@ function synthesize(ident, opts) {
     CentresInterets: mergeEnvelope('CentresInterets', identSafe, [sources().interests, sources().libraries], sectionCentresInterets(identSafe)),
     Emotions: mergeEnvelope('Emotions', identSafe, [sources().state, sources().journal], sectionEmotions(identSafe)),
     Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().relations, sources().memory], sectionRelations(identSafe)),
-    Competences: mergeEnvelope('Competences', identSafe, [sources().capabilities, sources().libraries], sectionCompetences(identSafe)),
+    Competences: mergeEnvelope('Competences', identSafe, [sources().capabilities, sources().libraries, sources().competences], sectionCompetences(identSafe)),
     Valeurs: mergeEnvelope('Valeurs', identSafe, ['docs/ (état réel + principes)'], sectionValeurs(identSafe)),
     Limites: mergeEnvelope('Limites', identSafe, [sources().capabilities, sources().permissions, sources().toolkit, sources().senses], sectionLimites(identSafe)),
     Experiences: mergeEnvelope('Experiences', identSafe, [sources().journal, 'tools/notebook/'], sectionExperiences(identSafe)),

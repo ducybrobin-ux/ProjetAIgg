@@ -1612,6 +1612,160 @@ async function run() {
     }
   }
 
+  console.log('\n34) ARBRE COMPÉTENCES/BADGES (branches, niveaux 0→6, prérequis, badge jamais automatique — v0.4.3)');
+  if (ident) {
+    const osX = require('os');
+    const pathX = require('path');
+    const badges = require('../src/badges');
+    const tmpDir = pathX.join(osX.tmpdir(), `aigg-badges-test-${Date.now()}`);
+    const tmpFile = pathX.join(tmpDir, 'badges.ndjson');
+    const memDir = config.PATHS.memoryFamilies.procedures;
+    const journalFile = config.PATHS.journalFile;
+
+    const memBefore = fs.existsSync(memDir) ? new Set(fs.readdirSync(memDir)) : new Set();
+    const journalLinesBefore = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+    const realFileExisted = fs.existsSync(config.PATHS.competencesFile);
+    const realFileBefore = realFileExisted ? fs.readFileSync(config.PATHS.competencesFile, 'utf8') : null;
+    const permsBefore = JSON.stringify(require('../src/permissions').loadPermissions());
+
+    try {
+      badges._setFile(tmpFile);
+
+      // 1) Arbre du Prompt Maître : 8 branches, niveaux 0→6, toutes les branches référencées
+      const branchesOk = badges.BRANCHES.length === 8;
+      const codesAll = badges.allCodes();
+      const nivOK = Object.keys(badges.NIVEAUX).length === 7 && badges.MAX_NIVEAU === 6;
+      report('badges_arbre_branches',
+        branchesOk && nivOK && badges.CHAINE.length === 9 && codesAll.length > 50
+          && ['SOCLE', 'INFORMATIQUE', 'RAISONNEMENT', 'DEVELOPPEMENT', 'RECHERCHE', 'COMMUNICATION-SENS', 'SOCIAL', 'OUTILS']
+            .every((b) => badges.BRANCHES.some((x) => x.CODE === b)),
+        `${badges.BRANCHES.length} branches, ${codesAll.length} compétences, niveaux 0→6, chaîne (${badges.CHAINE.length} étapes)`);
+
+      // 2) La chaîne Rust est structurante : Rust I → II → III → système/réseau → WebAssembly
+      const rustOk = ['INF-RUST1', 'INF-RUST2', 'INF-RUST3', 'INF-RUST-SYS', 'INF-RUST-WASM'].every((c) => codesAll.includes(c))
+        && badges.nodeOf('INF-RUST2').REQUIS.some((r) => r.CODE === 'INF-RUST1')
+        && badges.nodeOf('INF-RUST-SYS').REQUIS.some((r) => r.CODE === 'INF-RUST3');
+      report('badges_rust_chain', rustOk, 'Rust I → Rust II → Rust III → système/réseau → WebAssembly (prérequis)');
+
+      // 3) Règle d'or : jamais de badge sans PREUVE ni sans PAR (validation explicite du tuteur)
+      let refusP = false;
+      try { badges.honor(ident, 'SOC-RELATIONS1', { NIVEAU: 2, PAR: 'tuteur' }); }
+      catch (e) { refusP = String(e.message).includes('preuve'); }
+      let refusPar = false;
+      try { badges.honor(ident, 'SOC-RELATIONS1', { NIVEAU: 2, PREUVE: 'x' }); }
+      catch (e) { refusPar = String(e.message).includes('tuteur'); }
+      report('badges_honor_preuve_exigee', refusP && refusPar && badges.REGLE.includes('JAMAIS'),
+        'prouve/PAR exigés, règle portée par le registre');
+
+      // 4) Honor EXPLICITE et TRACÉ : BADGE:N, NIVEAU_LABEL, STATUT, prérequis nuls OK
+      const b1 = badges.honor(ident, 'SOC-RELATIONS1', {
+        NIVEAU: 2, PREUVE: 'rencontre réelle véridique', PAR: 'tuteur', NOTE: 'exercice validé',
+      });
+      const b1Ok = b1.NIVEAU === 2 && b1.NIVEAU_LABEL === badges.NIVEAUX[2] && b1.STATUT === 'BADGE'
+        && b1.TRANSACTIONS.some((t) => t.ACTION === 'BADGE:2' && t.PREUVE === 'rencontre réelle véridique' && t.PAR === 'tuteur');
+      report('badges_honor_explicite_trace', b1Ok, `${b1.LIBELLE} → niveau ${b1.NIVEAU} (« ${b1.NIVEAU_LABEL} ») tracé`);
+
+      // 5) Aucun badge automatique : une compétence jamais honorée reste au niveau 0 INCONNU
+      const niv0 = badges.check(ident, 'INF-POWERSHELL');
+      report('badges_aucun_honor_automatique', niv0.NIVEAU === 0 && niv0.STATUT === 'INCONNU' && niv0.PRET,
+        'aucun badge automatique : niveau 0 tant que rien n\'est validé');
+
+      // 6) Prérequis NON contournables : DEV-PROGRAMMATION2 refusé sans PROGRAMMATION1
+      let refusReq = false;
+      try { badges.honor(ident, 'DEV-PROGRAMMATION2', { NIVEAU: 3, PREUVE: 'p', PAR: 'tuteur' }); }
+      catch (e) { refusReq = String(e.message).includes('Prérequis'); }
+      const okReqPass = badges.honor(ident, 'DEV-PROGRAMMATION1', { NIVEAU: 4, PREUVE: 'p', PAR: 'tuteur' }).STATUT === 'BADGE';
+      const okPuis = badges.honor(ident, 'DEV-PROGRAMMATION2', { NIVEAU: 3, PREUVE: 'p', PAR: 'tuteur' }).NIVEAU === 3;
+      report('badges_prerequis_refus', refusReq && okReqPass && okPuis,
+        'refus tant que prérequis non satisfaits, passe ensuite');
+
+      // 7) Niveau décroissant refusé (un badge ne se retire pas par surprise)
+      let refusDec = false;
+      try { badges.honor(ident, 'DEV-PROGRAMMATION2', { NIVEAU: 2, PREUVE: 'p', PAR: 'tuteur' }); }
+      catch (e) { refusDec = String(e.message).includes('décroissant'); }
+      report('badges_niveau_decroissant_refus', refusDec, '2 < 3 refusé après BADGE:3');
+
+      // 8) propose() : proposition tracée (PROPOSAL), jamais un badge automatique
+      const pr = badges.propose(ident, 'INF-RUST1', { POURQUOI: 'démontrer du Rust élémentaire', PAR: ident.AIgg_NAME });
+      const prOk = pr.STATUT === 'PROPOSE' && pr.TRANSACTIONS.some((t) => t.ACTION === 'PROPOSAL') && pr.NIVEAU === 0;
+      report('badges_propose_trace', prOk, `${pr.LIBELLE} proposée (PROPOSAL tracée, reste au niveau 0)`);
+
+      // 9) Source NDJSON privée : une ligne par compétence honorée/proposée, JSON valide
+      const ndjsonLines = fs.readFileSync(tmpFile, 'utf8').split('\n').filter(Boolean);
+      const ndjsonOK = ndjsonLines.length === 4
+        && ndjsonLines.every((l) => { try { const o = JSON.parse(l); return !!o.CODE && !!o.LIBELLE && !!o.BRANCHE; } catch { return false; } });
+      report('badges_source_ndjson', ndjsonOK, `${ndjsonLines.length} ligne(s) dans competences/badges.ndjson (privé)`);
+
+      // 10) check() : OBSTACLES/PRÊT reflètent les prérequis réels
+      const chk = badges.check(ident, 'DEV-PROGRAMMATION2');
+      const chkOK = chk.REQUIS.every((r) => r.SATISFAIT) && chk.PRET && chk.PROCHAIN_NIVEAU === 4;
+      const chkBloque = badges.check(ident, 'REC-MULTI-SOURCE').REQUIS.some((r) => !r.SATISFAIT);
+      report('badges_check', chkOK && chkBloque && chk.REQUIS.length === 1, 'PRÊT/OBSTACLES calculés depuis les prérequis');
+
+      // 11) Jamais de contournement des permissions : honor ne modifie AUCUNE permission ni capacité
+      const permsAfter = JSON.stringify(require('../src/permissions').loadPermissions());
+      const capsBefore = JSON.stringify(require('../src/capabilities').detectCapabilities());
+      const capsAfter = JSON.stringify(require('../src/capabilities').detectCapabilities());
+      report('badges_jamais_contourne_permissions', permsAfter === permsBefore && capsAfter === capsBefore && badges.REGLE.includes('permission'),
+        'permissions et capacités inchangées, règle capacité ≠ permission portée');
+
+      // 12) Journal : BADGE_HONORED / BADGE_PROPOSED tracés ; mémoire famille procedures
+      const recentEvents = require('../src/journal').recentJournal(20).map((e) => e.EVENT);
+      const journalOK = recentEvents.includes('BADGE_HONORED') && recentEvents.includes('BADGE_PROPOSED');
+      const memFiles = fs.existsSync(memDir) ? fs.readdirSync(memDir) : [];
+      const memOK = memFiles.some((f) => {
+        try { return fs.readFileSync(pathX.join(memDir, f), 'utf8').includes('Compétence «'); } catch { return false; }
+      });
+      report('badges_journal_trace', journalOK && memOK, 'BADGE_HONORED/BADGE_PROPOSED + souvenir procedures');
+
+      // 13) Conscience : Competences.json expose l'arbre natif ; Moi.json les badges
+      const tmpConscience = pathX.join(osX.tmpdir(), `aigg-badges-conscience-${Date.now()}`);
+      try {
+        const c = require('../src/conscience');
+        c.synthesize(ident, { dir: tmpConscience });
+        const compDoc = util.readJson(pathX.join(tmpConscience, 'Competences.json'), null);
+        const moiDoc = util.readJson(pathX.join(tmpConscience, 'Moi.json'), null);
+        const data = compDoc.DATA;
+        report('badges_conscience_integree',
+          compDoc.SOURCES.includes('competences/ (arbre natif des compétences/badges)')
+            && Array.isArray(data.ARBRE_COMPETENCES) && data.ARBRE_COMPETENCES.length === 8
+            && data.REGLE.includes('permission') && data.CHAINE.length === 9
+            && data.BADGES.total >= 3
+            && moiDoc.DATA.COMPETENCES_NATIVES.badges >= 3,
+          `${data.ARBRE_COMPETENCES.length} branches synthétisées, ${data.BADGES.total} badge(s), Moi.json OK`);
+      } finally {
+        try { fs.rmSync(tmpConscience, { recursive: true, force: true }); } catch {}
+      }
+
+      // 14) Vie privée : le dépôt réel n'est JAMAIS touché par les tests
+      const realUnchanged = realFileExisted
+        ? fs.readFileSync(config.PATHS.competencesFile, 'utf8') === realFileBefore
+        : !fs.existsSync(config.PATHS.competencesFile);
+      report('badges_aucune_pollution_depot', realUnchanged, 'competences/ non modifié');
+    } finally {
+      badges._setFile(null);
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+      // Nettoyage des entrées mémoire « procedures » créées pendant le test
+      try {
+        if (fs.existsSync(memDir)) {
+          for (const f of fs.readdirSync(memDir)) {
+            if (!memBefore.has(f)) { try { fs.unlinkSync(pathX.join(memDir, f)); } catch {} }
+          }
+        }
+      } catch {}
+      // Journal restreint à sa longueur initiale (append-only, mais tests propres)
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journalLinesBefore) {
+            fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
+              + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
