@@ -1324,6 +1324,150 @@ async function run() {
     }
   }
 
+  console.log('\n32) RELATIONS (fonction native, confiance explicite/progressive/traçable — v0.4.1)');
+  if (ident) {
+    const osX = require('os');
+    const pathX = require('path');
+    const relations = require('../src/relations');
+    const tmpDir = pathX.join(osX.tmpdir(), `aigg-relations-test-${Date.now()}`);
+    const tmpFile = pathX.join(tmpDir, 'relations.ndjson');
+    const memDir = config.PATHS.memoryFamilies.relations;
+    const journalFile = config.PATHS.journalFile;
+
+    const memBefore = fs.existsSync(memDir) ? new Set(fs.readdirSync(memDir)) : new Set();
+    const journalLinesBefore = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+    const realFileExisted = fs.existsSync(config.PATHS.relationsFile);
+    const realFileBefore = realFileExisted ? fs.readFileSync(config.PATHS.relationsFile, 'utf8') : null;
+
+    try {
+      relations._setFile(tmpFile);
+
+      // 1) Catégories du Prompt Maître, toutes présentes
+      const catsOK = relations.CATEGORIES.length === 6
+        && ['Tuteur', 'TuteurIgg', 'AmiHumain', 'AmiIgg', 'Parent', 'Autres']
+          .every((c) => relations.CATEGORIES.includes(c));
+      report('relations_categories', catsOK, relations.CATEGORIES.join(', '));
+
+      // 2) AJOUT d'une relation entre tuteurs : AUCUNE confiance automatique
+      const relTuteur = relations.add(ident, {
+        CATEGORIE: 'TuteurIgg',
+        NOM: 'Zul',
+        TUTEUR_ID: 't-999',
+        POURQUOI: 'présenté par mon tuteur',
+        PAR: 'tuteur',
+      });
+      report('relations_tuteur_entier_aucune_confiance',
+        relTuteur.CATEGORIE === 'TuteurIgg' && relTuteur.CONFIANCE.NIVEAU === 0
+          && relTuteur.CONFIANCE.NIVEAU_LABEL === relations.NIVEAUX[0]
+          && relTuteur.CONFIANCE.ORIGINE === 'explicite',
+        `confiance ${relTuteur.CONFIANCE.NIVEAU} (${relTuteur.CONFIANCE.NIVEAU_LABEL})`);
+
+      // 3) Ajout par défaut d'un ami : confiance 0, jamais implicite
+      const relAmi = relations.add(ident, { CATEGORIE: 'AmiHumain', NOM: 'Nina' });
+      report('relations_add_confiance_zero', relAmi.CONFIANCE.NIVEAU === 0
+        && relAmi.CONFIANCE.TRANSACTIONS[0].ACTION === 'CREATION'
+        && relAmi.CONFIANCE.TRANSACTIONS[0].PAR === ident.AIgg_NAME,
+        `confiance ${relAmi.CONFIANCE.NIVEAU}, ${relAmi.CONFIANCE.TRANSACTIONS.length} transaction(s)`);
+
+      // 4) Confiance PROGRESSIVE et TRACÉE : trust n'augmente que de 1, tracé
+      const up1 = relations.trust(ident, relAmi.ID, { PAR: ident.AIgg_NAME, NOTE: 'rencontre réelle vérifiée' });
+      const up2 = relations.trust(ident, relAmi.ID, { PAR: ident.AIgg_NAME, NOTE: 'projet partagé réussi' });
+      const tracesOk = up2.CONFIANCE.TRANSACTIONS.some((t) => t.ACTION === 'TRUST:1')
+        && up2.CONFIANCE.TRANSACTIONS.some((t) => t.ACTION === 'TRUST:2');
+      report('relations_trust_progressif_trace',
+        up1.CONFIANCE.NIVEAU === 1 && up2.CONFIANCE.NIVEAU === 2
+          && up2.CONFIANCE.NIVEAU_LABEL === relations.NIVEAUX[2] && tracesOk,
+        `niveau ${up2.CONFIANCE.NIVEAU} (${up2.CONFIANCE.NIVEAU_LABEL}), ${up2.CONFIANCE.TRANSACTIONS.length} transactions`);
+
+      // 5) Plafond de confiance : on ne peut jamais dépasser le niveau 3
+      let plafondErreur = false;
+      try {
+        relations.trust(ident, relAmi.ID, { PAR: ident.AIgg_NAME });
+        relations.trust(ident, relAmi.ID, { PAR: ident.AIgg_NAME });
+      } catch (e) { plafondErreur = String(e.message).includes('maximum'); }
+      report('relations_trust_plafond', plafondErreur, plafondErreur ? 'niveau max atteint, refus' : 'devrait refuser');
+
+      // 6) Parent = filiation structurelle, jamais une propriété
+      const relParent = relations.add(ident, { CATEGORIE: 'Parent', NOM: 'AIggAlpha', PARENT_DE: 'AIggBeta' });
+      report('relations_parent_filiation', relParent.CATEGORIE === 'Parent'
+        && relParent.PARENT_DE === 'AIggBeta'
+        && relParent.CONFIANCE.NIVEAU === 0,
+        `parent de ${relParent.PARENT_DE}`);
+
+      // 7) Le fichier de la source est bien un NDJSON privé (un fichier, ligne par relation)
+      const ndjsonLines = fs.readFileSync(tmpFile, 'utf8').split('\n').filter(Boolean);
+      const ndjsonOK = ndjsonLines.every((l) => { try { const o = JSON.parse(l); return !!o.ID && !!o.CATEGORIE; } catch { return false; } });
+      report('relations_source_ndjson', ndjsonLines.length === 3 && ndjsonOK,
+        `${ndjsonLines.length} relation(s) dans relations/relations.ndjson`);
+
+      // 8) log() : trace complète consultable
+      const trace = relations.log(relAmi.ID);
+      report('relations_log_transactions', trace.TRANSACTIONS.length >= 3
+        && trace.CONFIANCE.ORIGINE === 'explicite',
+        `${trace.TRANSACTIONS.length} transactions dans la trace`);
+
+      // 9) Archivage RÉVERSIBLE et tracé (jamais de perte silencieuse)
+      relations.remove(ident, relTuteur.ID, { PAR: ident.AIgg_NAME, RAISON: 'test archivage' });
+      const horsListe = !relations.list().some((r) => r.ID === relTuteur.ID);
+      relations.restore(ident, relTuteur.ID, { PAR: ident.AIgg_NAME });
+      const deRetour = relations.list().some((r) => r.ID === relTuteur.ID);
+      const archLog = relations.log(relTuteur.ID).TRANSACTIONS.some((t) => t.ACTION === 'ARCHIVE')
+        && relations.log(relTuteur.ID).TRANSACTIONS.some((t) => t.ACTION === 'RESTORE');
+      report('relations_archive_restaure', horsListe && deRetour && archLog,
+        'archivage réversible, ARCHIVE/RESTORE tracés');
+
+      // 10) Catégorie inconnue : refus explicite (aucune invention de catégorie)
+      let refusOK = false;
+      try { relations.add(ident, { CATEGORIE: 'Inconnue', NOM: 'X' }); }
+      catch (e) { refusOK = String(e.message).includes('Catégorie inconnue'); }
+      report('relations_categorie_invalide_refus', refusOK, refusOK ? 'refusée' : 'ne refuse pas');
+
+      // 11) Conscience : Relations.json est la synthèse qui cite la source native
+      const tmpConscience = pathX.join(osX.tmpdir(), `aigg-relations-conscience-${Date.now()}`);
+      try {
+        const c = require('../src/conscience');
+        c.synthesize(ident, { dir: tmpConscience });
+        const relDoc = util.readJson(pathX.join(tmpConscience, 'Relations.json'), null);
+        const relData = relDoc.DATA;
+        const noms = relData.RELATIONS.map((r) => r.NOM);
+        report('relations_conscience_integree',
+          relDoc.SOURCES.includes('relations/ (fichier natif des relations)')
+            && noms.includes(ident.TUTOR_NAME) && noms.includes('Zul') && noms.includes('Nina')
+            && relData.REVUE && relData.PARENT && relData.CATEGORIES.length === 6,
+          `${relData.RELATIONS.length} relation(s) synthétisées (tuteur + natives)`);
+      } finally {
+        try { fs.rmSync(tmpConscience, { recursive: true, force: true }); } catch {}
+      }
+
+      // 12) Vie privée : le dépôt réel n'est JAMAIS touché par les tests
+      const realUnchanged = realFileExisted
+        ? fs.readFileSync(config.PATHS.relationsFile, 'utf8') === realFileBefore
+        : !fs.existsSync(config.PATHS.relationsFile);
+      report('relations_aucune_pollution_depot', realUnchanged, 'relations/ non modifié');
+    } finally {
+      relations._setFile(null);
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+      // Nettoyage des entrées mémoire relationnelles créées pendant le test
+      try {
+        if (fs.existsSync(memDir)) {
+          for (const f of fs.readdirSync(memDir)) {
+            if (!memBefore.has(f)) { try { fs.unlinkSync(pathX.join(memDir, f)); } catch {} }
+          }
+        }
+      } catch {}
+      // Journal restreint à sa longueur initiale (append-only, mais tests propres)
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journalLinesBefore) {
+            fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
+              + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

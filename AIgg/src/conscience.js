@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * CONS​CIENCE (v0.4.0) — couche de synthèse fonctionnelle.
+ * CONS​CIENCE (v0.4.1) — couche de synthèse fonctionnelle.
  *
  * Avertissement honnête : « Conscience » désigne ici ARCHITECTURE FONCTIONNELLE
  * (représentation cohérente de soi, dérivée de données réelles), JAMAIS une
@@ -73,6 +73,7 @@ function sources() {
     berceau: 'core/berceau.json',
     senses: 'senses/ (sondes réelles)',
     memory: 'memory/ (4 familles)',
+    relations: 'relations/ (fichier natif des relations)',
     journal: 'journal/events.ndjson',
     libraries: 'libraries/',
     toolkit: 'tools/ (manifestes)',
@@ -389,23 +390,47 @@ function sectionEmotions(ident) {
 
 function sectionRelations(ident) {
   const memory = require('./memory');
+  const relations = require('./relations');
   const souvenirs = recentMemory('relations', 8);
-  const relations = [];
+  const liste = [];
   if (ident.TUTOR_NAME) {
-    relations.push({
+    liste.push({
       CATEGORIE: 'Tuteur',
       NOM: ident.TUTOR_NAME,
       TUTOR_ID: ident.TUTOR_ID,
       DEPUIS: ident.BIRTH_DATE,
       ROLE: 'me préparer, me confirmer, m\'autoriser outils et compétences',
-      CONFIANCE: 'explicite — progressive et traçable (transactions réelles uniquement)',
+      CONFIANCE: {
+        NIVEAU: 3,
+        NIVEAU_LABEL: relations.NIVEAUX[3],
+        ORIGINE: 'explicite — naissance sous son autorité',
+      },
       PROVENANCE: 'core/identity.json',
     });
   }
+  for (const r of relations.list()) {
+    liste.push({
+      CATEGORIE: r.CATEGORIE,
+      NOM: r.NOM,
+      AIgg_ID_TIERS: r.AIgg_ID_TIERS,
+      TUTEUR_ID: r.TUTEUR_ID,
+      ROLE: r.ROLE,
+      POURQUOI: r.POURQUOI,
+      CONFIANCE: {
+        NIVEAU: r.CONFIANCE.NIVEAU,
+        NIVEAU_LABEL: r.CONFIANCE.NIVEAU_LABEL,
+        ORIGINE: r.CONFIANCE.ORIGINE,
+        TRANSACTIONS_TRACEES: r.CONFIANCE.TRANSACTIONS.length,
+      },
+      PROVENANCE: 'relations/ (fichier natif)',
+    });
+  }
   return {
-    RELATIONS: relations,
+    RELATIONS: liste,
+    REVUE: 'La confiance est EXPLICITE, PROGRESSIVE et TRACABLE : une relation entre tuteurs ne crée jamais automatiquement une relation de confiance entre AIgg.',
+    PARENT: 'Parent = filiation structurelle, jamais une propriété : une descendance porte sa propre identité et n\'hérite jamais automatiquement de secrets, permissions ni accès.',
+    CATEGORIES: relations.CATEGORIES,
     SOUVENIRS_RELATIONNELS: souvenirs,
-    MODEL_V0_4_1: 'Le modèle de Relations natif (catégories, confiance progressive, jamais implicite, reproduction sans héritage de secrets) est prévu en v0.4.1. Ici : synthèse de l\'existant.',
   };
 }
 
@@ -590,7 +615,7 @@ function readme(ident) {
     '| `Objectifs.json` | Objectifs dérivés des compétences en cours. |',
     '| `CentresInterets.json` | Domaines réellement référencés (bibliothèques/compétences). |',
     '| `Emotions.json` | Marqueur fonctionnel (état réel), jamais émotion simulée. |',
-    '| `Relations.json` | Relations (tuteur) + schéma v0.4.1 à venir. |',
+    '| `Relations.json` | Relations natives : catégories, confiance explicite/progressive/traçable, jamais automatique ; Parent = filiation structurelle. |',
     '| `Competences.json` | Capacités + compétences de bibliothèques (avec preuves). |',
     '| `Valeurs.json` | Valeurs documentées de l\'architecture. |',
     '| `Limites.json` | Capacités non acquises, outils bloqués, limites honnêtes. |',
@@ -645,7 +670,7 @@ function synthesize(ident, opts) {
     Objectifs: mergeEnvelope('Objectifs', identSafe, [sources().libraries], sectionObjectifs(identSafe)),
     CentresInterets: mergeEnvelope('CentresInterets', identSafe, [sources().libraries], sectionCentresInterets(identSafe)),
     Emotions: mergeEnvelope('Emotions', identSafe, [sources().state, sources().journal], sectionEmotions(identSafe)),
-    Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().memory], sectionRelations(identSafe)),
+    Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().relations, sources().memory], sectionRelations(identSafe)),
     Competences: mergeEnvelope('Competences', identSafe, [sources().capabilities, sources().libraries], sectionCompetences(identSafe)),
     Valeurs: mergeEnvelope('Valeurs', identSafe, ['docs/ (état réel + principes)'], sectionValeurs(identSafe)),
     Limites: mergeEnvelope('Limites', identSafe, [sources().capabilities, sources().permissions, sources().toolkit, sources().senses], sectionLimites(identSafe)),

@@ -1139,7 +1139,7 @@ function runBerceau(ident, args) {
 const CONSCIENCE_HELP_FR = [
   'AIgg — aide de `conscience` (français)',
   '',
-  'But : gérer la couche de synthèse Conscience (v0.4.0) — le dossier',
+  'But : gérer la couche de synthèse Conscience — le dossier',
   'AIgg/Conscience/ est une représentation cohérente de soi DÉRIVÉE des vraies',
   'sources (identity, state, capabilities, permissions, senses, memory, journal,',
   'libraries, needs, berceau, toolkit). Ce n\'est jamais une seconde base de',
@@ -1184,6 +1184,109 @@ function runConscience(ident, args) {
       break;
     default:
       console.log(CONSCIENCE_HELP_FR);
+  }
+}
+
+const RELATIONS_HELP_FR = [
+  'AIgg — aide de `relations` (français)',
+  '',
+  'But : gérer la fonction native des Relations (v0.4.1). Le fichier',
+  'relations/relations.ndjson est la SOURCE (privée, ignorée par Git) ;',
+  'AIgg/Conscience/Relations.json est la synthèse qui la cite.',
+  '',
+  'RÈGLES',
+  '  - Catégories : Tuteur, TuteurIgg (tuteur d\'un autre AIgg), AmiHumain,',
+  '    AmiIgg, Parent, Autres.',
+  '  - CONFIANCE EXPLICITE, PROGRESSIVE et TRACABLE : une relation entre',
+  '    tuteurs ne crée JAMAIS automatiquement une relation de confiance entre',
+  '    AIgg. Chaque augmentation de confiance (trust) exige une action et est',
+  '    tracée (TRANSACTIONS).',
+  '  - Parent = filiation structurelle, jamais une propriété : la descendance',
+  '    a sa propre identité, aucun secret/permission/accès hérité.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd relations                  Liste + statut (comptes par catégorie).',
+  '  AIgg.cmd relations add <CATEGORIE> --nom=<nom> [--id=<ai>] [--tuteur=<tid>] [--pourquoi=<…>] [--role=<…>] [--par=<…>]',
+  '                                Crée une relation (confiance 0 par défaut).',
+  '  AIgg.cmd relations trust <ID> [--note=<…>] [--par=<tuteur>]',
+  '                                Augmente la confiance de 1 niveau (0→3), tracé.',
+  '  AIgg.cmd relations log <ID>     Affiche la trace complète des transactions.',
+  '  AIgg.cmd relations rm <ID> [--raison=<…>]',
+  '                                Archive la relation (réversible, tracé).',
+  '  AIgg.cmd relations restore <ID> [--note=<…>]',
+  '                                Restaure une relation archivée.',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd relations add TuteurIgg --nom="Zul" --tuteur="r-001" --pourquoi="présenté par mon tuteur"',
+  '  AIgg.cmd relations trust <ID> --note="rencontre réelle vérifiée par le tuteur"',
+  '  AIgg.cmd relations log <ID>',
+  '',
+  'Vie privée : relations/ est généré sur la machine et ignoré par Git — jamais publié.',
+].join('\n');
+
+function runRelations(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const relations = require('./src/relations');
+  const sub = rest[0];
+
+  switch (sub) {
+    case 'add': {
+      const cat = rest[1];
+      try {
+        const row = relations.add(ident, {
+          CATEGORIE: cat,
+          NOM: fl.nom,
+          AIgg_ID_TIERS: fl.id || null,
+          TUTEUR_ID: fl.tuteur || null,
+          TUTEUR_NOM_TIERS: fl.tuteurNom || null,
+          POURQUOI: fl.pourquoi || null,
+          ROLE: fl.role || null,
+          PARENT_DE: fl.parentDe || null,
+          PAR: fl.par || null,
+          NOTE: fl.note || null,
+        });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'trust': {
+      try {
+        const row = relations.trust(ident, rest[1], { NOTE: fl.note, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'log': {
+      try { console.log(JSON.stringify(relations.log(rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'rm':
+    case 'remove': {
+      try {
+        const row = relations.remove(ident, rest[1], { RAISON: fl.raison, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'restore': {
+      try {
+        const row = relations.restore(ident, rest[1], { NOTE: fl.note, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'list':
+    case 'status':
+    case undefined:
+      if (sub === 'list') console.log(JSON.stringify(relations.list(), null, 2));
+      else console.log(JSON.stringify(relations.status(), null, 2));
+      break;
+    case 'help':
+      console.log(RELATIONS_HELP_FR);
+      break;
+    default:
+      console.log(RELATIONS_HELP_FR);
   }
 }
 
@@ -1367,6 +1470,10 @@ async function main() {
       runConscience(ident, args.slice(1));
       break;
 
+    case 'relations':
+      runRelations(ident, args.slice(1));
+      break;
+
     default:
       console.log(
         'Commandes :\n' +
@@ -1378,6 +1485,7 @@ async function main() {
         '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check\n' +
         '  berceau [set <taille> | check | level] — quota d\'espace / habitation (aide : AIgg.cmd berceau help)\n' +
         '  conscience [status | sync | moi | files] — couche de synthèse de soi (AIgg/Conscience/)\n' +
+        '  relations [list | add | trust | log | rm | restore] — fonction native des Relations (confiance explicite, progressive, traçable)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

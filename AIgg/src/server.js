@@ -55,7 +55,15 @@ function apiData() {
     health: health.overview(ident),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
     conscience: conscienceStatusSafe(ident),
+    relations: relationsStatusSafe(),
   };
+}
+
+function relationsStatusSafe() {
+  try {
+    const r = require('./relations');
+    return { status: r.status(), total: r.list().length };
+  } catch { return null; }
 }
 
 function conscienceStatusSafe(ident) {
@@ -285,6 +293,26 @@ function start() {
         const c = require('./conscience');
         try { sendJson(res, c.synthesize(ident)); }
         catch (e) { sendError(res, e.message); }
+        return;
+      }
+
+      // --- Relations : fonction native (v0.4.1, confiance explicite/progressive/traçable) ---
+      if (url.pathname === '/api/relations' && req.method === 'GET') {
+        const r = require('./relations');
+        sendJson(res, { status: r.status(), relations: r.list() });
+        return;
+      }
+      if (url.pathname === '/api/relations' && req.method === 'POST') {
+        const body = await readBody(req);
+        const r = require('./relations');
+        try {
+          if (body.action === 'add') sendJson(res, r.add(ident, body));
+          else if (body.action === 'trust') sendJson(res, r.trust(ident, body.id, body));
+          else if (body.action === 'rm' || body.action === 'remove') sendJson(res, r.remove(ident, body.id, body));
+          else if (body.action === 'restore') sendJson(res, r.restore(ident, body.id, body));
+          else if (body.action === 'log') sendJson(res, r.log(body.id));
+          else sendError(res, 'Action inconnue. Permis : add, trust, rm, restore, log.');
+        } catch (e) { sendError(res, e.message); }
         return;
       }
 

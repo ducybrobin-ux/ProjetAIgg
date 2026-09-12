@@ -35,7 +35,7 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (229 vérifications, PASS/FAIL réels)
+.\AIgg.cmd tests        # auto-diagnostics (242 vérifications, PASS/FAIL réels)
 .\AIgg.cmd docs-check   # audit des docs (versions, compteurs) — lecture seule
 ```
 

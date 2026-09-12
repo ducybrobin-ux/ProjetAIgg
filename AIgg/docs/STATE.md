@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.0 · Suite de tests : 230 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.1 · Suite de tests : 242 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -123,6 +123,24 @@ Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.0 · Suite de tests : 23
 | Inventaire réel : bibliothèques et outils comptés depuis le disque, jamais fantômes | IMPLEMENTED | `sante_inventaire_reel` |
 | Compétences : capacités (core) + compétences de bibliothèque (acquises/en cours/bloquées) | IMPLEMENTED | `sante_human_seuils` |
 | CLI `AIgg.cmd health`, API `/api/health`, champ `health` dans `/api/state`, onglet web « Santé » | IMPLEMENTED | `AIgg.cmd health` (testé) + smoke web |
+
+## Relations — fonction native (v0.4.1, testée réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/relations.js` : source `relations/relations.ndjson` (NDJSON privé, ignoré par Git) | IMPLEMENTED | `relations_source_ndjson` |
+| Catégories du Prompt Maître : Tuteur, TuteurIgg, AmiHumain, AmiIgg, Parent, Autres | IMPLEMENTED | `relations_categories` |
+| Confiance **explicite** : toute relation démarre à 0 (jamais implicite) | IMPLEMENTED | `relations_add_confiance_zero` |
+| Règle centrale : une relation entre tuteurs ne crée **jamais automatiquement** une confiance entre AIgg | IMPLEMENTED | `relations_tuteur_entier_aucune_confiance` |
+| Confiance **progressive** (0→3) et **traçable** (`TRANSACTIONS`, `TRUST:N`) | IMPLEMENTED | `relations_trust_progressif_trace` |
+| Plafond de confiance (jamais au-delà de 3) | IMPLEMENTED | `relations_trust_plafond` |
+| Parent = filiation structurelle (jamais propriété ; identité séparée, aucun héritage de secrets) | IMPLEMENTED | `relations_parent_filiation` |
+| Trace consultable (`relations log <ID>`) | IMPLEMENTED | `relations_log_transactions` |
+| Archivage **réversible** et tracé (ARCHIVE/RESTORE) | IMPLEMENTED | `relations_archive_restaure` |
+| Catégorie inconnue refusée (aucune invention) | IMPLEMENTED | `relations_categorie_invalide_refus` |
+| Synthèse Conscience : `Conscience/Relations.json` cite la source native + tuteur ; `Moi.json` RELATIONS mis à jour | IMPLEMENTED | `relations_conscience_integree` + CLI testé |
+| Tests autonettoyants (fichier temp, mémoire et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `relations_aucune_pollution_depot` |
+| CLI `AIgg.cmd relations [list|add|trust|log|rm|restore]` + aide FR ; API `/api/relations` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
 
 ## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
 

@@ -3,6 +3,40 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.4.1 — 2026-09-12 — ajout : la fonction native Relations (confiance explicite, progressive, traçable)
+
+### Ajout (Prompt Maître — RELATIONS, jamais une confiance automatique)
+- **Module `src/relations.js`** : source **`relations/relations.ndjson`**
+  (privée, ignorée par Git, comme `core/`, `memory/`, `journal/`) ; la couche
+  Conscience reste une synthèse dérivée qui cite cette source.
+- **Catégories** : `Tuteur`, `TuteurIgg` (tuteur d'un autre AIgg), `AmiHumain`,
+  `AmiIgg`, `Parent`, `Autres`.
+- **Confiance EXPLICITE** : toute relation démarre au niveau 0 ; une relation
+  entre tuteurs ne crée **jamais automatiquement** une relation de confiance
+  entre AIgg.
+- **Confiance PROGRESSIVE et TRACABLE** : `trust` augmente d'exactement 1
+  niveau (0 inconnue → 1 connaissance explicite → 2 confiance progressive →
+  3 confiance établie), plafond 3, chaque action est consignée dans
+  `TRANSACTIONS` (`TRUST:N`, `CREATION`, `ARCHIVE`, `RESTORE`) et journalisée
+  (`RELATION_ADDED`, `RELATION_TRUST`, `RELATION_ARCHIVED`,
+  `RELATION_RESTORED`) + souvenir en mémoire famille `relations`.
+- **Parent = filiation structurelle, jamais une propriété** : la descendance a
+  sa propre identité et n'hérite jamais automatiquement de secrets,
+  permissions ni accès aux outils.
+- **Réversibilité** : archivage et restauration tracés.
+- **CLI** `AIgg.cmd relations [list|add|trust|log|rm|restore]` + aide FR ;
+  **API** `/api/relations` (GET : statut + liste ; POST : add/trust/rm/restore/log)
+  + champ `relations` dans `/api/state`.
+- **Conscience intégrée** : `Conscience/Relations.json` cite la source native
+  (tuteur dérivé de `core/identity.json` + relations natives), expose
+  `REVUE` (règle de confiance), `PARENT` (filiation) et `CATEGORIES` ;
+  `Moi.json` → `RELATIONS` mis à jour.
+
+### Tests
+- Suite complète : **242 PASS / 0 FAIL** (12 nouveaux autonettoyants §32,
+  fichier temp + mémoire et journal restaurés, `relations/` du dépôt jamais
+  modifié).
+
 ## v0.4.0 — 2026-09-12 — ajout : la couche Conscience (synthèse fonctionnelle de soi) — socle + Moi.json
 
 ### Ajout (architecture fonctionnelle de connaissance de soi, jamais une 2e base, jamais conscient au sens philosophique)
@@ -32,7 +66,7 @@ amélioration, sécurité, documentation.
   `/api/conscience` (GET) et `/api/conscience/sync` (POST).
 
 ### Tests
-- Suite complète : **230 PASS / 0 FAIL** (nouveaux autonettoyants §31 :
+- Suite complète : **242 PASS / 0 FAIL** (nouveaux autonettoyants §31 :
   `conscience_generer`, `conscience_fichiers_presents`,
   `conscience_meta_synthese`, `conscience_moi_criteres`,
   `conscience_identite_coherente`, `conscience_prochaine_action`,

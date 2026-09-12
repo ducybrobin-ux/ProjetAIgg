@@ -5,9 +5,10 @@ core/state.json
 core/capabilities.json
 core/permissions.json
 
-# Mémoire, journaux, courriers, sauvegardes
+# Mémoire, journaux, courriers, relations, sauvegardes
 memory/
 journal/
+relations/
 inbox/
 outbox/
 backups/
