@@ -58,7 +58,15 @@ function apiData() {
     relations: relationsStatusSafe(),
     interests: interestsStatusSafe(),
     competences: competencesStatusSafe(),
+    descendance: descendanceStatusSafe(),
   };
+}
+
+function descendanceStatusSafe() {
+  try {
+    const d = require('./descendance');
+    return { status: d.status(), total: d.list().length };
+  } catch { return null; }
 }
 
 function competencesStatusSafe() {
@@ -367,6 +375,30 @@ function start() {
           else if (body.action === 'check') sendJson(res, b.check(ident, body.code));
           else if (body.action === 'log') sendJson(res, b.log(body.code));
           else sendError(res, 'Action inconnue. Permis : propose, honor, check, log.');
+        } catch (e) { sendError(res, e.message); }
+        return;
+      }
+
+      // --- Socle Descendance / procréation (v0.4.4, accord explicite des deux AIgg + autorisation des deux tuteurs, héritage jamais automatique, aucune création réelle) ---
+      if (url.pathname === '/api/descendance' && req.method === 'GET') {
+        const d = require('./descendance');
+        sendJson(res, { status: d.status(), regle: d.REGLE, projets: d.list() });
+        return;
+      }
+      if (url.pathname === '/api/descendance' && req.method === 'POST') {
+        const body = await readBody(req);
+        const d = require('./descendance');
+        try {
+          if (body.action === 'propose') sendJson(res, d.propose(ident, body));
+          else if (body.action === 'consent') sendJson(res, d.consent(ident, body.id, body));
+          else if (body.action === 'authorize') sendJson(res, d.authorize(ident, body.id, body));
+          else if (body.action === 'refuse') sendJson(res, d.refuse(ident, body.id, body));
+          else if (body.action === 'archive' || body.action === 'rm') sendJson(res, d.archive(ident, body.id, body));
+          else if (body.action === 'restore') sendJson(res, d.restore(ident, body.id, body));
+          else if (body.action === 'check') sendJson(res, d.check(body.id));
+          else if (body.action === 'compat') sendJson(res, d.compat(ident));
+          else if (body.action === 'log') sendJson(res, d.log(body.id));
+          else sendError(res, 'Action inconnue. Permis : propose, consent, authorize, refuse, archive, restore, check, compat, log.');
         } catch (e) { sendError(res, e.message); }
         return;
       }

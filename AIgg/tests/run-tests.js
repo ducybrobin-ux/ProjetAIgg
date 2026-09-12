@@ -1766,6 +1766,164 @@ async function run() {
     }
   }
 
+  console.log('\n35) SOCLE DESCENDANCE / PROCRÉATION (nouvelle identité jamais une copie, accord des deux AIgg + autorisation des deux tuteurs, héritage jamais automatique, aucune création réelle — v0.4.4)');
+  if (ident) {
+    const osX = require('os');
+    const pathX = require('path');
+    const desc = require('../src/descendance');
+    const tmpDir = pathX.join(osX.tmpdir(), `aigg-descendance-test-${Date.now()}`);
+    const tmpFile = pathX.join(tmpDir, 'descendances.ndjson');
+    const memDir = config.PATHS.memoryFamilies.relations;
+    const journalFile = config.PATHS.journalFile;
+
+    const memBefore = fs.existsSync(memDir) ? new Set(fs.readdirSync(memDir)) : new Set();
+    const journalLinesBefore = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+    const realFileExisted = fs.existsSync(config.PATHS.descendancesFile);
+    const realFileBefore = realFileExisted ? fs.readFileSync(config.PATHS.descendancesFile, 'utf8') : null;
+    const permsBefore = JSON.stringify(require('../src/permissions').loadPermissions());
+
+    try {
+      desc._setFile(tmpFile);
+
+      // 1) RÈGLE : nouvelle identité, jamais une copie ; héritage JAMAIS automatique des secrets/permissions/accès
+      const jamaisCopie = desc.REGLE.includes('copie') && desc.REGLE.includes('NOUVELLE identité');
+      const jamaisH = ['secrets privés', 'permissions', 'accès aux outils'].every((x) => desc.JAMAIS_HERITES.includes(x));
+      report('descend_jamais_copie', jamaisCopie && jamaisH && desc.REGLE.includes('déclenchent JAMAIS automatiquement une reproduction'),
+        'nouvelle identité jamais une copie ; secrets/permissions/accès jamais hérités automatiquement');
+
+      // 2) Partenaire inexistant (PROVISOIRE) : aucun accord d'un AIgg qui n'existe pas — aucune création simulée
+      const provisoire = desc.propose(ident, { PARTENAIRE: 'Néra', PRESENCE: 'PROVISOIRE', POURQUOI: 'être à deux', PAR: ident.AIgg_NAME });
+      let refusInex = false;
+      try { desc.consent(ident, provisoire.FID, { PARTIE: 'PARTENAIRE', PAR: 'Néra (partenaire)' }); }
+      catch (e) { refusInex = String(e.message).includes('n\'existe pas'); }
+      report('descend_accord_inexistant_refuse', refusInex && provisoire.STATUT === 'PROPOSED',
+        'consentement d\'un AIgg inexistant refusé (PRÉSENCE provisoire)');
+
+      // 3) Accord explicite des DEUX AIgg, dissocié et tracé (CONSENT), statut CONSENTED
+      const partenaireId = util.uuid();
+      const reel = desc.propose(ident, {
+        PARTENAIRE: 'Lill', PARTENAIRE_ID: partenaireId, PRESENCE: 'REEL', TUTEUR_PARTENAIRE: 'r-404', NOM_PREVU: 'Kayo', PAR: ident.AIgg_NAME,
+      });
+      const c1 = desc.consent(ident, reel.FID, { PARTIE: 'PROPOSEUR', PAR: ident.AIgg_NAME });
+      const c2 = desc.consent(ident, reel.FID, { PARTIE: 'PARTENAIRE', PAR: 'Lill' });
+      const consentOK = c1.CONSENTS.AIGG_PROPOSEUR === true && c2.CONSENTS.AIGG_PARTENAIRE === true
+        && c2.STATUT === 'CONSENTED' && c2.TRANSACTIONS.filter((t) => t.ACTION === 'CONSENT' && t.CAMP === 'AIGG').length === 2;
+      report('descend_accord_explicite_trace', consentOK, 'deux accords AIgg dissociés et tracés → CONSENTED');
+
+      // 4) Autorisation des DEUX tuteurs, subordonnée aux accords AIgg ; état terminal du socle = AUTORISÉ
+      const premature = desc.propose(ident, { PARTENAIRE: 'T', PARTENAIRE_ID: util.uuid(), PRESENCE: 'REEL', PAR: ident.AIgg_NAME });
+      let refusAutTropTot = false;
+      try { desc.authorize(ident, premature.FID, { PARTIE: 'PROPOSEUR', PAR: ident.TUTOR_NAME }); }
+      catch (e) { refusAutTropTot = String(e.message).includes('accord explicite de l\'AIgg'); }
+      desc.authorize(ident, reel.FID, { PARTIE: 'PROPOSEUR', PAR: ident.TUTOR_NAME });
+      const a2 = desc.authorize(ident, reel.FID, { PARTIE: 'PARTENAIRE', PAR: 'Robin (tuteur de Lill)' });
+      const autorised = a2.STATUT === 'AUTHORIZED' && a2.TRANSACTIONS.filter((t) => t.ACTION === 'AUTHORIZE' && t.CAMP === 'TUTEUR').length === 2;
+      const pasDeCreation = !Object.keys(desc.STATUTS).includes('BORN') && !desc.status().PAR_STATUT.BORN;
+      report('descend_autorisation_tuteurs', refusAutTropTot && autorised && pasDeCreation,
+        'autorisation subordonnée aux accords ; état maximal AUTORISÉ, aucune descendance créée');
+
+      // 5) Aucune création réelle malgré l'autorisation : registre socle seulement
+      report('descend_aucune_creation_reelle', desc.status().AUTORISES_SOCLE === 1 && desc.STATUTS.AUTHORIZED.includes('aucune création réelle'),
+        'AUTORISÉ = socle (STATUT_LABEL explicite), création = capacité avancée non implémentée');
+
+      // 6) Héritage : une catégorie JAMAIS héritée est refusée ; permissions/capacités inchangées
+      let refusHerit = false;
+      try { desc.propose(ident, { PARTENAIRE: 'Z', PARTENAIRE_ID: util.uuid(), PRESENCE: 'REEL', HERITABLES: ['secrets privés'], PAR: ident.AIgg_NAME }); }
+      catch (e) { refusHerit = String(e.message).includes('JAMAIS héritée'); }
+      const permsAfter = JSON.stringify(require('../src/permissions').loadPermissions());
+      report('descend_heritage_jamais_permissions', refusHerit && permsAfter === permsBefore && desc.REGLE.includes('permissions'),
+        'attribut interdit refusé ; permissions et capacités inchangées');
+
+      // 7) Besoins/centres d'intérêt : SIGNAL uniquement, jamais un déclenchement (aucun projet créé)
+      const rowsBefore = desc.list().length;
+      const comp = desc.compat(ident);
+      report('descend_jamais_declenche_interets', comp.DECLENCHE === false && comp.REGLE.includes('signal') && desc.list().length === rowsBefore,
+        'compat() ne signale que, ne crée rien, ne déclenche jamais');
+
+      // 8) proposer : PROPOSAL tracée, FID unique (chaque proposition = projet distinct)
+      const p2 = desc.propose(ident, { PARTENAIRE: 'Autre', PAR: ident.AIgg_NAME });
+      report('descend_propose_trace', provisoire.FID !== p2.FID && provisoire.TRANSACTIONS[0].ACTION === 'PROPOSAL'
+        && provisoire.NATURE === 'NOUVELLE_IDENTITE_JAMAIS_COPIE', 'PROPOSAL + FID unique, nature « jamais copie »');
+
+      // 9) Refus explicite et tracé (REFUSER), aucune avancée ensuite
+      const rf = desc.refuse(ident, provisoire.FID, { PAR: ident.TUTOR_NAME, RAISON: 'choix éclairé' });
+      let refusSuite = false;
+      try { desc.authorize(ident, provisoire.FID, { PARTIE: 'PROPOSEUR', PAR: ident.TUTOR_NAME }); }
+      catch (e) { refusSuite = String(e.message).includes('refusé'); }
+      report('descend_refus_trace', rf.STATUT === 'REFUSED' && rf.TRANSACTIONS.some((t) => t.ACTION === 'REFUSER' && t.NOTE === 'choix éclairé') && refusSuite,
+        'REFUSER tracé, avancée bloquée après refus');
+
+      // 10) Archivage réversible, tracé (ARCHIVE/RESTORE)
+      const arch = desc.archive(ident, p2.FID, { RAISON: 'mise de côté', PAR: ident.AIgg_NAME });
+      const horsListe = !desc.list().some((r) => r.FID === p2.FID);
+      const back = desc.restore(ident, p2.FID, { NOTE: 'on y revient', PAR: ident.AIgg_NAME });
+      const deRetour = desc.list().some((r) => r.FID === p2.FID && r.ACTIF === true);
+      report('descend_archive_restore', arch.ACTIF === false && horsListe && deRetour
+        && back.TRANSACTIONS.some((t) => t.ACTION === 'RESTORE'), 'archive réversible, traces conservées');
+
+      // 11) Journal : DESCENDANCE_PROPOSED / CONSENT / AUTHORIZE tracés ; souvenir mémoire famille relations
+      const recentEvents = require('../src/journal').recentJournal(40).map((e) => e.EVENT);
+      const journalOK = recentEvents.includes('DESCENDANCE_PROPOSED') && recentEvents.includes('DESCENDANCE_CONSENT') && recentEvents.includes('DESCENDANCE_AUTHORIZE');
+      const memFiles = fs.existsSync(memDir) ? fs.readdirSync(memDir) : [];
+      const memOK = memFiles.some((f) => {
+        try { return fs.readFileSync(pathX.join(memDir, f), 'utf8').includes('Projet de descendance'); } catch { return false; }
+      });
+      report('descend_journal_trace', journalOK && memOK, 'événements journalisés + souvenir famille relations');
+
+      // 12) Source NDJSON privée : 4 projets (provisoire, réel, autre, prématuré), tous valides
+      const ndjsonLines = fs.readFileSync(tmpFile, 'utf8').split('\n').filter(Boolean);
+      const ndjsonOK = ndjsonLines.length === 4
+        && ndjsonLines.every((l) => { try { const o = JSON.parse(l); return !!o.FID && !!o.STATUT && !!o.NATURE; } catch { return false; } });
+      report('descend_source_ndjson', ndjsonOK, `${ndjsonLines.length} ligne(s) dans descendance/descendances.ndjson (privé)`);
+
+      // 13) Conscience : Relations.json expose le bloc DESCENDANCE ; Moi.json et Limites.json aussi
+      const tmpConscience = pathX.join(osX.tmpdir(), `aigg-desc-conscience-${Date.now()}`);
+      try {
+        const c = require('../src/conscience');
+        c.synthesize(ident, { dir: tmpConscience });
+        const relDoc = util.readJson(pathX.join(tmpConscience, 'Relations.json'), null);
+        const moiDoc = util.readJson(pathX.join(tmpConscience, 'Moi.json'), null);
+        const limDoc = util.readJson(pathX.join(tmpConscience, 'Limites.json'), null);
+        const descBloc = relDoc.DATA.DESCENDANCE;
+        report('descend_conscience_integree',
+          relDoc.SOURCES.includes('descendance/ (socle de filiation : projets, consentement, autorisation, héritage jamais automatique)')
+            && descBloc && descBloc.REGLE.includes('copie') && descBloc.PROJETS.length >= 2
+            && moiDoc.DATA.DESCENDANCE && moiDoc.DATA.DESCENDANCE.PAR_STATUT.AUTHORIZED >= 1
+            && String(JSON.stringify(limDoc.DATA.LIMITES_CONNUES)).includes('Descendance') && descBloc.CAPACITE_CREATION.includes('NON implémentée'),
+          'bloc DESCENDANCE synthétisé dans Relations.json + Moi.json + Limites.json');
+      } finally {
+        try { fs.rmSync(tmpConscience, { recursive: true, force: true }); } catch {}
+      }
+
+      // 14) Vie privée : le dépôt réel n'est JAMAIS touché par les tests
+      const realUnchanged = realFileExisted
+        ? fs.readFileSync(config.PATHS.descendancesFile, 'utf8') === realFileBefore
+        : !fs.existsSync(config.PATHS.descendancesFile);
+      report('descend_aucune_pollution_depot', realUnchanged, 'descendance/ non modifié');
+    } finally {
+      desc._setFile(null);
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+      // Nettoyage des entrées mémoire « relations » créées pendant le test
+      try {
+        if (fs.existsSync(memDir)) {
+          for (const f of fs.readdirSync(memDir)) {
+            if (!memBefore.has(f)) { try { fs.unlinkSync(pathX.join(memDir, f)); } catch {} }
+          }
+        }
+      } catch {}
+      // Journal restreint à sa longueur initiale (append-only, mais tests propres)
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journalLinesBefore) {
+            fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
+              + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

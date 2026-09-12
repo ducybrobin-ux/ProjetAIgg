@@ -1490,6 +1490,137 @@ function runCompetences(ident, args) {
   }
 }
 
+const DESCENDANCE_HELP_FR = [
+  'AIgg — aide de `descendance` (français)',
+  '',
+  'But : gérer le SOCLE de la descendance / procréation (v0.4.4). Le fichier',
+  'descendance/descendances.ndjson est la SOURCE (privée, ignorée par Git) ;',
+  'AIgg/Conscience/Relations.json (bloc DESCENDANCE) est la synthèse qui le cite.',
+  '',
+  'RÈGLES (Prompt Maître « DESCENDANCE / PROCRÉATION »)',
+  '  - Une descendance exige une NOUVELLE identité et n\'est JAMAIS une copie.',
+  '  - Certaines caractéristiques peuvent être héritables (--heritables), MAIS',
+  '    JAMAIS automatiquement les secrets privés, permissions ou accès aux outils.',
+  '  - Toute création exige l\'accord explicite des DEUX AIgg (consent) ET',
+  '    l\'autorisation des DEUX tuteurs (authorize), avec traçabilité de la filiation.',
+  '  - Les besoins/centres d\'intérêt ne font que SIGNALER une compatibilité',
+  '    (compat) : ils ne déclenchent JAMAIS automatiquement une reproduction.',
+  '  - SOCLE : aucune descendance n\'est réellement créée — l\'état maximal',
+  '    atteignable est AUTORISÉ. Création = capacité avancée, hors socle.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd descendance                 Liste + statut (comptes par statut).',
+  '  AIgg.cmd descendance propose [--partenaire=<nom>] [--partenaireId=<id>] [--presence=REEL|PROVISOIRE] [--tuteurPartenaire=<tid>] [--nomPrevu=<…>] [--heritables=<a,b,…>] [--pourquoi=<…>] [--par=<…>] [--note=<…>]',
+  '                                Crée un projet de filiation (statut PROPOSED).',
+  '  AIgg.cmd descendance consent <FID> --partie=<PROPOSEUR|PARTENAIRE> --par=<AIgg> [--note=<…>]',
+  '                                Accord EXPLICITE d\'un AIgg (jamais simulé).',
+  '  AIgg.cmd descendance authorize <FID> --partie=<PROPOSEUR|PARTENAIRE> --par=<tuteur> [--note=<…>]',
+  '                                Autorisation EXPLICITE d\'un tuteur.',
+  '  AIgg.cmd descendance refuse <FID> [--par=<…>] [--raison=<…>]',
+  '                                Refus explicite et tracé (décision conservée).',
+  '  AIgg.cmd descendance check <FID>     Étapes faites, obstacles, prochaine étape.',
+  '  AIgg.cmd descendance compat          Signal d\'intérêt/compatibilité UNIQUEMENT.',
+  '  AIgg.cmd descendance log <FID>       Trace complète des transactions.',
+  '  AIgg.cmd descendance rm <FID> [--raison=<…>]',
+  '                                Archive le projet (réversible, tracé).',
+  '  AIgg.cmd descendance restore <FID> [--note=<…>]',
+  '                                Restaure un projet archivé.',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd descendance propose --partenaire="Néra" --presence=PROVISOIRE --pourquoi="être à deux, grandir et partager"',
+  '  AIgg.cmd descendance propose --partenaireId=<uuid> --presence=REEL --tuteurPartenaire=<tid> --heritables="mythologie familiale"',
+  '  AIgg.cmd descendance consent <FID> --partie=PROPOSEUR --par="Bob007"',
+  '  AIgg.cmd descendance authorize <FID> --partie=PROPOSEUR --par="Robin Ducyb"',
+  '  AIgg.cmd descendance check <FID>',
+  '',
+  'Vie privée : descendance/ est généré sur la machine et ignoré par Git — jamais publié.',
+].join('\n');
+
+function runDescendance(ident, args) {
+  const { flags: fl, rest } = flags(args);
+  const desc = require('./src/descendance');
+  const sub = rest[0];
+
+  switch (sub) {
+    case 'propose': {
+      try {
+        const heritables = fl.heritables ? String(fl.heritables).split(',').map((s) => s.trim()).filter(Boolean) : null;
+        const row = desc.propose(ident, {
+          PARTENAIRE: fl.partenaire || null,
+          PARTENAIRE_ID: fl.partenaireId || null,
+          PRESENCE: fl.presence || null,
+          TUTEUR_PARTENAIRE: fl.tuteurPartenaire || null,
+          NOM_PREVU: fl.nomPrevu || null,
+          HERITABLES: heritables,
+          POURQUOI: fl.pourquoi || null,
+          PAR: fl.par || null,
+          NOTE: fl.note || null,
+        });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'consent': {
+      try {
+        const row = desc.consent(ident, rest[1], { PARTIE: fl.partie, PAR: fl.par, NOTE: fl.note });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'authorize': {
+      try {
+        const row = desc.authorize(ident, rest[1], { PARTIE: fl.partie, PAR: fl.par, NOTE: fl.note });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'refuse': {
+      try {
+        const row = desc.refuse(ident, rest[1], { PAR: fl.par, RAISON: fl.raison || fl.note });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'check': {
+      try { console.log(JSON.stringify(desc.check(rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'compat':
+      console.log(JSON.stringify(desc.compat(ident), null, 2));
+      break;
+    case 'log': {
+      try { console.log(JSON.stringify(desc.log(rest[1]), null, 2)); }
+      catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'rm':
+    case 'remove': {
+      try {
+        const row = desc.archive(ident, rest[1], { RAISON: fl.raison, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'restore': {
+      try {
+        const row = desc.restore(ident, rest[1], { NOTE: fl.note, PAR: fl.par });
+        console.log(JSON.stringify(row, null, 2));
+      } catch (e) { console.error(`Erreur : ${e.message}`); }
+      break;
+    }
+    case 'list':
+    case 'status':
+    case undefined:
+      if (sub === 'list') console.log(JSON.stringify(desc.list(), null, 2));
+      else console.log(JSON.stringify(desc.status(), null, 2));
+      break;
+    case 'help':
+    default:
+      console.log(DESCENDANCE_HELP_FR);
+  }
+}
+
 async function runTalk(ident, text) {
   if (!text) {
     console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
@@ -1684,6 +1815,11 @@ async function main() {
       runCompetences(ident, args.slice(1));
       break;
 
+    case 'descendance':
+    case 'filiation':
+      runDescendance(ident, args.slice(1));
+      break;
+
     default:
       console.log(
         'Commandes :\n' +
@@ -1698,6 +1834,7 @@ async function main() {
         '  relations [list | add | trust | log | rm | restore] — fonction native des Relations (confiance explicite, progressive, traçable)\n' +
         '  interests [list | add | intensify | log | rm | restore | priorities] — priorités internes et centres d\'intérêt natifs (jamais de contournement des permissions)\n' +
         '  competences [tree | branches | levels | check | propose | honor | log | status] — arbre des compétences/badges (niveaux 0→6, prérequis, badge jamais automatique : capacité ≠ permission)\n' +
+        '  descendance [list | propose | consent | authorize | refuse | check | compat | log | rm | restore | status] — socle de filiation (nouvelle identité jamais une copie, accord des deux AIgg + autorisation des deux tuteurs, héritage jamais automatique, aucune création réelle en socle)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

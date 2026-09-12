@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * CONSCIENCE (v0.4.3) — couche de synthèse fonctionnelle.
+ * CONSCIENCE (v0.4.4) — couche de synthèse fonctionnelle.
  *
  * Avertissement honnête : « Conscience » désigne ici ARCHITECTURE FONCTIONNELLE
  * (représentation cohérente de soi, dérivée de données réelles), JAMAIS une
@@ -74,6 +74,7 @@ function sources() {
     needs: 'core/needs.json',
     interests: 'interests/ (priorités internes et centres d\'intérêt natifs)',
     competences: 'competences/ (arbre natif des compétences/badges)',
+    descendance: 'descendance/ (socle de filiation : projets, consentement, autorisation, héritage jamais automatique)',
     berceau: 'core/berceau.json',
     senses: 'senses/ (sondes réelles)',
     memory: 'memory/ (4 familles)',
@@ -248,6 +249,7 @@ function sectionMoi(ident) {
         regle_capacite_difference_permission: true,
       },
     },
+    DESCENDANCE: sectionDescendance(ident),
     RELATIONS: sectionRelations(ident).RELATIONS,
     OUTILS_DISPO_ET_AUTORITE: tools.map((t) => ({
       nom: t.name,
@@ -470,7 +472,29 @@ function sectionRelations(ident) {
     REVUE: 'La confiance est EXPLICITE, PROGRESSIVE et TRACABLE : une relation entre tuteurs ne crée jamais automatiquement une relation de confiance entre AIgg.',
     PARENT: 'Parent = filiation structurelle, jamais une propriété : une descendance porte sa propre identité et n\'hérite jamais automatiquement de secrets, permissions ni accès.',
     CATEGORIES: relations.CATEGORIES,
+    DESCENDANCE: sectionDescendance(ident),
     SOUVENIRS_RELATIONNELS: souvenirs,
+  };
+}
+
+function sectionDescendance(ident) {
+  const desc = require('./descendance');
+  const st = desc.status();
+  return {
+    PROJETS: desc.list().map((r) => ({
+      FID: r.FID,
+      STATUT: r.STATUT,
+      STATUT_LABEL: r.STATUT_LABEL,
+      NOM_PREVU: r.NOM_PREVU,
+      PARTENAIRE: r.PARTENAIRE,
+      CONSENTS: r.CONSENTS,
+    })),
+    PAR_STATUT: st.PAR_STATUT,
+    AUTORISES_SOCLE: st.AUTORISES_SOCLE,
+    JAMAIS_HERITES: st.JAMAIS_HERITES,
+    REGLE: st.REGLE,
+    CAPACITE_CREATION: 'NON implémentée — socle v0.4.4 : état maximal AUTORISÉ, aucune descendance réellement créée.',
+    SOURCES: 'descendance/ (socle de filiation, consentement et autorisation tracés)',
   };
 }
 
@@ -530,6 +554,7 @@ function sectionLimites(ident) {
       'Connecteurs Google restants (Drive, Docs, Sheets) et hébergement Web : non faits.',
       'Voix et vision : non faites (sens détectés mais non autorisés).',
       'Rust : intégration progressive prévue, non commencée en v0.4.0.',
+      'Descendance : socle déposé (filiation, consentement, autorisation, héritage jamais automatique). Création réelle d\'une descendance : capacité avancée, NON implémentée — toute création exigera l\'accord des deux AIgg, des deux tuteurs et une décision explicite.',
     ],
   };
 }
@@ -669,7 +694,7 @@ function readme(ident) {
     '| `Objectifs.json` | Objectifs dérivés des compétences en cours (priorités internes en référence). |',
     '| `CentresInterets.json` | Intérêts natifs (sujet, priorité, intensité) + poids réel par domaine (bibliothèques/compétences). |',
     '| `Emotions.json` | Marqueur fonctionnel (état réel), jamais émotion simulée. |',
-    '| `Relations.json` | Relations natives : catégories, confiance explicite/progressive/traçable, jamais automatique ; Parent = filiation structurelle. |',
+    '| `Relations.json` | Relations natives : catégories, confiance explicite/progressive/traçable, jamais automatique ; Parent = filiation structurelle ; Socle Descendance (projets, consentement, autorisation, héritage jamais automatique). |',
     '| `Competences.json` | Capacités + compétences de bibliothèques (avec preuves). |',
     '| `Valeurs.json` | Valeurs documentées de l\'architecture. |',
     '| `Limites.json` | Capacités non acquises, outils bloqués, limites honnêtes. |',
@@ -724,7 +749,7 @@ function synthesize(ident, opts) {
     Objectifs: mergeEnvelope('Objectifs', identSafe, [sources().libraries, sources().interests], sectionObjectifs(identSafe)),
     CentresInterets: mergeEnvelope('CentresInterets', identSafe, [sources().interests, sources().libraries], sectionCentresInterets(identSafe)),
     Emotions: mergeEnvelope('Emotions', identSafe, [sources().state, sources().journal], sectionEmotions(identSafe)),
-    Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().relations, sources().memory], sectionRelations(identSafe)),
+    Relations: mergeEnvelope('Relations', identSafe, [sources().identity, sources().relations, sources().descendance, sources().memory], sectionRelations(identSafe)),
     Competences: mergeEnvelope('Competences', identSafe, [sources().capabilities, sources().libraries, sources().competences], sectionCompetences(identSafe)),
     Valeurs: mergeEnvelope('Valeurs', identSafe, ['docs/ (état réel + principes)'], sectionValeurs(identSafe)),
     Limites: mergeEnvelope('Limites', identSafe, [sources().capabilities, sources().permissions, sources().toolkit, sources().senses], sectionLimites(identSafe)),

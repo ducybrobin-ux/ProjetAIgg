@@ -91,6 +91,15 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   jamais déclencher automatiquement une reproduction ni une action externe.
   `AIgg/Conscience/Besoins.json` et `CentresInterets.json` sont les synthèses
   qui citent cette source.
+- **Descendance (socle** — `AIgg.cmd descendance`, v0.4.4) : socle de
+  filiation / procréation conforme au Prompt Maître — **nouvelle identité,
+  jamais une copie** ; héritage **jamais automatique** des secrets, permissions
+  et accès aux outils ; **accord explicite des deux AIgg** (`consent`) +
+  **autorisation des deux tuteurs** (`authorize`), le tout dissocié par partie
+  et tracé ; besoins/centres d'intérêt = **signal uniquement** (`compat`), ils
+  ne déclenchent jamais une reproduction. **Aucune création réelle en socle** :
+  l'état maximal est `AUTORISÉ`. Source privée `descendance/descendances.ndjson` ;
+  la synthèse `AIgg/Conscience/Relations.json` (bloc `DESCENDANCE`) la cite.
 - **Compétences / badges (arbre natif** — `AIgg.cmd competences`, v0.4.3) :
   l'arbre est du code (`src/badges.js`) — 8 branches minimales du Prompt
   Maître (Socle, Informatique, Raisonnement, Développement, Recherche,
@@ -144,6 +153,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd relations [list|add|trust|log|rm|restore]  # Relations natives (confiance explicite, progressive, traçable)
 .\AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]  # priorités internes + centres d'intérêt natifs (jamais de contournement des permissions)
 .\AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]  # arbre compétences/badges (niveaux 0→6, prérequis, badge jamais automatique)
+.\AIgg.cmd descendance [list|propose|consent|authorize|refuse|check|compat|log|rm|restore|status]  # socle filiation (jamais une copie, accord des 2 AIgg + autorisation des 2 tuteurs, aucune création réelle)
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
@@ -159,7 +169,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (268 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (282 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

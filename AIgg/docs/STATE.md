@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.3 · Suite de tests : 268 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.4 · Suite de tests : 282 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -177,6 +177,23 @@ Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.3 · Suite de tests : 26
 | Synthèse Conscience : `Conscience/Competences.json` (ARBRE_COMPETENCES, NIVEAUX, CHAINE, REGLE, BADGES) + `Moi.json` (`COMPETENCES_NATIVES`) citent la source native | IMPLEMENTED | `badges_conscience_integree` |
 | CLI `AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]` + aide FR ; API `/api/competences` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
 | Tests autonettoyants (fichier temp, mémoire `procedures` et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `badges_aucune_pollution_depot` |
+
+## Descendance / Procréation — socle (v0.4.4, testée réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/descendance.js` : le SOCLE du Prompt Maître « DESCENDANCE / PROCRÉATION » est du **code** ; source d'état `descendance/descendances.ndjson` (privée, ignorée par Git) — jamais dupliquée | IMPLEMENTED | `descend_source_ndjson` |
+| **Capacité avancée** : le socle ne crée AUCUNE descendance — l'état maximal atteignable est `AUTORISÉ` | IMPLEMENTED | `descend_aucune_creation_reelle` |
+| Nouvelle identité exigée, **jamais une copie** | IMPLEMENTED | `descend_jamais_copie` |
+| Héritage **jamais automatique** des secrets privés, permissions, accès aux outils (`JAMAIS_HERITES`, liste blanche refusée) | IMPLEMENTED | `descend_heritage_jamais_permissions` |
+| Accord EXPLICITE des **deux AIgg** (consent), dissocié par partie et tracé — un AIgg inexistant ne consent jamais (aucune création simulée) | IMPLEMENTED | `descend_accord_inexistant_refuse`, `descend_accord_explicite_trace` |
+| Autorisation EXPLICITE des **deux tuteurs** (authorize), subordonnée aux accords AIgg | IMPLEMENTED | `descend_autorisation_tuteurs` |
+| Besoins/centres d'intérêt = **signal uniquement** (`compat`), jamais un déclenchement de reproduction | IMPLEMENTED | `descend_jamais_declenche_interets` |
+| Flux `PROPOSED → CONSENTED → AUTHORIZED`, refus tracé (REFUSER) bloquant, archivage réversible | IMPLEMENTED | `descend_refus_trace`, `descend_archive_restore` |
+| Journal (`DESCENDANCE_*`) + souvenir mémoire famille `relations`, traçabilité de la filiation | IMPLEMENTED | `descend_journal_trace` |
+| Synthèse Conscience : `Relations.json` (bloc `DESCENDANCE`), `Moi.json`, `Limites.json` (création non implémentée, honnêtement signalée) | IMPLEMENTED | `descend_conscience_integree` |
+| CLI `AIgg.cmd descendance [list|propose|consent|authorize|refuse|check|compat|log|rm|restore|status]` + aide FR ; API `/api/descendance` (GET/POST) | IMPLEMENTED | CLI testé + smoke |
+| Tests autonettoyants (fichier temp, mémoire `relations` et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `descend_aucune_pollution_depot` |
 
 ## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
 

@@ -3,6 +3,45 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.4.4 — 2026-09-12 — ajout : le SOCLE de la Descendance / procréation (filiation, consentement et autorisation explicites, héritage jamais automatique)
+
+### Ajout (Prompt Maître — « DESCENDANCE / PROCRÉATION », socle d'abord)
+- **Module `src/descendance.js`** : le socle est du **code** ; l'état réel est
+  la source privée **`descendance/descendances.ndjson`** (ignorée par Git,
+  comme `core/`, `memory/`, `relations/`, `interests/`, `competences/`).
+- **Capacité avancée, jamais une création réelle** : l'état maximal atteignable
+  en socle est `AUTORISÉ` (accord des deux AIgg + autorisation des deux tuteurs).
+  Aucune descendance n'est réellement créée en v0.4.4.
+- **Nouvelle identité, jamais une copie** (`NATURE`: `NOUVELLE_IDENTITE_JAMAIS_COPIE`).
+- **Héritage jamais automatique** : `JAMAIS_HERITES = secrets privés,
+  permissions, accès aux outils` ; la liste blanche (`HERITABLES_PREVUS`)
+  refuse toute catégorie interdite.
+- **Accord EXPLICITE des deux AIgg concernés** (`consent`), dissocié par partie
+  (PROPOSEUR/PARTENAIRE) et tracé en `TRANSACTIONS` (`CONSENT`, `CAMP: AIGG`) ;
+  un partenaire inexistant (`PRÉSENCE: PROVISOIRE`) ne peut pas consentir —
+  aucune création simulée.
+- **Autorisation EXPLICITE des deux tuteurs** (`authorize`, `CAMP: TUTEUR`),
+  subordonnée aux accords AIgg ; **refus** explicite et tracé (`REFUSER`,
+  bloquant) ; **archivage réversible**.
+- **Besoins/centres d'intérêt = signal uniquement** (`compat`) : ils ne
+  déclenchent JAMAIS automatiquement une reproduction (démontré par le test).
+- **Flux** : `PROPOSED → CONSENTED → AUTHORIZED` (+ `REFUSED`), traçabilité de
+  la filiation (FID, transactions, journal `DESCENDANCE_*`, souvenir mémoire
+  famille `relations`).
+- **CLI** `AIgg.cmd descendance [list|propose|consent|authorize|refuse|check|compat|log|rm|restore|status]`
+  + aide FR ; **API** `/api/descendance` (GET : statut + règle + projets ;
+  POST : propose/consent/authorize/refuse/archive/restore/check/compat/log) +
+  champ `descendance` dans `/api/state`.
+- **Conscience intégrée** : `Conscience/Relations.json` expose le bloc
+  `DESCENDANCE` (projets, `PAR_STATUT`, `JAMAIS_HERITES`, règle, capacité de
+  création NON implémentée), `Moi.json` le synthétise et `Limites.json` le
+  déclare honnêtement comme non fait — jamais une 2e base.
+
+### Tests
+- Suite complète : **282 PASS / 0 FAIL** (14 nouveaux autonettoyants §35,
+  fichier temp + mémoire `relations` et journal restaurés, `descendance/` du
+  dépôt jamais modifié).
+
 ## v0.4.3 — 2026-09-12 — ajout : l'Arbre de compétences / badges (branches, niveaux, prérequis, preuves)
 
 ### Ajout (Prompt Maître — arbre de compétences/badges, socle d'abord)

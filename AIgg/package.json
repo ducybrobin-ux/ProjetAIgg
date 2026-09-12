@@ -1,7 +1,7 @@
 {
   "name": "aigg",
-  "version": "0.4.3",
-  "description": "AIgg - oeuf numerique minimal et evolutif. Identite, memoire, journal, permissions, conversation, besoins, apparence, migration, bibliotheques de specialisation, interface web, niveaux d'espace (habitations, seuils predictifs non obligatoires), sante du systeme, couche de synthese Conscience (AIgg/Conscience/), Relations natives (confiance explicite, progressive, tracable), Interets natifs (priorites internes, jamais de contournement des permissions) et Arbre de competences/badges (branches Socle/Informatique/Raisonnement/Developpement/Recherche/Communication-Sens/Social/Outils, niveaux 0-6, prerequis, preuves, badge jamais automatique : capacite != permission). Sans dependance externe obligatoire.",
+  "version": "0.4.4",
+  "description": "AIgg - oeuf numerique minimal et evolutif. Identite, memoire, journal, permissions, conversation, besoins, apparence, migration, bibliotheques de specialisation, interface web, niveaux d'espace (habitations, seuils predictifs non obligatoires), sante du systeme, couche de synthese Conscience (AIgg/Conscience/), Relations natives (confiance explicite, progressive, tracable), Interets natifs (priorites internes, jamais de contournement des permissions), Arbre de competences/badges (branches Socle/Informatique/Raisonnement/Developpement/Recherche/Communication-Sens/Social/Outils, niveaux 0-6, prerequis, preuves, badge jamais automatique : capacite != permission) et Socle Descendance (projets de filiation, nouvelle identite jamais une copie, consentement explicite des deux AIgg + autorisation des deux tuteurs, heritage jamais automatique des secrets/permissions/acces, aucun declenchement par les besoins/interets, aucune creation reelle avant decision du tuteur). Sans dependance externe obligatoire.",
   "main": "AIgg.js",
   "scripts": {
     "start": "node AIgg.js status",
