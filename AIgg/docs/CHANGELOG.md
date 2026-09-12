@@ -3,6 +3,43 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.4.0 — 2026-09-12 — ajout : la couche Conscience (synthèse fonctionnelle de soi) — socle + Moi.json
+
+### Ajout (architecture fonctionnelle de connaissance de soi, jamais une 2e base, jamais conscient au sens philosophique)
+- **Module `src/conscience.js`** : couche de **synthèse** qui lit les vraies
+  sources (`core/identity.json`, `core/state.json`, capabilities, permissions,
+  senses, memory/, journal/, libraries/, berceau, toolkit) et génère le dossier
+  **`AIgg/Conscience/`** — 19 fichiers : `Identite.json`, `Moi.json`,
+  `Etats.json`, `Perceptions.json`, `Memoire.json`, `Besoins.json`,
+  `Intentions.json`, `Objectifs.json`, `CentresInterets.json`, `Emotions.json`,
+  `Relations.json`, `Competences.json`, `Valeurs.json`, `Limites.json`,
+  `Experiences.json`, `Reflexion.json`, `Histoire.json`, `README.md` et
+  `JournalConscient.ndjson` (append-only). Chaque section cite ses `SOURCES` ;
+  **aucune valeur n'est inventée**.
+- **`Moi.json`** répond aux critères du Prompt Maître : QUI SUIS-JE /
+  IDENTIFIANT / TUTEUR / OÙ SUIS-JE / ÉTAT / JE SAIS / JE PEUX / JE NE PEUX
+  PAS / LIMITES / J'APPRENDS / BESOINS ET CENTRES D'INTÉRÊT / RELATIONS /
+  OUTILS / FAIT RÉCENT / APPRIS / **PROCHAINE ACTION AUTORISÉE**.
+- **Prochaine action = capacité + permission** : jamais une initiative
+  autonome ; si des besoins sont en attente, elle attend le tuteur ; à
+  l'étroit, elle rappelle `AGRANDIR` (jamais d'action automatique).
+- **Honnêteté** : « Conscience » = **architecture fonctionnelle**. Aucune
+  émotion simulée (`Emotions.json` = marqueur d'état réel), modèle de Relations
+  complet annoncé pour v0.4.1, arbre compétences/badges pour v0.4.3.
+- **Vie privée** : `Conscience/` est généré sur la machine et **ignoré par
+  Git** (comme `core/`, `memory/`, `journal/`).
+- CLI `AIgg.cmd conscience [status|sync|moi|files]` + aide FR ; API
+  `/api/conscience` (GET) et `/api/conscience/sync` (POST).
+
+### Tests
+- Suite complète : **230 PASS / 0 FAIL** (nouveaux autonettoyants §31 :
+  `conscience_generer`, `conscience_fichiers_presents`,
+  `conscience_meta_synthese`, `conscience_moi_criteres`,
+  `conscience_identite_coherente`, `conscience_prochaine_action`,
+  `conscience_relations_tuteur`, `conscience_journal_append`,
+  `conscience_capacites_reelles`, `conscience_etat_reel` — génération dans un
+  dossier temporaire, jamais dans le dépôt).
+
 ## v0.3.14 — 2026-09-11 — clarification : les seuils d'habitation sont prédictifs, jamais une obligation
 
 ### Amélioration (rester avec de la place : on ne « déménage » pas parce qu'un seuil approche)

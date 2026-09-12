@@ -5,7 +5,7 @@ const os = require('os');
 
 const ROOT = path.join(__dirname, '..');
 
-const CORE_VERSION = '0.3.14';
+const CORE_VERSION = '0.4.0';
 const MEMORY_VERSION = '0.1.0';
 const AIGG_NAME = 'AIgg';
 const DEFAULT_FIRST_NAME = 'Bob007';
@@ -34,6 +34,7 @@ const PATHS = {
   tests: path.join(ROOT, 'tests'),
   libraries: path.join(ROOT, 'libraries'),
   templates: path.join(ROOT, 'templates'),
+  conscience: path.join(ROOT, 'Conscience'),
 
   identity: path.join(ROOT, 'core', 'identity.json'),
   state: path.join(ROOT, 'core', 'state.json'),

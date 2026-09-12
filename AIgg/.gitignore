@@ -12,6 +12,9 @@ inbox/
 outbox/
 backups/
 
+# Couche de synthèse Conscience (générée par src/conscience.js — privée)
+Conscience/
+
 # Coffre-fort local (même chiffré : jamais publié)
 vault/
 

@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.14 · Suite de tests : 220 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-12 · CORE_VERSION 0.4.0 · Suite de tests : 230 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -123,6 +123,21 @@ Dernière mise à jour : 2026-09-11 · CORE_VERSION 0.3.14 · Suite de tests : 2
 | Inventaire réel : bibliothèques et outils comptés depuis le disque, jamais fantômes | IMPLEMENTED | `sante_inventaire_reel` |
 | Compétences : capacités (core) + compétences de bibliothèque (acquises/en cours/bloquées) | IMPLEMENTED | `sante_human_seuils` |
 | CLI `AIgg.cmd health`, API `/api/health`, champ `health` dans `/api/state`, onglet web « Santé » | IMPLEMENTED | `AIgg.cmd health` (testé) + smoke web |
+
+## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `src/conscience.js` : couche de synthèse (JAMAIS 2e base — chaque section cite ses `SOURCES`) | IMPLEMENTED | `conscience_meta_synthese` |
+| Dossier généré `AIgg/Conscience/` (Identite, Moi, Etats, Perceptions, Memoire, Besoins, Intentions, Objectifs, CentresInterets, Emotions, Relations, Competences, Valeurs, Limites, Experiences, Reflexion, Histoire, README, JournalConscient.ndjson) | IMPLEMENTED | `conscience_fichiers_presents` |
+| `Moi.json` : QUI SUIS-JE, IDENTIFIANT, TUTEUR, OÙ, ÉTAT, JE SAIS, JE PEUX, JE NE PEUX PAS, LIMITES, J'APPRENDS, BESOINS/INTÉRÊTS, RELATIONS, OUTILS, RÉCENT, APPRIS, PROCHAINE ACTION AUTORISÉE | IMPLEMENTED | `conscience_moi_criteres` |
+| Identité cohérente (jamais inventée) | IMPLEMENTED | `conscience_identite_coherente` |
+| Prochaine action calculée = capacité + permission (jamais une initiative autonome) | IMPLEMENTED | `conscience_prochaine_action` |
+| Relations : tuteur depuis `core/identity.json` ; modèle natif (v0.4.1) annoncé honnêtement | IMPLEMENTED | `conscience_relations_tuteur` |
+| `JournalConscient.ndjson` append-only, clé unique | IMPLEMENTED | `conscience_journal_append` |
+| Capabilités listées = capabilities réelles ; état réel | IMPLEMENTED | `conscience_capacites_reelles`, `conscience_etat_reel` |
+| CLI `AIgg.cmd conscience [sync|moi|files]` + aide FR ; API `/api/conscience`, `/api/conscience/sync` | IMPLEMENTED | CLI testé + smoke |
+| Dossier `Conscience/` **privé** (généré, ignoré par Git) | IMPLEMENTED | `.gitignore` (`Conscience/`) |
 
 ## Coffre-fort local (vault) — infrastructure sécurité (testé réellement)
 

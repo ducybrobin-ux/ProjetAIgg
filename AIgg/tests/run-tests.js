@@ -1251,6 +1251,79 @@ async function run() {
     }
   }
 
+  // 31. v0.4.0 : Conscience — couche de synthèse fonctionnelle (jamais 2e base)
+  console.log('\n31) CONSCIENCE (couche de synthèse de soi — v0.4.0)');
+  if (ident) {
+    const osX = require('os');
+    const pathX = require('path');
+    const conscience = require('../src/conscience');
+    const tmpDir = pathX.join(osX.tmpdir(), `aigg-conscience-test-${Date.now()}`);
+    try {
+      // Génération dans un dossier temporaire (autonettoyant, jamais dans le dépôt)
+      const synth = conscience.synthesize(ident, { dir: tmpDir });
+      report('conscience_generer', synth.ok && synth.files.length >= 18 && synth.sections.length === conscience.SECTIONS.length,
+        `${synth.files.length} fichiers, ${synth.sections.length} sections`);
+
+      // Les 18 fichiers attendus sont présents
+      const expected = [...conscience.SECTIONS.map((s) => `${s}.json`), 'README.md', 'JournalConscient.ndjson'];
+      const present = expected.every((f) => fs.existsSync(pathX.join(tmpDir, f)));
+      report('conscience_fichiers_presents', present, expected.join(', '));
+
+      // Chaque fichier est une synthèse : FORMAT + VERSION + AIgg_ID + SOURCES
+      const metaOK = conscience.SECTIONS.every((s) => {
+        const doc = util.readJson(pathX.join(tmpDir, `${s}.json`), null);
+        return doc && doc.FORMAT === 'aigg-conscience' && doc.NATURE === 'synthese'
+          && doc.VERSION === config.CORE_VERSION && doc.AIgg_ID === ident.AIgg_ID
+          && Array.isArray(doc.SOURCES) && doc.SOURCES.length >= 1 && doc.DATA;
+      });
+      report('conscience_meta_synthese', metaOK, `${config.CORE_VERSION}, format aigg-conscience`);
+
+      // Moi.json : réponses de fond (QUI, IDENTIFIANT, TUTEUR, OÙ, ÉTAT, SAIS,
+      // PEUX, NE PEUX PAS, APPRENDS, INTÉRÊTS, RELATIONS, OUTILS, RÉCENT, APPRIS,
+      // PROCHAINE ACTION AUTORISÉE)
+      const moi = util.readJson(pathX.join(tmpDir, 'Moi.json'), null);
+      const moiKeys = ['QUI_SUIS_JE', 'IDENTIFIANT', 'TUTEUR', 'OU_SUIS_JE', 'ETAT',
+        'CE_QUE_JE_SAIS', 'CE_QUE_JE_PEUX', 'CE_QUE_JE_NE_PEUX_PAS', 'LIMITES',
+        'J_APPRENDS', 'BESOINS_ET_CENTRES_D_INTERET', 'RELATIONS',
+        'OUTILS_DISPO_ET_AUTORITE', 'FAIT_RECENT', 'APPRIS', 'PROCHAINE_ACTION_AUTORISEE'];
+      report('conscience_moi_criteres', moi && moiKeys.every((k) => k in moi.DATA), moiKeys.join(', '));
+
+      // Identité cohérente : le Moi dit exactement qui il est (jamais inventé)
+      const idOK = moi.DATA.IDENTIFIANT === ident.AIgg_ID
+        && moi.DATA.QUI_SUIS_JE.includes(ident.AIgg_NAME);
+      report('conscience_identite_coherente', idOK, `${ident.AIgg_NAME} — ${ident.AIgg_ID}`);
+
+      // Prochaine action : toujours un champ AUTORISEE booléen honnête
+      const pa = moi.DATA.PROCHAINE_ACTION_AUTORISEE;
+      report('conscience_prochaine_action', !!(pa && typeof pa.AUTORISEE === 'boolean' && pa.RAISON),
+        pa ? `${pa.AUTORISEE ? 'autorisée' : 'non autorisée'} — ${pa.RAISON.slice(0, 60)}` : 'absente');
+
+      // Relations : le tuteur est présent (provenance identity) — jamais inventé
+      const rel = util.readJson(pathX.join(tmpDir, 'Relations.json'), null);
+      report('conscience_relations_tuteur', rel && rel.DATA && rel.DATA.RELATIONS.some((r) => r.CATEGORIE === 'Tuteur' && r.NOM === ident.TUTOR_NAME),
+        rel ? rel.DATA.RELATIONS.map((r) => r.CATEGORIE).join(', ') : 'relations absentes');
+
+      // JournalConscient : append-only, clé EVENT_ID unique
+      const lines = require('fs').readFileSync(pathX.join(tmpDir, 'JournalConscient.ndjson'), 'utf8')
+        .split('\n').filter(Boolean).map((l) => JSON.parse(l));
+      report('conscience_journal_append', lines.length === 1 && lines[0].EVENT === 'CONSCIENCE_SYNTHESE'
+        && lines[0].AIgg_ID === ident.AIgg_ID,
+        lines.length + ' entrée(s)');
+
+      // Capabilities → Moi : les capacités acquises listées sont réelles
+      const caps = require('../src/capabilities').detectCapabilities().filter((c) => c.acquired).map((c) => c.name);
+      const listeMoi = moi.DATA.CE_QUE_JE_PEUX.capacites;
+      report('conscience_capacites_reelles', listeMoi.every((n) => caps.includes(n)) && listeMoi.length === caps.length,
+        `${listeMoi.length} capacités listées`);
+
+      // L'état reflète réellement state.json
+      const st = require('../src/state').status(ident);
+      report('conscience_etat_reel', moi.DATA.ETAT.courant === st.state, moi.DATA.ETAT.courant);
+    } finally {
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;

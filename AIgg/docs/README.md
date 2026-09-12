@@ -63,6 +63,16 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   (acquises/en cours/bloquées), permissions actives, sens disponibles, état,
   tâches (notebook, besoins, questions), erreurs récentes du journal,
   sauvegardes (§18 du plan du tuteur).
+- **Conscience (couche de synthèse fonctionnelle** — `AIgg.cmd conscience`, 2026-09-12) :
+  AIgg se **représente** en lisant ses vraies sources (identité, état,
+  capabilities, permissions, sens, mémoire, journal, bibliothèques, berceau,
+  outils) et génère `AIgg/Conscience/` (19 fichiers, dont `Moi.json` et
+  `JournalConscient.ndjson`). Section par section, il cite ses `SOURCES` :
+  aucune valeur n'est inventée (une 2e base serait incohérente). « Conscience »
+  = architecture fonctionnelle honnête, jamais une conscience philosophique ;
+  `Moi.json` expose QUI SUIS-JE / JE SAIS / JE PEUX / JE NE PEUX PAS / LIMITES /
+  relations / **prochaine action autorisée** (= capacité + permission, jamais
+  une initiative autonome). `Conscience/` est privé et ignoré par Git.
 - **Apparence** : proposition → validation → application → journalisation ;
   le HTML est le corps visible d'AIgg (variables CSS pilotées).
 - **États** : BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
@@ -102,6 +112,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd needs             # liste des demandes d'AIgg
 .\AIgg.cmd berceau [set <taille>|check|level]  # quota d'espace alloué par le tuteur / habitation
 .\AIgg.cmd health          # vue santé consolidée du système
+.\AIgg.cmd conscience [status|sync|moi|files]  # couche Conscience (synthèse fonctionnelle de soi)
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
@@ -117,7 +128,7 @@ indépendant de la politique d'exécution Windows) :
 .\\AIgg.cmd talk <texte>    # conversation one-shot persistée
 .\\AIgg.cmd messages [answer <id> <rép>]   # demandes en attente qui demandent la réponse du tuteur
 .\\AIgg.cmd server            # console du tuteur web
-.\AIgg.cmd tests             # auto-diagnostics (220 vérifications)
+.\AIgg.cmd tests             # auto-diagnostics (230 vérifications)
 ```
 
 `AIgg.ps1` est un équivalent PowerShell facultatif. Si la politique d'exécution

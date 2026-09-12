@@ -1,7 +1,7 @@
 {
   "name": "aigg",
-  "version": "0.3.14",
-  "description": "AIgg - oeuf numerique minimal et evolutif. Identite, memoire, journal, permissions, conversation, besoins, apparence, migration, bibliotheques de specialisation, interface web, niveaux d'espace (habitations, seuils predictifs non obligatoires) et sante du systeme. Sans dependance externe obligatoire.",
+  "version": "0.4.0",
+  "description": "AIgg - oeuf numerique minimal et evolutif. Identite, memoire, journal, permissions, conversation, besoins, apparence, migration, bibliotheques de specialisation, interface web, niveaux d'espace (habitations, seuils predictifs non obligatoires), sante du systeme et couche de synthese Conscience (AIgg/Conscience/). Sans dependance externe obligatoire.",
   "main": "AIgg.js",
   "scripts": {
     "start": "node AIgg.js status",

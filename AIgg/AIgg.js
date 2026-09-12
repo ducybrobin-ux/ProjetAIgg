@@ -1136,6 +1136,57 @@ function runBerceau(ident, args) {
   }
 }
 
+const CONSCIENCE_HELP_FR = [
+  'AIgg — aide de `conscience` (français)',
+  '',
+  'But : gérer la couche de synthèse Conscience (v0.4.0) — le dossier',
+  'AIgg/Conscience/ est une représentation cohérente de soi DÉRIVÉE des vraies',
+  'sources (identity, state, capabilities, permissions, senses, memory, journal,',
+  'libraries, needs, berceau, toolkit). Ce n\'est jamais une seconde base de',
+  'données : chaque fichier cite ses SOURCES et n\'invente aucune valeur.',
+  '« Conscience » = architecture fonctionnelle, jamais conscience philosophique',
+  'ou biologique ni émotions simulées.',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd conscience                État du dossier Conscience.',
+  '  AIgg.cmd conscience sync           (Re)génère toute la couche Conscience.',
+  '  AIgg.cmd conscience moi            Affiche Moi.json (synthèse de soi).',
+  '  AIgg.cmd conscience files          Liste les sections générées.',
+  '',
+  'EXEMPLES',
+  '  AIgg.cmd conscience',
+  '  AIgg.cmd conscience sync',
+  '  AIgg.cmd conscience moi',
+  '',
+  'Vie privée : le dossier Conscience/ (comme core/, memory/, journal/) est',
+  'généré sur la machine et ignoré par Git — jamais publié.',
+].join('\n');
+
+function runConscience(ident, args) {
+  const conscience = require('./src/conscience');
+  const sub = args[0];
+
+  switch (sub) {
+    case 'sync':
+      console.log(JSON.stringify(conscience.synthesize(ident), null, 2));
+      break;
+    case 'moi':
+      console.log(JSON.stringify(conscience.moi(ident), null, 2));
+      break;
+    case 'files':
+      console.log(JSON.stringify(conscience.SECTIONS.concat([conscience.FILES.README, conscience.FILES.JOURNAL]), null, 2));
+      break;
+    case 'status':
+    case 'help':
+    case undefined:
+      if (sub === 'help') console.log(CONSCIENCE_HELP_FR);
+      else console.log(JSON.stringify(conscience.status(ident), null, 2));
+      break;
+    default:
+      console.log(CONSCIENCE_HELP_FR);
+  }
+}
+
 async function runTalk(ident, text) {
   if (!text) {
     console.log('Usage : AIgg.cmd talk <texte>. Ex : AIgg.cmd talk "apprends que le ciel est bleu"');
@@ -1312,6 +1363,10 @@ async function main() {
       runVault(args.slice(1));
       break;
 
+    case 'conscience':
+      runConscience(ident, args.slice(1));
+      break;
+
     default:
       console.log(
         'Commandes :\n' +
@@ -1322,6 +1377,7 @@ async function main() {
         '  web-read <url>, web-search <requête>, notebook-add <question> [hypothèse], notebook-del <id>, avatar\n' +
         '  library <sous-commande>, email <sous-commande>, gmail <sous-commande>, ia <sous-commande> (ask/status), vault <sous-commande>, appearance <sous-commande>, migrate <destination>, docs-check\n' +
         '  berceau [set <taille> | check | level] — quota d\'espace / habitation (aide : AIgg.cmd berceau help)\n' +
+        '  conscience [status | sync | moi | files] — couche de synthèse de soi (AIgg/Conscience/)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

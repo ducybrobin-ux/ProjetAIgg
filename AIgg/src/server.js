@@ -54,7 +54,15 @@ function apiData() {
     berceau: berceau.status(),
     health: health.overview(ident),
     avatar: fs.existsSync(path.join(config.PATHS.web, 'avatar.svg')) ? '/avatar.svg' : null,
+    conscience: conscienceStatusSafe(ident),
   };
+}
+
+function conscienceStatusSafe(ident) {
+  try {
+    const c = require('./conscience');
+    return { status: c.status(ident), moi_present: require('fs').existsSync(path.join(require('./config').PATHS.conscience, 'Moi.json')) };
+  } catch { return null; }
 }
 
 function notebookListSafe() {
@@ -264,6 +272,19 @@ function start() {
       // --- Santé : vue consolidée du système (§18 du plan tuteur, v0.3.13) ---
       if (url.pathname === '/api/health' && req.method === 'GET') {
         sendJson(res, health.overview(ident));
+        return;
+      }
+
+      // --- Conscience : couche de synthèse de soi (v0.4.0) ---
+      if (url.pathname === '/api/conscience' && req.method === 'GET') {
+        const c = require('./conscience');
+        sendJson(res, { status: c.status(ident), moi: c.moi(ident) });
+        return;
+      }
+      if (url.pathname === '/api/conscience/sync' && req.method === 'POST') {
+        const c = require('./conscience');
+        try { sendJson(res, c.synthesize(ident)); }
+        catch (e) { sendError(res, e.message); }
         return;
       }
 
