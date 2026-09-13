@@ -1,506 +1,506 @@
-﻿# AIgg â€” Journal de dÃ©veloppement (CHANGELOG.md)
+# AIgg — Journal de développement (CHANGELOG.md)
 
-Format : `[version] date â€” type : description`. Types : ajout, correction,
-amÃ©lioration, sÃ©curitÃ©, documentation.
+Format : `[version] date — type : description`. Types : ajout, correction,
+amélioration, sécurité, documentation.
 
-## v0.5.0 â€” 2026-09-13 â€” ajout : le SOCLE de la Cognition (orchestration cognitive : Ã©tats honnÃªtes, rappel mÃ©moire/bibliothÃ¨que, stratÃ©gie, besoin QUESTION, AUCUN outil exÃ©cutÃ©)
+## v0.5.0 — 2026-09-13 — ajout : le SOCLE de la Cognition (orchestration cognitive : états honnêtes, rappel mémoire/bibliothèque, stratégie, besoin QUESTION, AUCUN outil exécuté)
 
-### Ajout (Prompt MaÃ®tre Â« Cognition / orchestration cognitive Â» â€” socle d'abord)
-- **Module `src/cognition.js`** : l'orchestrateur cognitif est du **code** â€” cycle
-  rÃ©el `COMPRENDRE â†’ rappel mÃ©moire â†’ recherche bibliothÃ¨que â†’ diagnostic du manque â†’
-  plan + outils candidats`, **sans jamais exÃ©cuter d'outil** Ã  ce stade (la recherche
-  OUTIL rÃ©elle, Web + IA externe comme outil, arrive en v0.5.1).
-- **11 Ã©tats cognitifs** (`STATES`) : JE_SAIS, JE_NE_SAIS_PAS, JE_NE_COMPRENDS_PAS,
+### Ajout (Prompt Maître « Cognition / orchestration cognitive » — socle d'abord)
+- **Module `src/cognition.js`** : l'orchestrateur cognitif est du **code** — cycle
+  réel `COMPRENDRE → rappel mémoire → recherche bibliothèque → diagnostic du manque →
+  plan + outils candidats`, **sans jamais exécuter d'outil** à ce stade (la recherche
+  OUTIL réelle, Web + IA externe comme outil, arrive en v0.5.1).
+- **11 états cognitifs** (`STATES`) : JE_SAIS, JE_NE_SAIS_PAS, JE_NE_COMPRENDS_PAS,
   JE_PEUX_CHERCHER, JE_CHERCHE, J_AI_TROUVE, JE_DOIS_VERIFIER,
   J_AI_BESOIN_DE_PRECISION, JE_DOIS_DEMANDER_AU_TUTEUR, JE_N_AI_PAS_OUTIL_PERMISSION,
   PAS_DE_REPONSE_FIABLE.
-- **Rappel mÃ©moire honnÃªte** (jamais une invention : score â‰¥ 0,6 et â‰¥ 2 mots communs)
-  â†’ `JE_SAIS` (source `MEMORY`, confiance).
-- **Rappel bibliothÃ¨que L2** (correspondance exacte ou score â‰¥ `MIN_LIBRARY_SCORE=12`)
-  â†’ `J_AI_TROUVE` (provenance `LIBRARY` : titre, bibliothÃ¨que, extrait ; confiance =
-  score normalisÃ©).
-- **Manque diagnostiquÃ© et journalisÃ©** (`COGNITION_UNKNOWN` : WORK_ID, question,
-  statut, outils utilisables, plan) â†’ `JE_PEUX_CHERCHER` (outil utilisable) ou
-  `JE_N_AI_PAS_OUTIL_PERMISSION` ; stratÃ©gie rÃ©elle (`canSearch`, `bestTool`,
+- **Rappel mémoire honnête** (jamais une invention : score ≥ 0,6 et ≥ 2 mots communs)
+  → `JE_SAIS` (source `MEMORY`, confiance).
+- **Rappel bibliothèque L2** (correspondance exacte ou score ≥ `MIN_LIBRARY_SCORE=12`)
+  → `J_AI_TROUVE` (provenance `LIBRARY` : titre, bibliothèque, extrait ; confiance =
+  score normalisé).
+- **Manque diagnostiqué et journalisé** (`COGNITION_UNKNOWN` : WORK_ID, question,
+  statut, outils utilisables, plan) → `JE_PEUX_CHERCHER` (outil utilisable) ou
+  `JE_N_AI_PAS_OUTIL_PERMISSION` ; stratégie réelle (`canSearch`, `bestTool`,
   `explanation`).
-- **Outils candidats** cataloguÃ©s par `toolkit.discoverAll` : interactions du
-  manifeste + `utilisable = installÃ© ET autorisÃ©` â€” **CAPACITÃ‰ â‰  PERMISSION, jamais
-  contournÃ©**, **aucune exÃ©cution** ni activitÃ© fictive en socle.
-- **Besoin de prÃ©cision via `needs.js`** (type `QUESTION`, jamais un devin) pour les
-  apprentissages ouverts (Â« apprends-moi X Â») ; la rÃ©ponse du tuteur est **mÃ©morisÃ©e**
+- **Outils candidats** catalogués par `toolkit.discoverAll` : interactions du
+  manifeste + `utilisable = installé ET autorisé` — **CAPACITÉ ≠ PERMISSION, jamais
+  contourné**, **aucune exécution** ni activité fictive en socle.
+- **Besoin de précision via `needs.js`** (type `QUESTION`, jamais un devin) pour les
+  apprentissages ouverts (« apprends-moi X ») ; la réponse du tuteur est **mémorisée**
   et le besoin passe `FULFILLED` (cycle APPRENDRE).
-- **Conversation honnÃªte enrichie** : Â« Je ne sais pas encore rÃ©pondre Ã  cela (â€¦) â€”
-  Ã‰tat cognitif : â€¦ Â» + stratÃ©gie ; `/api/talk` et `talk` CLI exposent le rÃ©sultat
-  cognitif (`cognition.*` : statut, activitÃ©s rÃ©elles, sources, plan, outils candidats).
+- **Conversation honnête enrichie** : « Je ne sais pas encore répondre à cela (…) —
+  État cognitif : … » + stratégie ; `/api/talk` et `talk` CLI exposent le résultat
+  cognitif (`cognition.*` : statut, activités réelles, sources, plan, outils candidats).
 - **CLI** `AIgg.cmd cognition "question"` + aide FR ; journalisation
   `COGNITION_MEMORY_HIT / _LIBRARY_HIT / _AMBIGUOUS / _UNKNOWN`.
 
 ### Tests
-- Suite complÃ¨te : **290 PASS / 0 FAIL** (7 nouveaux autonettoyants Â§36,
-  bibliothÃ¨que temp + mÃ©moire, besoins, conversation, Ã©tat et journal restaurÃ©s,
-  dÃ©pÃ´t jamais modifiÃ©).
+- Suite complète : **290 PASS / 0 FAIL** (7 nouveaux autonettoyants §36,
+  bibliothèque temp + mémoire, besoins, conversation, état et journal restaurés,
+  dépôt jamais modifié).
 
-## v0.4.4 â€” 2026-09-12 â€” ajout : le SOCLE de la Descendance / procrÃ©ation (filiation, consentement et autorisation explicites, hÃ©ritage jamais automatique)
+## v0.4.4 — 2026-09-12 — ajout : le SOCLE de la Descendance / procréation (filiation, consentement et autorisation explicites, héritage jamais automatique)
 
-### Ajout (Prompt MaÃ®tre â€” Â« DESCENDANCE / PROCRÃ‰ATION Â», socle d'abord)
-- **Module `src/descendance.js`** : le socle est du **code** ; l'Ã©tat rÃ©el est
-  la source privÃ©e **`descendance/descendances.ndjson`** (ignorÃ©e par Git,
+### Ajout (Prompt Maître — « DESCENDANCE / PROCRÉATION », socle d'abord)
+- **Module `src/descendance.js`** : le socle est du **code** ; l'état réel est
+  la source privée **`descendance/descendances.ndjson`** (ignorée par Git,
   comme `core/`, `memory/`, `relations/`, `interests/`, `competences/`).
-- **CapacitÃ© avancÃ©e, jamais une crÃ©ation rÃ©elle** : l'Ã©tat maximal atteignable
-  en socle est `AUTORISÃ‰` (accord des deux AIgg + autorisation des deux tuteurs).
-  Aucune descendance n'est rÃ©ellement crÃ©Ã©e en v0.4.4.
-- **Nouvelle identitÃ©, jamais une copie** (`NATURE`: `NOUVELLE_IDENTITE_JAMAIS_COPIE`).
-- **HÃ©ritage jamais automatique** : `JAMAIS_HERITES = secrets privÃ©s,
-  permissions, accÃ¨s aux outils` ; la liste blanche (`HERITABLES_PREVUS`)
-  refuse toute catÃ©gorie interdite.
-- **Accord EXPLICITE des deux AIgg concernÃ©s** (`consent`), dissociÃ© par partie
-  (PROPOSEUR/PARTENAIRE) et tracÃ© en `TRANSACTIONS` (`CONSENT`, `CAMP: AIGG`) ;
-  un partenaire inexistant (`PRÃ‰SENCE: PROVISOIRE`) ne peut pas consentir â€”
-  aucune crÃ©ation simulÃ©e.
+- **Capacité avancée, jamais une création réelle** : l'état maximal atteignable
+  en socle est `AUTORISÉ` (accord des deux AIgg + autorisation des deux tuteurs).
+  Aucune descendance n'est réellement créée en v0.4.4.
+- **Nouvelle identité, jamais une copie** (`NATURE`: `NOUVELLE_IDENTITE_JAMAIS_COPIE`).
+- **Héritage jamais automatique** : `JAMAIS_HERITES = secrets privés,
+  permissions, accès aux outils` ; la liste blanche (`HERITABLES_PREVUS`)
+  refuse toute catégorie interdite.
+- **Accord EXPLICITE des deux AIgg concernés** (`consent`), dissocié par partie
+  (PROPOSEUR/PARTENAIRE) et tracé en `TRANSACTIONS` (`CONSENT`, `CAMP: AIGG`) ;
+  un partenaire inexistant (`PRÉSENCE: PROVISOIRE`) ne peut pas consentir —
+  aucune création simulée.
 - **Autorisation EXPLICITE des deux tuteurs** (`authorize`, `CAMP: TUTEUR`),
-  subordonnÃ©e aux accords AIgg ; **refus** explicite et tracÃ© (`REFUSER`,
-  bloquant) ; **archivage rÃ©versible**.
-- **Besoins/centres d'intÃ©rÃªt = signal uniquement** (`compat`) : ils ne
-  dÃ©clenchent JAMAIS automatiquement une reproduction (dÃ©montrÃ© par le test).
-- **Flux** : `PROPOSED â†’ CONSENTED â†’ AUTHORIZED` (+ `REFUSED`), traÃ§abilitÃ© de
-  la filiation (FID, transactions, journal `DESCENDANCE_*`, souvenir mÃ©moire
+  subordonnée aux accords AIgg ; **refus** explicite et tracé (`REFUSER`,
+  bloquant) ; **archivage réversible**.
+- **Besoins/centres d'intérêt = signal uniquement** (`compat`) : ils ne
+  déclenchent JAMAIS automatiquement une reproduction (démontré par le test).
+- **Flux** : `PROPOSED → CONSENTED → AUTHORIZED` (+ `REFUSED`), traçabilité de
+  la filiation (FID, transactions, journal `DESCENDANCE_*`, souvenir mémoire
   famille `relations`).
 - **CLI** `AIgg.cmd descendance [list|propose|consent|authorize|refuse|check|compat|log|rm|restore|status]`
-  + aide FR ; **API** `/api/descendance` (GET : statut + rÃ¨gle + projets ;
+  + aide FR ; **API** `/api/descendance` (GET : statut + règle + projets ;
   POST : propose/consent/authorize/refuse/archive/restore/check/compat/log) +
   champ `descendance` dans `/api/state`.
-- **Conscience intÃ©grÃ©e** : `Conscience/Relations.json` expose le bloc
-  `DESCENDANCE` (projets, `PAR_STATUT`, `JAMAIS_HERITES`, rÃ¨gle, capacitÃ© de
-  crÃ©ation NON implÃ©mentÃ©e), `Moi.json` le synthÃ©tise et `Limites.json` le
-  dÃ©clare honnÃªtement comme non fait â€” jamais une 2e base.
+- **Conscience intégrée** : `Conscience/Relations.json` expose le bloc
+  `DESCENDANCE` (projets, `PAR_STATUT`, `JAMAIS_HERITES`, règle, capacité de
+  création NON implémentée), `Moi.json` le synthétise et `Limites.json` le
+  déclare honnêtement comme non fait — jamais une 2e base.
 
 ### Tests
-- Suite complÃ¨te : **282 PASS / 0 FAIL** (14 nouveaux autonettoyants Â§35,
-  fichier temp + mÃ©moire `relations` et journal restaurÃ©s, `descendance/` du
-  dÃ©pÃ´t jamais modifiÃ©).
+- Suite complète : **282 PASS / 0 FAIL** (14 nouveaux autonettoyants §35,
+  fichier temp + mémoire `relations` et journal restaurés, `descendance/` du
+  dépôt jamais modifié).
 
-## v0.4.3 â€” 2026-09-12 â€” ajout : l'Arbre de compÃ©tences / badges (branches, niveaux, prÃ©requis, preuves)
+## v0.4.3 — 2026-09-12 — ajout : l'Arbre de compétences / badges (branches, niveaux, prérequis, preuves)
 
-### Ajout (Prompt MaÃ®tre â€” arbre de compÃ©tences/badges, socle d'abord)
+### Ajout (Prompt Maître — arbre de compétences/badges, socle d'abord)
 - **Module `src/badges.js`** : l'arbre est du **code** (jamais une 2e base) ;
-  l'Ã©tat rÃ©el est la source privÃ©e **`competences/badges.ndjson`** (ignorÃ©e par
+  l'état réel est la source privée **`competences/badges.ndjson`** (ignorée par
   Git, comme `core/`, `memory/`, `journal/`).
-- **8 branches minimales du Prompt MaÃ®tre** (SOCLE, INFORMATIQUE,
-  RAISONNEMENT, DÃ‰VELOPPEMENT, RECHERCHE, COMMUNICATION-SENS, SOCIAL,
-  OUTILS) â€” **84 compÃ©tences**, chaÃ®ne dÃ©clarÃ©e : Connaissance â†’ Exercice â†’
-  ExpÃ©rience/Test â†’ RÃ©sultat â†’ Validation â†’ Badge â†’ CapacitÃ© â†’ Outil â†’
-  Nouvelles compÃ©tences.
-- **Niveaux 0â†’6** : 0 inconnu, 1 dÃ©couverte, 2 comprÃ©hension, 3 pratique,
-  4 autonome sous contrÃ´le, 5 maÃ®trise, 6 capable de transmettre/construire.
-- **Rust structurant sans rÃ©Ã©criture** : Rust I â†’ Rust II â†’ Rust III â†’
-  Rust systÃ¨me/rÃ©seau â†’ Rust/WebAssembly (prÃ©requis enchaÃ®nÃ©s).
-- **PRÃ‰REQUIS non contournables** : un badge de niveau N peut exiger
-  `REQUIS` (autres compÃ©tences â‰¥ niveau minimal) ; honor est refusÃ© tant
+- **8 branches minimales du Prompt Maître** (SOCLE, INFORMATIQUE,
+  RAISONNEMENT, DÉVELOPPEMENT, RECHERCHE, COMMUNICATION-SENS, SOCIAL,
+  OUTILS) — **84 compétences**, chaîne déclarée : Connaissance → Exercice →
+  Expérience/Test → Résultat → Validation → Badge → Capacité → Outil →
+  Nouvelles compétences.
+- **Niveaux 0→6** : 0 inconnu, 1 découverte, 2 compréhension, 3 pratique,
+  4 autonome sous contrôle, 5 maîtrise, 6 capable de transmettre/construire.
+- **Rust structurant sans réécriture** : Rust I → Rust II → Rust III →
+  Rust système/réseau → Rust/WebAssembly (prérequis enchaînés).
+- **PRÉREQUIS non contournables** : un badge de niveau N peut exiger
+  `REQUIS` (autres compétences ≥ niveau minimal) ; honor est refusé tant
   qu'ils ne sont pas satisfaits.
-- **RÃˆGLE D'OR â€” badge jamais automatique** : une PREUVE et la validation
-  explicite du tuteur (`PAR`) sont requises ; chaque badge est tracÃ©
-  (`TRANSACTIONS` : `BADGE:N`, `PROPOSAL`), journalisÃ© (`BADGE_HONORED`,
-  `BADGE_PROPOSED`) et mÃ©morisÃ© (famille `procedures`). Niveau dÃ©croissant
-  refusÃ©.
-- **CAPACITÃ‰ â‰  PERMISSION** : un badge atteste d'une compÃ©tence, jamais d'une
-  autorisation ; honor ne modifie aucune permission ni capacitÃ©.
+- **RÈGLE D'OR — badge jamais automatique** : une PREUVE et la validation
+  explicite du tuteur (`PAR`) sont requises ; chaque badge est tracé
+  (`TRANSACTIONS` : `BADGE:N`, `PROPOSAL`), journalisé (`BADGE_HONORED`,
+  `BADGE_PROPOSED`) et mémorisé (famille `procedures`). Niveau décroissant
+  refusé.
+- **CAPACITÉ ≠ PERMISSION** : un badge atteste d'une compétence, jamais d'une
+  autorisation ; honor ne modifie aucune permission ni capacité.
 - **Proposition d'apprentissage** (`propose`) : AIgg peut proposer ce qu'il
-  veut apprendre, pourquoi et avec quelles ressources â€” jamais un badge sans
+  veut apprendre, pourquoi et avec quelles ressources — jamais un badge sans
   validation.
 - **CLI** `AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]`
   + aide FR ; **API** `/api/competences` (GET : statut + arbre + niveaux +
-  rÃ¨gle ; POST : propose/honor/check/log) + champ `competences` dans `/api/state`.
-- **Conscience intÃ©grÃ©e** : `Conscience/Competences.json`
+  règle ; POST : propose/honor/check/log) + champ `competences` dans `/api/state`.
+- **Conscience intégrée** : `Conscience/Competences.json`
   (`ARBRE_COMPETENCES`, `NIVEAUX`, `MAX_NIVEAU`, `CHAINE`, `REGLE`, `BADGES`)
   et `Moi.json` (`badges_natives`, `competences_en_proposition`,
   `COMPETENCES_NATIVES`) citent cette source
-  native â€” jamais une 2e base.
+  native — jamais une 2e base.
 
 ### Tests
-- Suite complÃ¨te : **268 PASS / 0 FAIL** (14 nouveaux autonettoyants Â§34,
-  fichier temp + mÃ©moire `procedures` et journal restaurÃ©s, `competences/` du
-  dÃ©pÃ´t jamais modifiÃ©).
+- Suite complète : **268 PASS / 0 FAIL** (14 nouveaux autonettoyants §34,
+  fichier temp + mémoire `procedures` et journal restaurés, `competences/` du
+  dépôt jamais modifié).
 
-## v0.4.2 â€” 2026-09-12 â€” ajout : les IntÃ©rÃªts (prioritÃ©s internes + centres d'intÃ©rÃªt natifs)
+## v0.4.2 — 2026-09-12 — ajout : les Intérêts (priorités internes + centres d'intérêt natifs)
 
-### Ajout (Prompt MaÃ®tre â€” Â« des envies, des intÃ©rÃªts, des butsâ€¦ Â» abordÃ© par phases)
+### Ajout (Prompt Maître — « des envies, des intérêts, des buts… » abordé par phases)
 - **Module `src/interests.js`** : source **`interests/interests.ndjson`**
-  (privÃ©e, ignorÃ©e par Git, comme `core/`, `memory/`, `journal/`) ; la couche
-  Conscience reste une synthÃ¨se dÃ©rivÃ©e qui cite cette source.
-- **7 prioritÃ©s internes** (`PRIORITES`) : `APPRENDRE`, `COMPRENDRE`,
-  `INTEGRITE` (maintenir mon intÃ©gritÃ©), `EXPLORER`, `COMMUNIQUER`,
-  `COMPETENCES` (dÃ©velopper des compÃ©tences), `OBJECTIFS`.
-- **Centre d'intÃ©rÃªt** = sujet + prioritÃ© + intensitÃ© **EXPLICITE,
-  PROGRESSIVE et TRACABLE** : 0 non exprimÃ© â†’ 1 intÃ©rÃªt dÃ©clarÃ© â†’ 2 intÃ©rÃªt
-  approfondi â†’ 3 intÃ©rÃªt engagÃ©, plafond 3 ; chaque action est consignÃ©e dans
+  (privée, ignorée par Git, comme `core/`, `memory/`, `journal/`) ; la couche
+  Conscience reste une synthèse dérivée qui cite cette source.
+- **7 priorités internes** (`PRIORITES`) : `APPRENDRE`, `COMPRENDRE`,
+  `INTEGRITE` (maintenir mon intégrité), `EXPLORER`, `COMMUNIQUER`,
+  `COMPETENCES` (développer des compétences), `OBJECTIFS`.
+- **Centre d'intérêt** = sujet + priorité + intensité **EXPLICITE,
+  PROGRESSIVE et TRACABLE** : 0 non exprimé → 1 intérêt déclaré → 2 intérêt
+  approfondi → 3 intérêt engagé, plafond 3 ; chaque action est consignée dans
   `TRANSACTIONS` (`CREATION`, `INTENSITE:N`, `ARCHIVE`, `RESTORE`) et
-  journalisÃ©e (`INTEREST_ADDED`, `INTEREST_INTENSIFIED`, `INTEREST_ARCHIVED`,
-  `INTEREST_RESTORED`) + souvenir en mÃ©moire famille `knowledge`.
-- **RÃ¨gle d'or** : les prioritÃ©s/intÃ©rÃªts ne contournent **jamais** les
-  permissions du tuteur (capacitÃ© â‰  permission) et ne peuvent jamais
-  dÃ©clencher automatiquement une reproduction ni une action externe.
-- **RÃ©versibilitÃ©** : archivage et restauration tracÃ©s.
+  journalisée (`INTEREST_ADDED`, `INTEREST_INTENSIFIED`, `INTEREST_ARCHIVED`,
+  `INTEREST_RESTORED`) + souvenir en mémoire famille `knowledge`.
+- **Règle d'or** : les priorités/intérêts ne contournent **jamais** les
+  permissions du tuteur (capacité ≠ permission) et ne peuvent jamais
+  déclencher automatiquement une reproduction ni une action externe.
+- **Réversibilité** : archivage et restauration tracés.
 - **CLI** `AIgg.cmd interests [list|add|intensify|log|rm|restore|priorities]`
-  + aide FR ; **API** `/api/interests` (GET : statut + liste + prioritÃ©s ;
+  + aide FR ; **API** `/api/interests` (GET : statut + liste + priorités ;
   POST : add/intensify/rm/restore/log) + champ `interests` dans `/api/state`.
-- **Conscience intÃ©grÃ©e** : `Conscience/Besoins.json` (`PRIORITES_INTERNES` +
-  `REGLE`), `Conscience/CentresInterets.json` (intÃ©rÃªts natifs +
+- **Conscience intégrée** : `Conscience/Besoins.json` (`PRIORITES_INTERNES` +
+  `REGLE`), `Conscience/CentresInterets.json` (intérêts natifs +
   `POIDS_REELS_PAR_DOMAINE`), Intentions, Objectifs et `Moi.json`
-  (`BESOINS_ET_CENTRES_D_INTERET`) citent cette source native â€” jamais une 2e
+  (`BESOINS_ET_CENTRES_D_INTERET`) citent cette source native — jamais une 2e
   base.
 
 ### Tests
-- Suite complÃ¨te : **254 PASS / 0 FAIL** (12 nouveaux autonettoyants Â§33,
-  fichier temp + mÃ©moire `knowledge` et journal restaurÃ©s, `interests/` du
-  dÃ©pÃ´t jamais modifiÃ©).
+- Suite complète : **254 PASS / 0 FAIL** (12 nouveaux autonettoyants §33,
+  fichier temp + mémoire `knowledge` et journal restaurés, `interests/` du
+  dépôt jamais modifié).
 
-## v0.4.1 â€” 2026-09-12 â€” ajout : la fonction native Relations (confiance explicite, progressive, traÃ§able)
+## v0.4.1 — 2026-09-12 — ajout : la fonction native Relations (confiance explicite, progressive, traçable)
 
-### Ajout (Prompt MaÃ®tre â€” RELATIONS, jamais une confiance automatique)
+### Ajout (Prompt Maître — RELATIONS, jamais une confiance automatique)
 - **Module `src/relations.js`** : source **`relations/relations.ndjson`**
-  (privÃ©e, ignorÃ©e par Git, comme `core/`, `memory/`, `journal/`) ; la couche
-  Conscience reste une synthÃ¨se dÃ©rivÃ©e qui cite cette source.
-- **CatÃ©gories** : `Tuteur`, `TuteurIgg` (tuteur d'un autre AIgg), `AmiHumain`,
+  (privée, ignorée par Git, comme `core/`, `memory/`, `journal/`) ; la couche
+  Conscience reste une synthèse dérivée qui cite cette source.
+- **Catégories** : `Tuteur`, `TuteurIgg` (tuteur d'un autre AIgg), `AmiHumain`,
   `AmiIgg`, `Parent`, `Autres`.
-- **Confiance EXPLICITE** : toute relation dÃ©marre au niveau 0 ; une relation
-  entre tuteurs ne crÃ©e **jamais automatiquement** une relation de confiance
+- **Confiance EXPLICITE** : toute relation démarre au niveau 0 ; une relation
+  entre tuteurs ne crée **jamais automatiquement** une relation de confiance
   entre AIgg.
 - **Confiance PROGRESSIVE et TRACABLE** : `trust` augmente d'exactement 1
-  niveau (0 inconnue â†’ 1 connaissance explicite â†’ 2 confiance progressive â†’
-  3 confiance Ã©tablie), plafond 3, chaque action est consignÃ©e dans
-  `TRANSACTIONS` (`TRUST:N`, `CREATION`, `ARCHIVE`, `RESTORE`) et journalisÃ©e
+  niveau (0 inconnue → 1 connaissance explicite → 2 confiance progressive →
+  3 confiance établie), plafond 3, chaque action est consignée dans
+  `TRANSACTIONS` (`TRUST:N`, `CREATION`, `ARCHIVE`, `RESTORE`) et journalisée
   (`RELATION_ADDED`, `RELATION_TRUST`, `RELATION_ARCHIVED`,
-  `RELATION_RESTORED`) + souvenir en mÃ©moire famille `relations`.
-- **Parent = filiation structurelle, jamais une propriÃ©tÃ©** : la descendance a
-  sa propre identitÃ© et n'hÃ©rite jamais automatiquement de secrets,
-  permissions ni accÃ¨s aux outils.
-- **RÃ©versibilitÃ©** : archivage et restauration tracÃ©s.
+  `RELATION_RESTORED`) + souvenir en mémoire famille `relations`.
+- **Parent = filiation structurelle, jamais une propriété** : la descendance a
+  sa propre identité et n'hérite jamais automatiquement de secrets,
+  permissions ni accès aux outils.
+- **Réversibilité** : archivage et restauration tracés.
 - **CLI** `AIgg.cmd relations [list|add|trust|log|rm|restore]` + aide FR ;
   **API** `/api/relations` (GET : statut + liste ; POST : add/trust/rm/restore/log)
   + champ `relations` dans `/api/state`.
-- **Conscience intÃ©grÃ©e** : `Conscience/Relations.json` cite la source native
-  (tuteur dÃ©rivÃ© de `core/identity.json` + relations natives), expose
-  `REVUE` (rÃ¨gle de confiance), `PARENT` (filiation) et `CATEGORIES` ;
-  `Moi.json` â†’ `RELATIONS` mis Ã  jour.
+- **Conscience intégrée** : `Conscience/Relations.json` cite la source native
+  (tuteur dérivé de `core/identity.json` + relations natives), expose
+  `REVUE` (règle de confiance), `PARENT` (filiation) et `CATEGORIES` ;
+  `Moi.json` → `RELATIONS` mis à jour.
 
 ### Tests
-- Suite complÃ¨te : **242 PASS / 0 FAIL** (12 nouveaux autonettoyants Â§32,
-  fichier temp + mÃ©moire et journal restaurÃ©s, `relations/` du dÃ©pÃ´t jamais
-  modifiÃ©).
+- Suite complète : **242 PASS / 0 FAIL** (12 nouveaux autonettoyants §32,
+  fichier temp + mémoire et journal restaurés, `relations/` du dépôt jamais
+  modifié).
 
-## v0.4.0 â€” 2026-09-12 â€” ajout : la couche Conscience (synthÃ¨se fonctionnelle de soi) â€” socle + Moi.json
+## v0.4.0 — 2026-09-12 — ajout : la couche Conscience (synthèse fonctionnelle de soi) — socle + Moi.json
 
 ### Ajout (architecture fonctionnelle de connaissance de soi, jamais une 2e base, jamais conscient au sens philosophique)
-- **Module `src/conscience.js`** : couche de **synthÃ¨se** qui lit les vraies
+- **Module `src/conscience.js`** : couche de **synthèse** qui lit les vraies
   sources (`core/identity.json`, `core/state.json`, capabilities, permissions,
-  senses, memory/, journal/, libraries/, berceau, toolkit) et gÃ©nÃ¨re le dossier
-  **`AIgg/Conscience/`** â€” 19 fichiers : `Identite.json`, `Moi.json`,
+  senses, memory/, journal/, libraries/, berceau, toolkit) et génère le dossier
+  **`AIgg/Conscience/`** — 19 fichiers : `Identite.json`, `Moi.json`,
   `Etats.json`, `Perceptions.json`, `Memoire.json`, `Besoins.json`,
   `Intentions.json`, `Objectifs.json`, `CentresInterets.json`, `Emotions.json`,
   `Relations.json`, `Competences.json`, `Valeurs.json`, `Limites.json`,
   `Experiences.json`, `Reflexion.json`, `Histoire.json`, `README.md` et
   `JournalConscient.ndjson` (append-only). Chaque section cite ses `SOURCES` ;
-  **aucune valeur n'est inventÃ©e**.
-- **`Moi.json`** rÃ©pond aux critÃ¨res du Prompt MaÃ®tre : QUI SUIS-JE /
-  IDENTIFIANT / TUTEUR / OÃ™ SUIS-JE / Ã‰TAT / JE SAIS / JE PEUX / JE NE PEUX
-  PAS / LIMITES / J'APPRENDS / BESOINS ET CENTRES D'INTÃ‰RÃŠT / RELATIONS /
-  OUTILS / FAIT RÃ‰CENT / APPRIS / **PROCHAINE ACTION AUTORISÃ‰E**.
-- **Prochaine action = capacitÃ© + permission** : jamais une initiative
-  autonome ; si des besoins sont en attente, elle attend le tuteur ; Ã 
-  l'Ã©troit, elle rappelle `AGRANDIR` (jamais d'action automatique).
-- **HonnÃªtetÃ©** : Â« Conscience Â» = **architecture fonctionnelle**. Aucune
-  Ã©motion simulÃ©e (`Emotions.json` = marqueur d'Ã©tat rÃ©el), modÃ¨le de Relations
-  complet annoncÃ© pour v0.4.1, arbre compÃ©tences/badges pour v0.4.3.
-- **Vie privÃ©e** : `Conscience/` est gÃ©nÃ©rÃ© sur la machine et **ignorÃ© par
+  **aucune valeur n'est inventée**.
+- **`Moi.json`** répond aux critères du Prompt Maître : QUI SUIS-JE /
+  IDENTIFIANT / TUTEUR / OÙ SUIS-JE / ÉTAT / JE SAIS / JE PEUX / JE NE PEUX
+  PAS / LIMITES / J'APPRENDS / BESOINS ET CENTRES D'INTÉRÊT / RELATIONS /
+  OUTILS / FAIT RÉCENT / APPRIS / **PROCHAINE ACTION AUTORISÉE**.
+- **Prochaine action = capacité + permission** : jamais une initiative
+  autonome ; si des besoins sont en attente, elle attend le tuteur ; à
+  l'étroit, elle rappelle `AGRANDIR` (jamais d'action automatique).
+- **Honnêteté** : « Conscience » = **architecture fonctionnelle**. Aucune
+  émotion simulée (`Emotions.json` = marqueur d'état réel), modèle de Relations
+  complet annoncé pour v0.4.1, arbre compétences/badges pour v0.4.3.
+- **Vie privée** : `Conscience/` est généré sur la machine et **ignoré par
   Git** (comme `core/`, `memory/`, `journal/`).
 - CLI `AIgg.cmd conscience [status|sync|moi|files]` + aide FR ; API
   `/api/conscience` (GET) et `/api/conscience/sync` (POST).
 
 ### Tests
-- Suite complÃ¨te : **242 PASS / 0 FAIL** (nouveaux autonettoyants Â§31 :
+- Suite complète : **242 PASS / 0 FAIL** (nouveaux autonettoyants §31 :
   `conscience_generer`, `conscience_fichiers_presents`,
   `conscience_meta_synthese`, `conscience_moi_criteres`,
   `conscience_identite_coherente`, `conscience_prochaine_action`,
   `conscience_relations_tuteur`, `conscience_journal_append`,
-  `conscience_capacites_reelles`, `conscience_etat_reel` â€” gÃ©nÃ©ration dans un
-  dossier temporaire, jamais dans le dÃ©pÃ´t).
+  `conscience_capacites_reelles`, `conscience_etat_reel` — génération dans un
+  dossier temporaire, jamais dans le dépôt).
 
-## v0.3.14 â€” 2026-09-11 â€” clarification : les seuils d'habitation sont prÃ©dictifs, jamais une obligation
+## v0.3.14 — 2026-09-11 — clarification : les seuils d'habitation sont prédictifs, jamais une obligation
 
-### AmÃ©lioration (rester avec de la place : on ne Â« dÃ©mÃ©nage Â» pas parce qu'un seuil approche)
-- **Principe Â§1 clarifiÃ©** : franchir (ou approcher) le seuil d'une habitation
-  ne force PAS AIgg Ã  dÃ©mÃ©nager. Les seuils (Graine 100 Mo â†’ Ã‰cosystÃ¨me 250 Go+)
-  sont PRÃ‰DICTIFS : ils indiquent seulement quand un quota plus grand devient
+### Amélioration (rester avec de la place : on ne « déménage » pas parce qu'un seuil approche)
+- **Principe §1 clarifié** : franchir (ou approcher) le seuil d'une habitation
+  ne force PAS AIgg à déménager. Les seuils (Graine 100 Mo → Écosystème 250 Go+)
+  sont PRÉDICTIFS : ils indiquent seulement quand un quota plus grand devient
   pertinent.
 - **AIgg reste et continue** : tant qu'il a encore de l'espace disponible dans
-  son quota, il continue d'acquÃ©rir badges, compÃ©tences et outils, quelle que
-  soit sa proximitÃ© du seuil suivant. Le niveau n'est nommÃ© que par le quota
-  rÃ©ellement allouÃ© par le tuteur.
-- **Seul dÃ©clencheur** : le dÃ©mÃ©nagement n'est jamais automatique â€” soit le
-  tuteur rÃ©alloue un quota plus grand (`berceau set`), soit AIgg devient Ã 
-  l'Ã©troit (â‰¥ 85 % du quota) et DEMANDE (besoin `AGRANDIR`).
-- **Textes alignÃ©s** : rÃ©ponse de conversation (`LEVEL`), `statusText()`,
+  son quota, il continue d'acquérir badges, compétences et outils, quelle que
+  soit sa proximité du seuil suivant. Le niveau n'est nommé que par le quota
+  réellement alloué par le tuteur.
+- **Seul déclencheur** : le déménagement n'est jamais automatique — soit le
+  tuteur réalloue un quota plus grand (`berceau set`), soit AIgg devient à
+  l'étroit (≥ 85 % du quota) et DEMANDE (besoin `AGRANDIR`).
+- **Textes alignés** : réponse de conversation (`LEVEL`), `statusText()`,
   `AIgg.cmd berceau level` (champ `predictif` explicite), aide `berceau` ;
-  toujours la mÃªme rÃ¨gle : Â« je peux rester ici et continuer d'acquÃ©rir Â».
+  toujours la même règle : « je peux rester ici et continuer d'acquérir ».
 
 ### Tests
-- Suite complÃ¨te : **220 PASS / 0 FAIL** (nouveaux autonettoyants Â§29 :
+- Suite complète : **220 PASS / 0 FAIL** (nouveaux autonettoyants §29 :
   `habitation_predictif_non_obligatoire`, `habitation_predictif_message`).
 
-## v0.3.13 â€” 2026-09-11 â€” ajout : les Habitations (niveaux d'espace) et la SantÃ© du systÃ¨me
+## v0.3.13 — 2026-09-11 — ajout : les Habitations (niveaux d'espace) et la Santé du système
 
-### Ajouts (nommer sa maison : quota â†’ habitation ; connaÃ®tre sa santÃ© rÃ©elle)
-- **Niveaux d'espace â€” Habitations (`src/berceau.js`)** : le quota allouÃ© par
-  le tuteur nomme l'habitation d'AIgg, du plus simple au plus fourni (Â§1 du plan
+### Ajouts (nommer sa maison : quota → habitation ; connaître sa santé réelle)
+- **Niveaux d'espace — Habitations (`src/berceau.js`)** : le quota alloué par
+  le tuteur nomme l'habitation d'AIgg, du plus simple au plus fourni (§1 du plan
   du tuteur) : Graine (100 Mo), Berceau (1 Go), Studio (2 Go), Appartement
   (5 Go), Maison (10 Go), Atelier (20 Go), Laboratoire (50 Go), Centre (100 Go),
-  Ã‰cosystÃ¨me (250 Go et plus). `berceau.level()` calcule le niveau rÃ©el depuis
-  l'allocation ; chaque niveau porte son plan d'Ã©quipement PRÃ‰VU (jamais
-  annoncÃ© comme acquis). **Plus d'espace â‰  plus intelligent**.
-- **Conversation** : Â« â€¦quelle habitation ? / quel niveau ? / oÃ¹ habites-tu ? Â»
-  â†’ rÃ©ponse rÃ©elle (`LEVEL`) : habitation, niveau, plan, prochaine habitation.
+  Écosystème (250 Go et plus). `berceau.level()` calcule le niveau réel depuis
+  l'allocation ; chaque niveau porte son plan d'équipement PRÉVU (jamais
+  annoncé comme acquis). **Plus d'espace ≠ plus intelligent**.
+- **Conversation** : « …quelle habitation ? / quel niveau ? / où habites-tu ? »
+  → réponse réelle (`LEVEL`) : habitation, niveau, plan, prochaine habitation.
 - **CLI `berceau level`** + statut enrichi (niveau + habitation + plan) ;
   `berceau` (statut) expose `levelName` / `levelIndex`.
-- **Vue santÃ© consolidÃ©e â€” `src/health.js`** : les 14 points du plan (Â§18),
-  tous mesurÃ©s rÃ©ellement : Ã©tat, niveau, espace (total/utilisÃ©/libre),
-  bibliothÃ¨ques, outils (prÃ©sents/installÃ©s/autorisations/tests en Ã©chec),
-  compÃ©tences (capacitÃ©s + compÃ©tences de bibliothÃ¨que acquises/en cours/
-  bloquÃ©es), permissions actives, sens disponibles, tÃ¢ches (notebook, besoins,
-  questions), erreurs rÃ©centes du journal (marqueur d'Ã©chec rÃ©el), sauvegardes.
+- **Vue santé consolidée — `src/health.js`** : les 14 points du plan (§18),
+  tous mesurés réellement : état, niveau, espace (total/utilisé/libre),
+  bibliothèques, outils (présents/installés/autorisations/tests en échec),
+  compétences (capacités + compétences de bibliothèque acquises/en cours/
+  bloquées), permissions actives, sens disponibles, tâches (notebook, besoins,
+  questions), erreurs récentes du journal (marqueur d'échec réel), sauvegardes.
 - **CLI `AIgg.cmd health`**, API `/api/health`, champ `health` dans
-  `/api/state`, onglet web Â« SantÃ© Â» (habitation + 14 points Â§18).
+  `/api/state`, onglet web « Santé » (habitation + 14 points §18).
 
 ### Tests
-- Suite complÃ¨te : **218 PASS / 0 FAIL** (nouveaux autonettoyants Â§29
+- Suite complète : **218 PASS / 0 FAIL** (nouveaux autonettoyants §29
   Habitations : `habitation_seuils`, `habitation_quota_nomme`,
   `habitation_graine`, `habitation_honnete`, `habitation_conversation` ;
-  Â§30 SantÃ© : `sante_14_points`, `sante_espace_coherent`,
+  §30 Santé : `sante_14_points`, `sante_espace_coherent`,
   `sante_niveau_coherent`, `sante_inventaire_reel`, `sante_erreurs_shape`,
-  `sante_human_seuils` ; snapshot/restore de berceau, besoins, journal, Ã©tat).
+  `sante_human_seuils` ; snapshot/restore de berceau, besoins, journal, état).
 
-## v0.3.12 â€” 2026-09-11 â€” ajout : le Berceau â€” AIgg se connaÃ®t en taille et demande de l'aide quand il est Ã  l'Ã©troit
+## v0.3.12 — 2026-09-11 — ajout : le Berceau — AIgg se connaît en taille et demande de l'aide quand il est à l'étroit
 
-### Ajouts (conscience de soi : poids, espace, quota â€” la Â« maison Â» allouÃ©e par le tuteur)
-- **Module `src/berceau.js`** : mesure rÃ©elle de son propre poids
-  (`measureSelf` : donnÃ©es vivantes de l'incubateur â€” `core`, `memory`,
+### Ajouts (conscience de soi : poids, espace, quota — la « maison » allouée par le tuteur)
+- **Module `src/berceau.js`** : mesure réelle de son propre poids
+  (`measureSelf` : données vivantes de l'incubateur — `core`, `memory`,
   `journal`, `senses`, `inbox`, `outbox`, `notebook`, `libraries`, `vault`,
-  `src`, `web`, `docs`, `tools`, `templates`â€¦ ; **exclues** : `backups/`
+  `src`, `web`, `docs`, `tools`, `templates`… ; **exclues** : `backups/`
   (archives de protection), `node_modules/`, `.git/`).
-- **Quota Â« Berceau Â» allouÃ© par le tuteur** : 1 Go par dÃ©faut, persistÃ© dans
-  `core/berceau.json` (privÃ©, comme tout `core/`). **Jamais d'action
-  automatique** : le tuteur dÃ©cide toujours (`AIgg.cmd berceau set <taille>`
+- **Quota « Berceau » alloué par le tuteur** : 1 Go par défaut, persisté dans
+  `core/berceau.json` (privé, comme tout `core/`). **Jamais d'action
+  automatique** : le tuteur décide toujours (`AIgg.cmd berceau set <taille>`
   ou `AIgg.cmd migrate <dest>`).
-- **Sonde d'espace libre rÃ©elle** du disque (`fs.statfs`, natif) ; si la sonde
-  est indisponible â†’ honnÃªtement indiquÃ© Â« inconnu Â» (jamais un chiffre inventÃ©).
-- **Seuil `tight`** : â‰¥ 85 % du quota franchi (ou disque trop plein) â†’ AIgg
-  crÃ©e un besoin **`AGRANDIR`** unique : Â« Je suis Ã  l'Ã©troit : je pÃ¨se Xâ€¦ â€”
-  peux-tu agrandir mon berceau ou me migrer ? Â». JournalisÃ© `BERCEAU_TIGHT`.
-- **Conversation** : Â« quelle est ta taille ? / ton berceau ? / combien
-  pÃ¨ses-tu ? Â» â†’ rÃ©ponse **rÃ©elle** (poids mesurÃ©, quota, espace libre) ;
-  la conscience de sa taille devient une rÃ©ponse de fait, pas une simulation.
-- **ProactivitÃ© honnÃªte** : au rÃ©veil, un besoin `AGRANDIR` actif est rappelÃ©
+- **Sonde d'espace libre réelle** du disque (`fs.statfs`, natif) ; si la sonde
+  est indisponible → honnêtement indiqué « inconnu » (jamais un chiffre inventé).
+- **Seuil `tight`** : ≥ 85 % du quota franchi (ou disque trop plein) → AIgg
+  crée un besoin **`AGRANDIR`** unique : « Je suis à l'étroit : je pèse X… —
+  peux-tu agrandir mon berceau ou me migrer ? ». Journalisé `BERCEAU_TIGHT`.
+- **Conversation** : « quelle est ta taille ? / ton berceau ? / combien
+  pèses-tu ? » → réponse **réelle** (poids mesuré, quota, espace libre) ;
+  la conscience de sa taille devient une réponse de fait, pas une simulation.
+- **Proactivité honnête** : au réveil, un besoin `AGRANDIR` actif est rappelé
   au tuteur comme les questions/confirmations (`messages` / digest).
 - **CLI `berceau`** : `berceau` (statut), `berceau set <taille>` (ex. `2G`,
-  `1500M`, `1,5Go`, `1073741824`), `berceau check` (mesure + demande si Ã 
-  l'Ã©troit) ; aide en franÃ§ais. **API web** : `/api/berceau`, et champs
+  `1500M`, `1,5Go`, `1073741824`), `berceau check` (mesure + demande si à
+  l'étroit) ; aide en français. **API web** : `/api/berceau`, et champs
   `berceau` dans `/api/state`.
 
 ### Tests
-- Suite complÃ¨te : **207 PASS / 0 FAIL** (9 nouveaux autonettoyants :
+- Suite complète : **207 PASS / 0 FAIL** (9 nouveaux autonettoyants :
   `berceau_mesure`, `berceau_human`, `berceau_alloc_defaut`,
-  `berceau_parse_taille`, `berceau_statut`, `berceau_libre` (sonde rÃ©elle),
+  `berceau_parse_taille`, `berceau_statut`, `berceau_libre` (sonde réelle),
   `berceau_demande_unique`, `berceau_conversation`, `berceau_proactif` ;
   snapshot/restore de `core/berceau.json`, besoins, journal, conversation).
 
-## v0.3.11 â€” 2026-09-11 â€” amÃ©lioration : EXTAI â€” multi-fournisseurs et traÃ§abilitÃ© outbox (outil `ia`)
+## v0.3.11 — 2026-09-11 — amélioration : EXTAI — multi-fournisseurs et traçabilité outbox (outil `ia`)
 
 ### Ajouts (l'IA externe reste OUTIL, avec plus de fournisseurs et de transparence)
 - **Multi-fournisseurs** : registre `tools/ia/providers.json` (hors Git, comme
-  web/providers.json) pour ajouter des endpoints compatibles Â« chat
-  completions Â» (openai par dÃ©faut ; ex. ollama local, openrouter, mistralâ€¦).
-  Choix Ã  la demande : `ia ask --provider=<nom>` ; `ia status` liste les
-  fournisseurs, leurs modÃ¨les et quelle clÃ© couvre chacun.
-- **ClÃ© par fournisseur** : `vault put ia.api_key.<provider> "<clÃ©>"` (clÃ©
-  propre) sinon clÃ© commune `ia.api_key`. Rien dans Git, l'aide, le journal,
-  la mÃ©moire ni outbox/.
-- **TraÃ§abilitÃ© outbox/** : chaque demande (rÃ©ussie ou non) est tracÃ©e
-  (`outbox/â€¦-ia-*.json`) : ID, date, fournisseur, modÃ¨le, prompt, statut
-  SENT/FAILED, rÃ©ponse (bornÃ©e) et usage â€” jamais de clÃ© ni de mot de passe.
-  CLI `ia log`, API `/api/ia/log`. (Le dossier outbox/ est dÃ©jÃ  privÃ©.)
-- **SÃ»retÃ©** : fournisseur inconnu â†’ refus explicite **sans rÃ©seau** ; sans
-  clÃ© â†’ `missing`, pas de rÃ©seau ; prompt â‰¤ 4 000 car., rÃ©ponse â‰¤ 3 000 car.
-  dans la trace, max_tokens â‰¤ 800.
+  web/providers.json) pour ajouter des endpoints compatibles « chat
+  completions » (openai par défaut ; ex. ollama local, openrouter, mistral…).
+  Choix à la demande : `ia ask --provider=<nom>` ; `ia status` liste les
+  fournisseurs, leurs modèles et quelle clé couvre chacun.
+- **Clé par fournisseur** : `vault put ia.api_key.<provider> "<clé>"` (clé
+  propre) sinon clé commune `ia.api_key`. Rien dans Git, l'aide, le journal,
+  la mémoire ni outbox/.
+- **Traçabilité outbox/** : chaque demande (réussie ou non) est tracée
+  (`outbox/…-ia-*.json`) : ID, date, fournisseur, modèle, prompt, statut
+  SENT/FAILED, réponse (bornée) et usage — jamais de clé ni de mot de passe.
+  CLI `ia log`, API `/api/ia/log`. (Le dossier outbox/ est déjà privé.)
+- **Sûreté** : fournisseur inconnu → refus explicite **sans réseau** ; sans
+  clé → `missing`, pas de réseau ; prompt ≤ 4 000 car., réponse ≤ 3 000 car.
+  dans la trace, max_tokens ≤ 800.
 
 ### Tests
-- Suite complÃ¨te : **198 PASS / 0 FAIL** (3 nouveaux autonettoyants :
-  `ia_outbox_tracee` (multi-fournisseurs A+B simulÃ©s localement + trace outbox
+- Suite complète : **198 PASS / 0 FAIL** (3 nouveaux autonettoyants :
+  `ia_outbox_tracee` (multi-fournisseurs A+B simulés localement + trace outbox
   SENT), `ia_provider_inconnu_refus`, `ia_log_sans_cle`).
 
-## v0.3.10 â€” 2026-09-11 â€” ajout : l'IA externe comme OUTIL (jamais comme cerveau)
+## v0.3.10 — 2026-09-11 — ajout : l'IA externe comme OUTIL (jamais comme cerveau)
 
-### Ajouts (premier pas vers EXTAI â€” Â« IA externe, outil facultatif Â»)
+### Ajouts (premier pas vers EXTAI — « IA externe, outil facultatif »)
 - **Outil `ia` (`tools/ia/`)** : connecteur vers une IA externe compatible
-  Â« chat completions Â» (ex. OpenAI). RÃ¨gle absolue respectÃ©e : **une IA externe
-  est un outil que l'on consulte, jamais le cerveau d'AIgg** â€” capacitÃ©
-  `CONSULTATION`, rÃ©ponse marquÃ©e `source: EXTERNAL_IA`, **jamais mÃ©morisÃ©e
-  automatiquement**, toujours accompagnÃ©e d'un avertissement Â« Ã  vÃ©rifier Â».
-- **CLI** : `AIgg.cmd ia status | ask --prompt="â€¦" [--system=â€¦] [--model=â€¦]
-  [--max-tokens=â€¦]` ; routes web `/api/ia/status` et `/api/ia/ask` (aide en
-  franÃ§ais). Outil **bloquÃ© par dÃ©faut** : autorisation (authorize) +
+  « chat completions » (ex. OpenAI). Règle absolue respectée : **une IA externe
+  est un outil que l'on consulte, jamais le cerveau d'AIgg** — capacité
+  `CONSULTATION`, réponse marquée `source: EXTERNAL_IA`, **jamais mémorisée
+  automatiquement**, toujours accompagnée d'un avertissement « à vérifier ».
+- **CLI** : `AIgg.cmd ia status | ask --prompt="…" [--system=…] [--model=…]
+  [--max-tokens=…]` ; routes web `/api/ia/status` et `/api/ia/ask` (aide en
+  français). Outil **bloqué par défaut** : autorisation (authorize) +
   installation (install) requises.
-- **Secrets jamais publiÃ©s** : la clÃ© d'API vit dans le coffre local
-  (`vault put ia.api_key "<clÃ©>"`), la base d'API par dÃ©faut se surcharge dans
-  `tools/ia/config.json` (ignorÃ© par Git, comme gmail/web).
-- **SÃ»retÃ©** : prompt limitÃ© (4 000 car.), rÃ©ponse max 800 tokens, timeout 20 s ;
-  sans clÃ© â†’ refus explicite `missing: KEY/PASSWORD` (aucun rÃ©seau touchÃ©) ;
-  rÃ©vocation = `revoke ia` + `vault rm ia.api_key`.
+- **Secrets jamais publiés** : la clé d'API vit dans le coffre local
+  (`vault put ia.api_key "<clé>"`), la base d'API par défaut se surcharge dans
+  `tools/ia/config.json` (ignoré par Git, comme gmail/web).
+- **Sûreté** : prompt limité (4 000 car.), réponse max 800 tokens, timeout 20 s ;
+  sans clé → refus explicite `missing: KEY/PASSWORD` (aucun réseau touché) ;
+  révocation = `revoke ia` + `vault rm ia.api_key`.
 
 ### Tests
-- Suite complÃ¨te : **195 PASS / 0 FAIL** (3 nouveaux autonettoyants :
+- Suite complète : **195 PASS / 0 FAIL** (3 nouveaux autonettoyants :
   `ia_outil_pas_cerveau` (manifest), `test_outil_ia` (endpoint `/v1/chat/completions`
-  simulÃ© localement, Bearer vÃ©rifiÃ©, coffre temporaire), `ia_sans_cle_refus`).
+  simulé localement, Bearer vérifié, coffre temporaire), `ia_sans_cle_refus`).
 
-## v0.3.9 â€” 2026-09-11 â€” ajout : la gÃ©opolitique du monde (preset `geo`, esprit Â« Le Dessous des Cartes Â»)
+## v0.3.9 — 2026-09-11 — ajout : la géopolitique du monde (preset `geo`, esprit « Le Dessous des Cartes »)
 
-### Ajouts (AIgg apprend Ã  dÃ©crypter le monde par les cartes)
-- **Preset `geo` (27 connaissances vÃ©rifiÃ©es)** de gÃ©ographie et de
-  gÃ©opolitique, dans l'esprit cartographique du Â« Dessous des Cartes Â» (ARTE) :
-  dÃ©finition de la gÃ©opolitique, Russie (plus grand pays), Inde (pays le plus
-  peuplÃ©), ONU (193 membres) et Conseil de sÃ©curitÃ© (les Â« P5 Â», droit de veto),
-  Union europÃ©enne (27 Ã‰tats, Bruxelles/Strasbourg/Luxembourg), OTAN (1949,
-  32 membres), G20, Corne de l'Afrique, canal de Suez (Ã‰gypte, 1869), dÃ©troit de
-  Malacca, capitales souvent mal connues (Canberra, BrasÃ­lia, Ottawa, Ankara,
-  Berne, Moscou, Wellington), Everest, mer Morte, plus grand dÃ©sert (Antarctique),
-  plus longue frontiÃ¨re (Canadaâ€“Ã‰tats-Unis), Brexit, Nigeria (pays le plus
-  peuplÃ© d'Afrique), Groenland, Route de la soie, menace des ocÃ©ans sur les
-  petits Ã‰tats insulaires.
+### Ajouts (AIgg apprend à décrypter le monde par les cartes)
+- **Preset `geo` (27 connaissances vérifiées)** de géographie et de
+  géopolitique, dans l'esprit cartographique du « Dessous des Cartes » (ARTE) :
+  définition de la géopolitique, Russie (plus grand pays), Inde (pays le plus
+  peuplé), ONU (193 membres) et Conseil de sécurité (les « P5 », droit de veto),
+  Union européenne (27 États, Bruxelles/Strasbourg/Luxembourg), OTAN (1949,
+  32 membres), G20, Corne de l'Afrique, canal de Suez (Égypte, 1869), détroit de
+  Malacca, capitales souvent mal connues (Canberra, Brasília, Ottawa, Ankara,
+  Berne, Moscou, Wellington), Everest, mer Morte, plus grand désert (Antarctique),
+  plus longue frontière (Canada–États-Unis), Brexit, Nigeria (pays le plus
+  peuplé d'Afrique), Groenland, Route de la soie, menace des océans sur les
+  petits États insulaires.
 - **CLI** : `AIgg.cmd learn geo` (idempotent).
-- **SÃ»retÃ©** : faits objectifs et vÃ©rifiables uniquement, aucun parti pris ;
-  hors sujet â†’ UNKNOWN. Relectures croisÃ©es intactes (ex. Â« qui a peint la
-  Joconde Â» reste art, Â« quelle est la capitaleâ€¦ Â» va vers gÃ©o).
+- **Sûreté** : faits objectifs et vérifiables uniquement, aucun parti pris ;
+  hors sujet → UNKNOWN. Relectures croisées intactes (ex. « qui a peint la
+  Joconde » reste art, « quelle est la capitale… » va vers géo).
 
 ### Tests
-- Suite complÃ¨te : **192 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+- Suite complète : **192 PASS / 0 FAIL** (6 nouveaux autonettoyants :
   `geo_preset_liste`, `geo_preset_load`, `geo_recall_capitale`,
-  `geo_recall_detroit`, `geo_honnete`, `geo_aucune_derive_art` ; les entrÃ©es gÃ©o
-  prÃ©-existantes sont prÃ©servÃ©es).
+  `geo_recall_detroit`, `geo_honnete`, `geo_aucune_derive_art` ; les entrées géo
+  pré-existantes sont préservées).
 
-## v0.3.8 â€” 2026-09-11 â€” ajout : la culture des arts (preset `art`, histoire de l'art)
+## v0.3.8 — 2026-09-11 — ajout : la culture des arts (preset `art`, histoire de l'art)
 
 ### Ajouts (AIgg approfondit la culture visuelle du tuteur)
-- **Preset `art` (27 connaissances vÃ©rifiÃ©es)** d'histoire de l'art europÃ©en,
+- **Preset `art` (27 connaissances vérifiées)** d'histoire de l'art européen,
   dans l'esprit des documentaires culturels d'ARTE : gothique, chapelle
-  Sixtine et CÃ¨ne (Michel-Ange, Vinci), clair-obscur et baroque (Caravage,
-  Rembrandt, Bernin), SiÃ¨cle d'or nÃ©erlandais (Ronde de nuit, Jeune Fille Ã  la
-  perle), VelÃ¡zquez et le Prado, romantisme (GÃ©ricault, Delacroix), Manet,
-  post-impressionnisme (van Gogh), cubisme (Picasso, Braque), surrÃ©alisme
-  (DalÃ­, Magritte), abstraction (Kandinsky), Bauhaus, ready-made (Duchamp),
-  invention de la photographie, art nouveau, et oÃ¹ voir les Å“uvres (Louvre,
+  Sixtine et Cène (Michel-Ange, Vinci), clair-obscur et baroque (Caravage,
+  Rembrandt, Bernin), Siècle d'or néerlandais (Ronde de nuit, Jeune Fille à la
+  perle), Velázquez et le Prado, romantisme (Géricault, Delacroix), Manet,
+  post-impressionnisme (van Gogh), cubisme (Picasso, Braque), surréalisme
+  (Dalí, Magritte), abstraction (Kandinsky), Bauhaus, ready-made (Duchamp),
+  invention de la photographie, art nouveau, et où voir les œuvres (Louvre,
   Orsay, Prado, Offices, Rijksmuseum).
-- **CLI** : `AIgg.cmd learn art` (idempotent). La relecture mÃ©moire distingue
-  bien les doublons thÃ©matiques (ex. Â« qui a peint / oÃ¹ est la Joconde Â»).
-- **SÃ»retÃ©** : connaissances seulement, vÃ©rifiÃ©es ; hors sujet â†’ UNKNOWN.
+- **CLI** : `AIgg.cmd learn art` (idempotent). La relecture mémoire distingue
+  bien les doublons thématiques (ex. « qui a peint / où est la Joconde »).
+- **Sûreté** : connaissances seulement, vérifiées ; hors sujet → UNKNOWN.
 
 ### Tests
-- Suite complÃ¨te : **186 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+- Suite complète : **186 PASS / 0 FAIL** (6 nouveaux autonettoyants :
   `art_preset_liste`, `art_preset_load`, `art_recall_oeuvre`, `art_recall_lieu`,
-  `art_idempotent`, `art_honnete` ; les entrÃ©es art prÃ©-existantes sont
-  prÃ©servÃ©es).
+  `art_idempotent`, `art_honnete` ; les entrées art pré-existantes sont
+  préservées).
 
-## v0.3.7 â€” 2026-09-11 â€” ajout : la culture du tuteur (preset `culture`, inspirÃ© d'ARTE)
+## v0.3.7 — 2026-09-11 — ajout : la culture du tuteur (preset `culture`, inspiré d'ARTE)
 
-### Ajouts (AIgg gagne une culture vÃ©rifiÃ©e)
-- **Preset `culture` (27 connaissances vÃ©rifiÃ©es)** dans l'esprit de la ligne
-  Ã©ditoriale d'ARTE (Â« la plateforme culturelle europÃ©enne Â») : la chaÃ®ne ARTE
-  elle-mÃªme (crÃ©ation 1991, premieres Ã©missions 30 mai 1992, siÃ¨ge de
-  Strasbourg, prÃ©curseur Â« La Sept Â», Le Dessous des Cartes, Karambolage,
-  28 minutes, Tracks), l'Europe (Charlemagne, traitÃ© de l'Ã‰lysÃ©e, traitÃ© de
+### Ajouts (AIgg gagne une culture vérifiée)
+- **Preset `culture` (27 connaissances vérifiées)** dans l'esprit de la ligne
+  éditoriale d'ARTE (« la plateforme culturelle européenne ») : la chaîne ARTE
+  elle-même (création 1991, premieres émissions 30 mai 1992, siège de
+  Strasbourg, précurseur « La Sept », Le Dessous des Cartes, Karambolage,
+  28 minutes, Tracks), l'Europe (Charlemagne, traité de l'Élysée, traité de
   Rome, Strasbourg), l'art (Renaissance, Joconde, impressionnisme, Nouvelle
-  Vague, Festival de Cannes), les idÃ©es (Descartes, Kant, LumiÃ¨res), les
-  sciences (Einstein, GalilÃ©e, Copernic, Gutenberg) et le documentaire.
-- **Relecture enrichie** : mots-outils interrogatifs ajoutÃ©s (`quel`, `quelle`,
-  `quels`, `quelles`, `combien`, `ce`) pour que les questions en Â« quelâ€¦ Â»
-  rÃ©pondent plus justement depuis la mÃ©moire â€” toujours sans invention (sinon
+  Vague, Festival de Cannes), les idées (Descartes, Kant, Lumières), les
+  sciences (Einstein, Galilée, Copernic, Gutenberg) et le documentaire.
+- **Relecture enrichie** : mots-outils interrogatifs ajoutés (`quel`, `quelle`,
+  `quels`, `quelles`, `combien`, `ce`) pour que les questions en « quel… »
+  répondent plus justement depuis la mémoire — toujours sans invention (sinon
   UNKNOWN).
 - **CLI** : `AIgg.cmd learn culture` (idempotent comme Python).
 
 ### Tests
-- Suite complÃ¨te : **180 PASS / 0 FAIL** (6 nouveaux autonettoyants :
+- Suite complète : **180 PASS / 0 FAIL** (6 nouveaux autonettoyants :
   `culture_preset_liste`, `culture_preset_load`, `culture_recall_arte`,
-  `culture_recall_oeuvre`, `culture_idempotent`, `culture_honnete` â€” les
-  entrÃ©es culture prÃ©-existantes du tuteur sont prÃ©servÃ©es).
+  `culture_recall_oeuvre`, `culture_idempotent`, `culture_honnete` — les
+  entrées culture pré-existantes du tuteur sont préservées).
 
-## v0.3.6 â€” 2026-09-10 â€” ajout : apprentissage continu (relecture au rÃ©veil, rÃ©vision des acquis, boucle journalâ†’mÃ©moire)
+## v0.3.6 — 2026-09-10 — ajout : apprentissage continu (relecture au réveil, révision des acquis, boucle journal→mémoire)
 
-### Ajouts (AIgg apprend seul, honnÃªtement, sur donnÃ©es rÃ©elles)
-- **Module `src/review.js`** â€” trois mÃ©canismes, jamais d'invention :
-  - **Relecture de la mÃ©moire au rÃ©veil** (`relireMemoire`) : Ã  chaque rÃ©veil
+### Ajouts (AIgg apprend seul, honnêtement, sur données réelles)
+- **Module `src/review.js`** — trois mécanismes, jamais d'invention :
+  - **Relecture de la mémoire au réveil** (`relireMemoire`) : à chaque réveil
     (CLI `wake` et `/api/wake`), AIgg re-parcourt ses 4 familles et dresse un
-    bilan rÃ©el (total, connaissances, acquises, en attente) â€” lecture seule.
-  - **RÃ©vision des acquis** (`revisionAcquis`) : les connaissances Â« validÃ©es Â»
-    non relues depuis N jours (7 par dÃ©faut) sont marquÃ©es
+    bilan réel (total, connaissances, acquises, en attente) — lecture seule.
+  - **Révision des acquis** (`revisionAcquis`) : les connaissances « validées »
+    non relues depuis N jours (7 par défaut) sont marquées
     (`LAST_REVIEW`, `REVISION_COUNT`) ; CLI `review [propose|apply] [--days=N]`;
-    `--plan` demande un rendez-vous de rÃ©vision au tuteur (besoin
+    `--plan` demande un rendez-vous de révision au tuteur (besoin
     `PLANIFICATION`, unique tant qu'il est actif). `propose` est sec.
-  - **Boucle journalâ†’mÃ©moire** (`journalToMemory`) : relit le journal et
-    reconstitue en mÃ©moire les acquisitions validÃ©es (`LEARN_VALIDATED` /
-    `QUESTION_ANSWERED`) absentes â€” idempotent et SAUF suppression explicite
-    (`MEMORY_DELETE` respectÃ©e). La suppression d'une connaissance (console web)
-    journalise dÃ©sormais la question pour honorer ce respect.
-- **CLI `wake`** : rÃ©veil â†’ relecture de la mÃ©moire + boucle journalâ†’mÃ©moire,
+  - **Boucle journal→mémoire** (`journalToMemory`) : relit le journal et
+    reconstitue en mémoire les acquisitions validées (`LEARN_VALIDATED` /
+    `QUESTION_ANSWERED`) absentes — idempotent et SAUF suppression explicite
+    (`MEMORY_DELETE` respectée). La suppression d'une connaissance (console web)
+    journalise désormais la question pour honorer ce respect.
+- **CLI `wake`** : réveil → relecture de la mémoire + boucle journal→mémoire,
   puis digest proactif honorable (silence si rien en attente).
-- **SÃ»retÃ©** : rÃ©vision et reconstitution ne modifient jamais une capacitÃ©, un
-  outil ou une permission ; l'autobiographie/relations/procÃ©dures ne sont pas
-  touchÃ©es par la boucle (connaissances uniquement).
+- **Sûreté** : révision et reconstitution ne modifient jamais une capacité, un
+  outil ou une permission ; l'autobiographie/relations/procédures ne sont pas
+  touchées par la boucle (connaissances uniquement).
 
 ### Tests
-- Suite complÃ¨te : **174 PASS / 0 FAIL** (7 nouveaux autonettoyants :
+- Suite complète : **174 PASS / 0 FAIL** (7 nouveaux autonettoyants :
   `continu_relire`, `continu_revision_propose`, `continu_revision_apply`,
   `continu_revision_idempotente`, `continu_planification`,
   `continu_boucle_restaure`, `continu_boucle_ignore_supprime`).
 
-## v0.3.5 â€” 2026-09-10 â€” ajout : presets de connaissances + relecture mÃ©moire par la conversation
+## v0.3.5 — 2026-09-10 — ajout : presets de connaissances + relecture mémoire par la conversation
 
-### Ajouts (AIgg connaÃ®t dÃ©jÃ  Python, sans invention)
-- **Presets de connaissances** : module `src/presets.js` â€” `listPresets()`, `loadPreset()`,
+### Ajouts (AIgg connaît déjà Python, sans invention)
+- **Presets de connaissances** : module `src/presets.js` — `listPresets()`, `loadPreset()`,
   fiches par domaine dans `src/presets/*.json`, chargement idempotent (jamais de doublon),
-  tracÃ© `PRESET_LOADED`, source `PRESET`, confiance 0.85, validÃ©.
+  tracé `PRESET_LOADED`, source `PRESET`, confiance 0.85, validé.
 - **Preset `python`** : 27 connaissances fondamentales (blocs, types, fonctions, classes,
-  GIL, slicing, dÃ©corateurs, gÃ©nÃ©rateurs, dataclass, annotationsâ€¦).
+  GIL, slicing, décorateurs, générateurs, dataclass, annotations…).
 - **CLI `learn python`** : `AIgg.cmd learn python` charge le preset ; `learn` sans argument
-  reste le mode guidÃ© interactif.
-- **Relecture mÃ©moire par la conversation** : si la question du tuteur ressemble Ã  une
-  question mÃ©morisÃ©e (â‰¥ 0.6 de mots significatifs communs, â‰¥ 2 mots), AIgg rÃ©pond depuis
-  sa mÃ©moire (`KNOWLEDGE_RECALL`) au lieu de dire Â« je ne sais pas Â». Aucune invention :
+  reste le mode guidé interactif.
+- **Relecture mémoire par la conversation** : si la question du tuteur ressemble à une
+  question mémorisée (≥ 0.6 de mots significatifs communs, ≥ 2 mots), AIgg répond depuis
+  sa mémoire (`KNOWLEDGE_RECALL`) au lieu de dire « je ne sais pas ». Aucune invention :
   sinon, il avoue ignorer.
-- **SÃ»retÃ©** : le preset est un pur ajout de connaissances (jamais une capacitÃ©, jamais
-  un outil, jamais une permission) ; les donnÃ©es restent dans `memory/knowledge/` (hors
+- **Sûreté** : le preset est un pur ajout de connaissances (jamais une capacité, jamais
+  un outil, jamais une permission) ; les données restent dans `memory/knowledge/` (hors
   Git).
 
 ### Tests
-- Suite complÃ¨te : **167 PASS / 0 FAIL** (7 nouveaux autonettoyants : `presets_liste`,
+- Suite complète : **167 PASS / 0 FAIL** (7 nouveaux autonettoyants : `presets_liste`,
   `presets_python_load`, `presets_python_domaine`, `presets_python_idempotent`,
   `presets_inconnu`, `presets_memoire`, `presets_journal`).
 
-## v0.3.4 â€” 2026-09-10 â€” ajout : communication proactive (conversation persistÃ©e, questions ouvertes, WAITING rÃ©el)
+## v0.3.4 — 2026-09-10 — ajout : communication proactive (conversation persistée, questions ouvertes, WAITING réel)
 
-### Ajouts (communication d'abord, proactivitÃ© honnÃªte)
-- **Conversation persistÃ©e** : module `src/conversation.js` â€” append/history/clear â€”
+### Ajouts (communication d'abord, proactivité honnête)
+- **Conversation persistée** : module `src/conversation.js` — append/history/clear —
   historique `core/conversation.ndjson`, visible dans la console web et au rechargement.
-- **Questions ouvertes au tuteur** : Â« je me demande si â€¦ Â» crÃ©e un besoin `QUESTION`,
-  passe l'Ã©tat Ã  `WAITING`, le tuteur rÃ©pond (console/web) â†’ rÃ©ponse mÃ©morisÃ©e + besoin
-  `FULFILLED` + Ã©tat `AWAKE`.
-- **ProactivitÃ© honnÃªte** : au rÃ©veil, si des besoins QUESTION/CONFIRMATION sont en
+- **Questions ouvertes au tuteur** : « je me demande si … » crée un besoin `QUESTION`,
+  passe l'état à `WAITING`, le tuteur répond (console/web) → réponse mémorisée + besoin
+  `FULFILLED` + état `AWAKE`.
+- **Proactivité honnête** : au réveil, si des besoins QUESTION/CONFIRMATION sont en
   attente, AIgg adresse un `proactiveDigest` ; sinon silence (aucune illusion).
-- **Ã‰tat WAITING rÃ©el** : dÃ©clenchÃ© par les besoins ouverts, transition vers `AWAKE`
-  quand tous sont rÃ©solus ; `LEARNING` confirmÃ© par le tuteur â†’ `AWAKE`.
+- **État WAITING réel** : déclenché par les besoins ouverts, transition vers `AWAKE`
+  quand tous sont résolus ; `LEARNING` confirmé par le tuteur → `AWAKE`.
 - **Console web** : fil de conversation reconstruit depuis le serveur (source de
-  vÃ©ritÃ©), badge clignotant sur l'onglet Demandes, champ de rÃ©ponse aux questions.
-- **CLI** : `talk <texte>` (one-shot persistÃ©), `messages [answer <id> <rÃ©p>]`
-  (liste/rÃ©pond), `wake` dÃ©clenche le digest.
+  vérité), badge clignotant sur l'onglet Demandes, champ de réponse aux questions.
+- **CLI** : `talk <texte>` (one-shot persisté), `messages [answer <id> <rép>]`
+  (liste/répond), `wake` déclenche le digest.
 
 ### Tests
-- Suite complÃ¨te : **160 PASS / 0 FAIL** (18 nouveaux : `conversation_persiste`,
+- Suite complète : **160 PASS / 0 FAIL** (18 nouveaux : `conversation_persiste`,
   `conversation_histoire`, `conversation_reponse_persistee`, `conversation_fichier`,
   `etat_waiting_question`, `question_need_creee`, `question_reponse`,
   `question_need_acheve`, `question_reponse_memorisee`, `etat_awake_apres_reponse`,
@@ -508,312 +508,312 @@ amÃ©lioration, sÃ©curitÃ©, documentation.
   `proactif_digest_persiste`, `etat_learning_prop`, `etat_waiting_confirmation`,
   `apprentissage_valide_etat_awake`, `apprentissage_memorise`).
 
-## v0.3.3 â€” 2026-09-07 â€” ajout : apparence avancÃ©e (Ã©tats visuels + avatar vivant)
+## v0.3.3 — 2026-09-07 — ajout : apparence avancée (états visuels + avatar vivant)
 
-### Ajouts (apparence contrÃ´lÃ©e, couleurs d'Ã©tat)
-- **Ã‰tats visuels complets** : 8 couleurs d'Ã©tat (BORN/AWAKE/LEARNING/THINKING/WAITING/SLEEPING/PAUSED/STOPPED) dans `STATE_COLORS` (valeur par dÃ©faut), compatibilitÃ© ascendante assurÃ©e par `mergeSchema()`.
-- **Avatar vivant** : variantes SVG par Ã©tat (yeux ouverts/fermÃ©s/demi, bouche, anneau de couleur d'Ã©tat) ; `data-state` sur la balise SVG pour vÃ©rification honnÃªte.
-- **CLI `appearance`** : `status|set|reset|suggest|apply|drop|avatar [Ã©tat]` + aide franÃ§aise ; le tuteur peut modifier toutes les couleurs (COLORS + STATE_COLORS) directement depuis la CLI.
-- **Console web enrichie** : badge colorÃ© par Ã©tat, sÃ©lecteurs d'Ã©tat (8 couleurs) dans l'onglet Apparence, anneau avatar dynamique.
-- **Routes serveur** : `POST /api/appearance/set`, `/api/appearance/reset` ; avatar rÃ©gÃ©nÃ©rÃ© aprÃ¨s sleep/wake.
-- **Chemin d'application** : les couleurs d'Ã©tat passent en tant que custom properties `--ap-state-*` dans le CSS.
+### Ajouts (apparence contrôlée, couleurs d'état)
+- **États visuels complets** : 8 couleurs d'état (BORN/AWAKE/LEARNING/THINKING/WAITING/SLEEPING/PAUSED/STOPPED) dans `STATE_COLORS` (valeur par défaut), compatibilité ascendante assurée par `mergeSchema()`.
+- **Avatar vivant** : variantes SVG par état (yeux ouverts/fermés/demi, bouche, anneau de couleur d'état) ; `data-state` sur la balise SVG pour vérification honnête.
+- **CLI `appearance`** : `status|set|reset|suggest|apply|drop|avatar [état]` + aide française ; le tuteur peut modifier toutes les couleurs (COLORS + STATE_COLORS) directement depuis la CLI.
+- **Console web enrichie** : badge coloré par état, sélecteurs d'état (8 couleurs) dans l'onglet Apparence, anneau avatar dynamique.
+- **Routes serveur** : `POST /api/appearance/set`, `/api/appearance/reset` ; avatar régénéré après sleep/wake.
+- **Chemin d'application** : les couleurs d'état passent en tant que custom properties `--ap-state-*` dans le CSS.
 
-### Limites honnÃªtes (documentÃ©es)
-- L'avatar reste un SVG statique (pas d'animation) â€” il reflÃ¨te l'Ã©tat au moment de la rÃ©gÃ©nÃ©ration.
-- Le tuteur doit rÃ©gÃ©nÃ©rer l'avatar manuellement (`AIgg.cmd appearance avatar`) si l'Ã©tat a changÃ© sans passer par sleep/wake.
+### Limites honnêtes (documentées)
+- L'avatar reste un SVG statique (pas d'animation) — il reflète l'état au moment de la régénération.
+- Le tuteur doit régénérer l'avatar manuellement (`AIgg.cmd appearance avatar`) si l'état a changé sans passer par sleep/wake.
 
 ### Tests
-- Suite complÃ¨te : **142 PASS / 0 FAIL** (8 nouveaux : `apparence_state_colors`, `apparence_state_color`, `apparence_merge_retrocompat`, `apparence_reset`, `apparence_reset_journalise`, `avatar_etats_variantes`, `avatar_data_state`, `avatar_anneau_couleur`).
+- Suite complète : **142 PASS / 0 FAIL** (8 nouveaux : `apparence_state_colors`, `apparence_state_color`, `apparence_merge_retrocompat`, `apparence_reset`, `apparence_reset_journalise`, `avatar_etats_variantes`, `avatar_data_state`, `avatar_anneau_couleur`).
 
-## v0.3.2 â€” 2026-09-07 â€” ajout : connecteur Gmail (P2) Ã  scopes minimaux
+## v0.3.2 — 2026-09-07 — ajout : connecteur Gmail (P2) à scopes minimaux
 
-### Ajouts (premier connecteur Google, moindre privilÃ¨ge)
+### Ajouts (premier connecteur Google, moindre privilège)
 - **Outil `gmail`** (`tools/gmail/`) : moteur **100 % natif** de l'API Gmail
-  v1 â€” `list` (mÃ©tadonnÃ©es), `read`, `send` â€” `fetch` Node â‰¥ 18, aucune
-  dÃ©pendance npm. CapabilitÃ© `COMMUNICATION` (partagÃ©e avec l'outil `email`).
-- **Moindre privilÃ¨ge** : scope minimal `gmail.metadata` par dÃ©faut ; `read`
-  corps complet exige `gmail.readonly`, `send` exige `gmail.send` â€” refus
-  explicite sinon (jamais de dÃ©passement silencieux).
+  v1 — `list` (métadonnées), `read`, `send` — `fetch` Node ≥ 18, aucune
+  dépendance npm. Capabilité `COMMUNICATION` (partagée avec l'outil `email`).
+- **Moindre privilège** : scope minimal `gmail.metadata` par défaut ; `read`
+  corps complet exige `gmail.readonly`, `send` exige `gmail.send` — refus
+  explicite sinon (jamais de dépassement silencieux).
 - **Secrets dans le coffre** : `gmail.access_token` et `gmail.scopes`
-  rangÃ©s dans le `vault` (AES-256-GCM, hors Git) ; mot de passe du coffre
-  fourni Ã  chaque commande, jamais stockÃ©.
-- **Envoi tracÃ©** dans `outbox/` (SENT/FAILED, mÃªme dossier que l'outil
-  `email`) ; chaque action passe par le Contrat Commun (permission + capacitÃ©).
-- **CLI** : `AIgg.cmd gmail status|list|read|send` + aide franÃ§aise ;
-  `gmail` restaurÃ© dans `DEFAULT_TOOLS_BLOCKED` (bloquÃ© par dÃ©faut).
-- `tools/gmail/config.json` (base d'API surchargable) ajoutÃ© au `.gitignore`.
+  rangés dans le `vault` (AES-256-GCM, hors Git) ; mot de passe du coffre
+  fourni à chaque commande, jamais stocké.
+- **Envoi tracé** dans `outbox/` (SENT/FAILED, même dossier que l'outil
+  `email`) ; chaque action passe par le Contrat Commun (permission + capacité).
+- **CLI** : `AIgg.cmd gmail status|list|read|send` + aide française ;
+  `gmail` restauré dans `DEFAULT_TOOLS_BLOCKED` (bloqué par défaut).
+- `tools/gmail/config.json` (base d'API surchargable) ajouté au `.gitignore`.
 
-### Limites honnÃªtes (documentÃ©es)
-- Le moteur est **testÃ© contre une API Gmail simulÃ©e locale** (aucun secret
-  rÃ©el, aucun rÃ©seau externe) â€” comme l'outil `email` avec son serveur SMTP
-  local. L'accÃ¨s rÃ©el exige les identifiants OAuth2 du tuteur (projet Google
-  Cloud : client + scopes) rangÃ©s dans le coffre.
+### Limites honnêtes (documentées)
+- Le moteur est **testé contre une API Gmail simulée locale** (aucun secret
+  réel, aucun réseau externe) — comme l'outil `email` avec son serveur SMTP
+  local. L'accès réel exige les identifiants OAuth2 du tuteur (projet Google
+  Cloud : client + scopes) rangés dans le coffre.
 - Les verbes OAuth (auth URL, redirect, refresh) ne sont pas encore un flux
-  complet : le token renseignÃ© par le tuteur est utilisÃ© en Bearer direct.
+  complet : le token renseigné par le tuteur est utilisé en Bearer direct.
 
 ### Tests
-- Suite complÃ¨te : **134 PASS / 0 FAIL** (`test_outil_gmail` + 
-  `gmail_scope_minimal` ; couverture list/read/send via serveur local simulÃ©,
-  vÃ©rification du Bearer et du refus sans scope, coffre temporaire autonettoyÃ©).
+- Suite complète : **134 PASS / 0 FAIL** (`test_outil_gmail` + 
+  `gmail_scope_minimal` ; couverture list/read/send via serveur local simulé,
+  vérification du Bearer et du refus sans scope, coffre temporaire autonettoyé).
 
-## v0.3.1 â€” 2026-09-07 â€” sÃ©curitÃ© : coffre-fort local chiffrÃ© (vault)
+## v0.3.1 — 2026-09-07 — sécurité : coffre-fort local chiffré (vault)
 
-### Ajouts (infrastructure de sÃ©curitÃ©, local)
+### Ajouts (infrastructure de sécurité, local)
 - **Coffre-fort `vault`** (`src/vault.js`) : stockage de secrets (mots de
-  passe, tokens OAuth, identifiants de connecteurs) **chiffrÃ©s** â€” AES-256-GCM,
-  clÃ© dÃ©rivÃ©e par **scrypt** (module natif `crypto`, aucune dÃ©pendance npm),
-  sel et IV alÃ©atoires par coffre, tag d'authentification.
-- **Mot de passe jamais stockÃ©** : fourni Ã  chaque commande via `--password=`
+  passe, tokens OAuth, identifiants de connecteurs) **chiffrés** — AES-256-GCM,
+  clé dérivée par **scrypt** (module natif `crypto`, aucune dépendance npm),
+  sel et IV aléatoires par coffre, tag d'authentification.
+- **Mot de passe jamais stocké** : fourni à chaque commande via `--password=`
   ou la variable d'environnement `AIGG_VAULT_PASSWORD` ; aucun champ mot de
-  passe dans `vault/vault.json`, dans Git, le journal, la mÃ©moire ou les docs.
-- **`vault/vault.json` hors Git** (`.gitignore` : `vault/`) â€” publiÃ© jamais,
-  mÃªme chiffrÃ© (principe moindre privilÃ¨ge).
+  passe dans `vault/vault.json`, dans Git, le journal, la mémoire ou les docs.
+- **`vault/vault.json` hors Git** (`.gitignore` : `vault/`) — publié jamais,
+  même chiffré (principe moindre privilège).
 - **CLI** : `AIgg.cmd vault init|put|get|list|rm|wipe|status` + aide
-  franÃ§aise ; journalisation des actions sans jamais rÃ©vÃ©ler les valeurs.
+  française ; journalisation des actions sans jamais révéler les valeurs.
 - Fonctions : `init`, `put`, `get`, `list`, `remove`, `wipe`, `status`,
-  `runTest()` â€” version fichier (testable) + version par dÃ©faut (`PATHS.vault`).
-- **Test rÃ©el autonettoyant** : coffre de test dans `os.tmpdir()`,
-  autonomie totale (init â†’ put â†’ get â†’ mauvais mdp â†’ list â†’ rm â†’ wipe),
-  secret vÃ©rifiÃ© **jamais en clair** dans le fichier ; aucun rÃ©sidu.
+  `runTest()` — version fichier (testable) + version par défaut (`PATHS.vault`).
+- **Test réel autonettoyant** : coffre de test dans `os.tmpdir()`,
+  autonomie totale (init → put → get → mauvais mdp → list → rm → wipe),
+  secret vérifié **jamais en clair** dans le fichier ; aucun résidu.
 
-### Limites honnÃªtes (documentÃ©es)
-- Aucune rÃ©cupÃ©ration possible si le mot de passe est perdu (par conception :
-  aucun mot de passe enregistrÃ© nulle part).
-- Pense-bÃªte : pour connecteurs Google (P2/PHASE 4-5), ranger les
+### Limites honnêtes (documentées)
+- Aucune récupération possible si le mot de passe est perdu (par conception :
+  aucun mot de passe enregistré nulle part).
+- Pense-bête : pour connecteurs Google (P2/PHASE 4-5), ranger les
   identifiants OAuth dans le coffre avant toute utilisation.
 
 ### Tests
-- Suite complÃ¨te : **132 PASS / 0 FAIL** (9 vÃ©rifications VAULT ajoutÃ©es :
+- Suite complète : **132 PASS / 0 FAIL** (9 vérifications VAULT ajoutées :
   `vault_test_autonettoyant`, init, put, get, mauvais mdp, clair jamais,
   list, rm, wipe).
 
-## v0.3.0 â€” 2026-09-06 â€” communication externe : outil e-mail (PHASE 4, envoi SMTP)
+## v0.3.0 — 2026-09-06 — communication externe : outil e-mail (PHASE 4, envoi SMTP)
 
-### Ajouts (premier outil externe rÃ©el)
+### Ajouts (premier outil externe réel)
 - **Outil `email`** (`tools/email/`) : envoi de messages via SMTP **100 %
-  natif** (RFC 5321 : EHLO, MAIL FROM, RCPT TO, DATA, QUIT â€” module `net`,
-  aucune dÃ©pendance npm). CapabilitÃ© `COMMUNICATION` acquise par
+  natif** (RFC 5321 : EHLO, MAIL FROM, RCPT TO, DATA, QUIT — module `net`,
+  aucune dépendance npm). Capabilité `COMMUNICATION` acquise par
   `toolkit.install('email')`.
-- **TraÃ§abilitÃ© `outbox/`** (privÃ©) : chaque envoi (rÃ©ussi ou Ã©chouÃ©) est
-  journalisÃ© en JSON avec ID, destination, sujet, serveur, erreur.
-- **Test rÃ©el autonettoyant** : serveur SMTP local (TCP sur port Ã©phÃ©mÃ¨re) â€”
-  un message part rÃ©ellement et est vÃ©rifiÃ© Ã  la rÃ©ception ; aucun faux PASS.
-- **CLI** : `AIgg.cmd email send|status|log` (libellÃ©s `--to --subject --body
-  [--host --port --from --timeout_ms]`) + aide franÃ§aise complÃ¨te.
+- **Traçabilité `outbox/`** (privé) : chaque envoi (réussi ou échoué) est
+  journalisé en JSON avec ID, destination, sujet, serveur, erreur.
+- **Test réel autonettoyant** : serveur SMTP local (TCP sur port éphémère) —
+  un message part réellement et est vérifié à la réception ; aucun faux PASS.
+- **CLI** : `AIgg.cmd email send|status|log` (libellés `--to --subject --body
+  [--host --port --from --timeout_ms]`) + aide française complète.
 - **API HTTP** : `/api/email/send` (POST), `/api/email/log` (GET), via le
   Contrat Commun (journalisation `TOOL_EMAIL_EXEC`).
-- BloquÃ© par dÃ©faut (moindre privilÃ¨ge) : `email` ajoutÃ© Ã 
+- Bloqué par défaut (moindre privilège) : `email` ajouté à
   `DEFAULT_TOOLS_BLOCKED` ; `tools/email/config.json` exclu de Git.
 
-### Limites honnÃªtes (documentÃ©es)
-- RÃ©ception (IMAP), AUTH SMTP et STARTTLS **non implÃ©mentÃ©s** ; connecteurs
-  Gmail / Drive / Docs / Sheets toujours prÃ©vus (PHASE 4-5), non faits.
+### Limites honnêtes (documentées)
+- Réception (IMAP), AUTH SMTP et STARTTLS **non implémentés** ; connecteurs
+  Gmail / Drive / Docs / Sheets toujours prévus (PHASE 4-5), non faits.
 
 ### Tests
-- Suite complÃ¨te : **123 PASS / 0 FAIL** (test_outil_email ajoutÃ©, Â§9
-  `outils_essentiels` Ã©tendu Ã  `email`).
+- Suite complète : **123 PASS / 0 FAIL** (test_outil_email ajouté, §9
+  `outils_essentiels` étendu à `email`).
 
-## v0.2.2 â€” 2026-09-06 â€” portabilitÃ© : installation sur un autre lecteur
+## v0.2.2 — 2026-09-06 — portabilité : installation sur un autre lecteur
 
-### Corrections / amÃ©liorations
-- **Tests portables** : Â§21 (docs-check) ne dÃ©pend plus du `README.md` racine
-  du projet (inexistant dans une copie portable) â€” lecture conditionnelle via
-  `fs.existsSync`. La suite passe dÃ©sormais sur un incubateur installÃ© sur un
-  autre lecteur (ex. `G:\AIgg`, installÃ© via `AIgg.cmd migrate`).
-- Installation portable vÃ©rifiÃ©e de bout en bout : `migrate` â†’ `status` â†’
-  `docs-check` â†’ suite complÃ¨te **122 PASS / 0 FAIL** sur le lecteur cible.
+### Corrections / améliorations
+- **Tests portables** : §21 (docs-check) ne dépend plus du `README.md` racine
+  du projet (inexistant dans une copie portable) — lecture conditionnelle via
+  `fs.existsSync`. La suite passe désormais sur un incubateur installé sur un
+  autre lecteur (ex. `G:\AIgg`, installé via `AIgg.cmd migrate`).
+- Installation portable vérifiée de bout en bout : `migrate` → `status` →
+  `docs-check` → suite complète **122 PASS / 0 FAIL** sur le lecteur cible.
 
-## v0.2.1 â€” 2026-09-06 â€” finalisation N2 : import robuste + docs exactes
+## v0.2.1 — 2026-09-06 — finalisation N2 : import robuste + docs exactes
 
-### Corrections / amÃ©liorations (facteur de robustesse)
-- **Import CLI** : un BOM UTF-8 Ã©ventuel en tÃªte du fichier `--file` est
-  dÃ©sormais ignorÃ© (Ã©chec `JSON.parse` auparavant avec un fichier signÃ©
-  Windows/PowerShell) â€” `AIgg.js`.
-- **Smoke de bout en bout** validÃ© rÃ©ellement : create â†’ source â†’ connaissance
-  â†’ search (filtres, accents, score+cause) â†’ export â†’ import â†’ remove ; cause
-  de classement `notes` ajoutÃ©e Ã  `docs/LIBRARIES.md` (Â§18).
+### Corrections / améliorations (facteur de robustesse)
+- **Import CLI** : un BOM UTF-8 éventuel en tête du fichier `--file` est
+  désormais ignoré (échec `JSON.parse` auparavant avec un fichier signé
+  Windows/PowerShell) — `AIgg.js`.
+- **Smoke de bout en bout** validé réellement : create → source → connaissance
+  → search (filtres, accents, score+cause) → export → import → remove ; cause
+  de classement `notes` ajoutée à `docs/LIBRARIES.md` (§18).
 
 ### Remarque
 - Suite de tests : **122 PASS / 0 FAIL**.
 
-## v0.2.0 â€” 2026-09-06 â€” recherche niveau 2 + sens rÃ©els + aide CLI + docs-check
+## v0.2.0 — 2026-09-06 — recherche niveau 2 + sens réels + aide CLI + docs-check
 
-### Ajouts / amÃ©liorations
-- **Recherche bibliothÃ¨que niveau 2 (N2)** : `searchL2(query, options)` dans
-  `src/library.js` â€” normalisation accents/casse/ponctuation, arrÃªts FR/EN/ES,
-  racinisation, classement pondÃ©rÃ© et expliquÃ© (cause par champ), filtres
-  bibliothÃ¨que/langue/type/statut/tags/provenance/limit, rÃ©sultats multilingues.
-- Import rÃ©el via CLI : `AIgg.cmd library import --file=â€¦ [--confirm]` (aperÃ§u
-  par dÃ©faut, remplacement d'une bibliothÃ¨que existante de mÃªme id).
+### Ajouts / améliorations
+- **Recherche bibliothèque niveau 2 (N2)** : `searchL2(query, options)` dans
+  `src/library.js` — normalisation accents/casse/ponctuation, arrêts FR/EN/ES,
+  racinisation, classement pondéré et expliqué (cause par champ), filtres
+  bibliothèque/langue/type/statut/tags/provenance/limit, résultats multilingues.
+- Import réel via CLI : `AIgg.cmd library import --file=… [--confirm]` (aperçu
+  par défaut, remplacement d'une bibliothèque existante de même id).
 - `addKnowledge` / `addSource` / `addDocument` enrichis (`ID` stable via `id`,
   `TITLE`, `TAGS`, `CONCEPTS`, `LANGUAGE`), export/import `aigg-library` v1
   acceptant les deux dialectes (`bundle` ou `name`+`metadata`).
-- **P9 â€” sens rÃ©els de la machine** : sondes sans prÃ©requis (Windows
-  WINMM/WMI, Linux ALSA/V4L2), Ã©tats DISPONIBLE/AUTORISE/ACTIF jamais
-  inventÃ©s (sonde bloquÃ©e â†’ `UNKNOWN`), cache 30 s, injectables pour les tests.
-  DÃ©tection rÃ©elle Windows : MICROPHONE OUI, CAMERA NON, HAUT_PARLEURS OUI.
-- **P10 â€” aide CLI `library` en franÃ§ais** : `AIgg.cmd library` sans argument
-  affiche la documentation complÃ¨te reflÃ©tant le code rÃ©el (recherche niveau 2,
-  import, Ã©tats, principes de sÃ©curitÃ©).
-- **P11 â€” `docs-check`** : `AIgg.cmd docs-check` (lecture seule) vÃ©rifie la
-  cohÃ©rence version + compteurs de tests entre STATE / CHANGELOG / README et le
-  code ; ne modifie rien ; sortie Â« AIgg DOCS CHECK Â». Roadmap externe et wiki
-  laissÃ©s en `MANUAL_CHECK`.
-- Web (onglet BibliothÃ¨ques) : recherche niveau 2 avec sÃ©lecteurs Langue/Type
-  et affichage du score + cause ; onglet Sens : raison affichÃ©e par capteur.
-- DÃ©pÃ´t public : dossier privÃ© `InformationsProjetAIgg/` retirÃ© de GitHub
-  (untrack + `.gitignore`), documents de conception Ã©changÃ©s hors dÃ©pÃ´t.
+- **P9 — sens réels de la machine** : sondes sans prérequis (Windows
+  WINMM/WMI, Linux ALSA/V4L2), états DISPONIBLE/AUTORISE/ACTIF jamais
+  inventés (sonde bloquée → `UNKNOWN`), cache 30 s, injectables pour les tests.
+  Détection réelle Windows : MICROPHONE OUI, CAMERA NON, HAUT_PARLEURS OUI.
+- **P10 — aide CLI `library` en français** : `AIgg.cmd library` sans argument
+  affiche la documentation complète reflétant le code réel (recherche niveau 2,
+  import, états, principes de sécurité).
+- **P11 — `docs-check`** : `AIgg.cmd docs-check` (lecture seule) vérifie la
+  cohérence version + compteurs de tests entre STATE / CHANGELOG / README et le
+  code ; ne modifie rien ; sortie « AIgg DOCS CHECK ». Roadmap externe et wiki
+  laissés en `MANUAL_CHECK`.
+- Web (onglet Bibliothèques) : recherche niveau 2 avec sélecteurs Langue/Type
+  et affichage du score + cause ; onglet Sens : raison affichée par capteur.
+- Dépôt public : dossier privé `InformationsProjetAIgg/` retiré de GitHub
+  (untrack + `.gitignore`), documents de conception échangés hors dépôt.
 
 ### Corrections
-- `library.remove()` : le journal Ã©tait recrÃ©Ã© avant le dÃ©placement vers
-  `_trash` (coquille vide) â†’ journalisation aprÃ¨s `renameSync` ; 35 coquilles
-  rÃ©siduelles purgÃ©es.
+- `library.remove()` : le journal était recréé avant le déplacement vers
+  `_trash` (coquille vide) → journalisation après `renameSync` ; 35 coquilles
+  résiduelles purgées.
 
 ### Remarque
-- Suite de tests : **122 PASS / 0 FAIL** (94 â†’ 119 avec sens rÃ©els,
-  recherche N2 et import ; â†’ 122 avec la couverture `docs-check`).
-- Finalisation N2 (import BOM + docs exactes) : reportÃ©e en **v0.2.1**.
+- Suite de tests : **122 PASS / 0 FAIL** (94 → 119 avec sens réels,
+  recherche N2 et import ; → 122 avec la couverture `docs-check`).
+- Finalisation N2 (import BOM + docs exactes) : reportée en **v0.2.1**.
 
-## v0.1.3 â€” 2026-09-06 â€” carnet : entrÃ©es rÃ©vocables, autonomie des tests
+## v0.1.3 — 2026-09-06 — carnet : entrées révocables, autonomie des tests
 
-### Ajouts / amÃ©liorations
+### Ajouts / améliorations
 - `tools/notebook/notebook.js` : nouvelle interaction `notebook.remove(id)`
-  (suppression d'une expÃ©rience, donnÃ©es locales uniquement).
-- `runTest()` du carnet est dÃ©sormais **autonettoyant** : il supprime
-  l'expÃ©rience `test_outil_notebook` qu'il crÃ©e (l'outil ne laisse plus de
-  trace aprÃ¨s `AIgg.cmd test notebook`).
-- Tests :: le test `NOTEBOOK RÃ‰EL` supprime son entrÃ©e `test_suite` et vÃ©rifie
-  la suppression (`expÃ©rience_supprimÃ©e`) â†’ **94 PASS / 0 FAIL** (au lieu de
+  (suppression d'une expérience, données locales uniquement).
+- `runTest()` du carnet est désormais **autonettoyant** : il supprime
+  l'expérience `test_outil_notebook` qu'il crée (l'outil ne laisse plus de
+  trace après `AIgg.cmd test notebook`).
+- Tests :: le test `NOTEBOOK RÉEL` supprime son entrée `test_suite` et vérifie
+  la suppression (`expérience_supprimée`) → **94 PASS / 0 FAIL** (au lieu de
   93).
 - CLI : `AIgg.cmd notebook-del <id>` (via contrat `notebook.remove`).
-- API : `POST /api/notebook/remove` â†’ `{ id }` (contrÃ´lÃ© par le contrat).
+- API : `POST /api/notebook/remove` → `{ id }` (contrôlé par le contrat).
 - Console web : bouton **supprimer** sur chaque ligne du carnet.
 
 ### Nettoyage
-- Purge des donnÃ©es rÃ©siduelles de test laissÃ©es par les anciennes versions
-  du carnet (`test_suite`, `test_outil_notebook`) â€” seule l'expÃ©rience
-  lÃ©gitime Â« Test du carnet de labo Â» subsiste.
+- Purge des données résiduelles de test laissées par les anciennes versions
+  du carnet (`test_suite`, `test_outil_notebook`) — seule l'expérience
+  légitime « Test du carnet de labo » subsiste.
 - `.gitignore` : exclusion des messages du tuteur (`InformationsProjetAIgg/Message*.txt`).
 
-## v0.1.2 â€” 2026-09-06 â€” correction naissance interactive
+## v0.1.2 — 2026-09-06 — correction naissance interactive
 
 ### Correction
 - **Naissance interactive impossible depuis la release** : `AIgg.cmd` (sans
-  identitÃ©) provoquait `PROBLÃˆME: process.stdin.close is not a function`
-  (CAUSE/FIN). La collecte des rÃ©ponses TTY fermait `process.stdin` d'une
-  faÃ§on non portable (introuvable sur certains Node) â†’ remplacÃ©e par la
+  identité) provoquait `PROBLÈME: process.stdin.close is not a function`
+  (CAUSE/FIN). La collecte des réponses TTY fermait `process.stdin` d'une
+  façon non portable (introuvable sur certains Node) → remplacée par la
   fermeture de l'interface `readline` (`rl.close()`), API stable partout.
-  VÃ©rifiÃ© : naissance de bout en bout dans un bac Ã  sable (entrÃ©es canalisÃ©es),
-  exit 0, Ã©tat `AWAKE`, `status` correct ensuite.
+  Vérifié : naissance de bout en bout dans un bac à sable (entrées canalisées),
+  exit 0, état `AWAKE`, `status` correct ensuite.
 - Suppression de la fonction auxiliaire devenue orpheline (`askInteractive`).
 
 ### Remarque
-- La suite de tests reste Ã  **93 PASS / 0 FAIL** (le parcours de naissance
-  interactif n'est pas couvert par `tests/run-tests.js` : nÃ©cessite un TTY ;
-  dÃ©sormais vÃ©rifiÃ© par reproduction directe dans un bac Ã  sable).
+- La suite de tests reste à **93 PASS / 0 FAIL** (le parcours de naissance
+  interactif n'est pas couvert par `tests/run-tests.js` : nécessite un TTY ;
+  désormais vérifié par reproduction directe dans un bac à sable).
 
-## v0.1.1 â€” 2026-09-05 â€” bibliothÃ¨ques de spÃ©cialisation (cahier)
+## v0.1.1 — 2026-09-05 — bibliothèques de spécialisation (cahier)
 
 ### Ajouts
-- Moteur `src/library.js` : environnement d'apprentissage structurÃ©, 100 %
+- Moteur `src/library.js` : environnement d'apprentissage structuré, 100 %
   natif (JSON + fs), avec cycle de vie complet, sources, documents,
-  connaissances (avec provenance), compÃ©tences, curriculum, exercices,
+  connaissances (avec provenance), compétences, curriculum, exercices,
   contradictions, annotations, journal local, recherche niveau 1, import /
   export `aigg-library` v1.
-- Distinctions absolues respectÃ©es : BIBLIOTHÃˆQUE â‰  MÃ‰MOIRE ; SOURCE â‰ 
-  DOCUMENT â‰  CONNAISSANCE â‰  COMPÃ‰TENCE ; document/code jamais exÃ©cutÃ©
-  (`NEVER_EXECUTED`) ; compÃ©tence jamais `MASTERED` automatiquement (preuve du
+- Distinctions absolues respectées : BIBLIOTHÈQUE ≠ MÉMOIRE ; SOURCE ≠
+  DOCUMENT ≠ CONNAISSANCE ≠ COMPÉTENCE ; document/code jamais exécuté
+  (`NEVER_EXECUTED`) ; compétence jamais `MASTERED` automatiquement (preuve du
   tuteur requise).
 - Templates `templates/library.json`, `source.json`, `curriculum.json`,
   `competency.json`.
 - Exemples publics de structure `libraries/examples/science/` et
-  `libraries/examples/programming/` (aucun savoir prÃ©-rempli).
-- PrivÃ©e par dÃ©faut : `libraries/*` (sauf `examples/`) et `libraries/_trash/`
-  exclus du dÃ©pÃ´t public (`.gitignore`).
-- CLI `AIgg.cmd library â€¦` (list, health, create, show, sources, knowledge,
+  `libraries/examples/programming/` (aucun savoir pré-rempli).
+- Privée par défaut : `libraries/*` (sauf `examples/`) et `libraries/_trash/`
+  exclus du dépôt public (`.gitignore`).
+- CLI `AIgg.cmd library …` (list, health, create, show, sources, knowledge,
   competencies, curriculum, notes, journal, search, export, source-add,
   knowledge-add, competence-add, competence-set, contradiction-add, note-add,
   archive, restore, remove, trash).
-- API HTTP `/api/libraries*` (CRUD, sources, connaissances, compÃ©tences,
+- API HTTP `/api/libraries*` (CRUD, sources, connaissances, compétences,
   exercices, documents, curriculum, contradictions, annotations, journal,
   recherche, export, import avec analyse/confirmation).
-- Onglet web Â« BibliothÃ¨ques Â» dans la console du tuteur (liste, dÃ©tail,
-  crÃ©ation privÃ©e, recherche).
-- Suite de tests : **93 PASS / 0 FAIL** (+ 25 vÃ©rifications TEST_LIBRARIES).
+- Onglet web « Bibliothèques » dans la console du tuteur (liste, détail,
+  création privée, recherche).
+- Suite de tests : **93 PASS / 0 FAIL** (+ 25 vérifications TEST_LIBRARIES).
 
 ### Corrections
-- `libRoot()` rÃ©solvait seulement `libraries/<id>` ; les bibliothÃ¨ques
-  imbriquÃ©es (exemples publics) Ã©taient introuvables par `find()` â†’ recherche
-  rÃ©cursive de l'id (hors `_trash`).
-- `importActivate` posait l'id retournÃ© par `create()` (suffixe anti-collision
-  pris en compte) ; les champs d'import en casse haute Ã©taient ignorÃ©s
-  (connaissances/documents/exercices) â†’ normalisation haut/bas.
-- `/api/library?id=` imbriquait `meta.meta` â†’ renvoie dÃ©sormais
+- `libRoot()` résolvait seulement `libraries/<id>` ; les bibliothèques
+  imbriquées (exemples publics) étaient introuvables par `find()` → recherche
+  récursive de l'id (hors `_trash`).
+- `importActivate` posait l'id retourné par `create()` (suffixe anti-collision
+  pris en compte) ; les champs d'import en casse haute étaient ignorés
+  (connaissances/documents/exercices) → normalisation haut/bas.
+- `/api/library?id=` imbriquait `meta.meta` → renvoie désormais
   `{ meta, sources }` directement utilisable.
 
-### SÃ©curitÃ©
-- BibliothÃ¨ques privÃ©es par dÃ©faut ; corbeille `_trash` exclue du dÃ©pÃ´t.
-- Documents importÃ©s et code jamais exÃ©cutÃ©s.
+### Sécurité
+- Bibliothèques privées par défaut ; corbeille `_trash` exclue du dépôt.
+- Documents importés et code jamais exécutés.
 
 ### Documentation
 - `docs/LIBRARIES.md` (nouveau), `docs/STATE.md`, `docs/CHANGELOG.md`,
   `docs/DEVELOPMENT.md`, `docs/SECURITY.md`, `docs/ARCHITECTURE.md`,
-  `docs/README.md`, `README.md` racine mis Ã  jour.
+  `docs/README.md`, `README.md` racine mis à jour.
 
-## v0.1.0 â€” 2026-09-05 â€” socle N0 + corpus du Prompt MaÃ®tre
+## v0.1.0 — 2026-09-05 — socle N0 + corpus du Prompt Maître
 
 ### Ajouts
-- Naissance : identitÃ© persistante (AIgg_ID UUID immuable), tuteur, acte de
+- Naissance : identité persistante (AIgg_ID UUID immuable), tuteur, acte de
   naissance, fuseau horaire, version, incubateur.
-- MÃ©moire 4 familles (autobiographique, connaissances, relations, procÃ©dures) :
-  mÃ©moriser, rappeler, corriger, supprimer.
-- Journal NDJSON (Ã©vÃ©nements, pas de clÃ© dupliquÃ©e).
-- Sens rÃ©flexes avec 3 Ã©tats (DISPONIBLE / AUTORISÃ‰ / ACTIF).
-- CapacitÃ©s Ã©volutives (acquises / non acquises) et permissions (moindre
-  privilÃ¨ge, toutes bloquÃ©es par dÃ©faut).
-- Veille / rÃ©veil / Ã¢ge ; sauvegarde et restauration avec manifeste.
-- Registre d'outils + Contrat Commun (IDENTIFIER â†’ CAPACITÃ‰ â†’ PERMISSION â†’
-  EXÃ‰CUTER â†’ JOURNALISER â†’ RETOURNER) avec blocages honnÃªtes.
-- Outils locaux : `web` (lecture HTTP + recherche DuckDuckGo sans clÃ©),
-  `notebook` (carnet de laboratoire), `avatar` (SVG dÃ©terministe, sans secret).
-- Console web du tuteur : identitÃ©, Ã©tat, capacitÃ©s, sens, outils,
-  permissions, mÃ©moire, notebook, journal, sauvegardes.
-- **8 Ã©tats** (BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
-  STOPPED) avec transition sÃ©curisÃ©e et journalisation.
-- **Conversation** : moteur honnÃªte (`src/talk.js`), onglet Conversation,
-  cycle d'apprentissage Â« apprends que X â†’ est-ce correct ? â†’ oui/non Â»
-  enregistrÃ© comme demande au tuteur.
+- Mémoire 4 familles (autobiographique, connaissances, relations, procédures) :
+  mémoriser, rappeler, corriger, supprimer.
+- Journal NDJSON (événements, pas de clé dupliquée).
+- Sens réflexes avec 3 états (DISPONIBLE / AUTORISÉ / ACTIF).
+- Capacités évolutives (acquises / non acquises) et permissions (moindre
+  privilège, toutes bloquées par défaut).
+- Veille / réveil / âge ; sauvegarde et restauration avec manifeste.
+- Registre d'outils + Contrat Commun (IDENTIFIER → CAPACITÉ → PERMISSION →
+  EXÉCUTER → JOURNALISER → RETOURNER) avec blocages honnêtes.
+- Outils locaux : `web` (lecture HTTP + recherche DuckDuckGo sans clé),
+  `notebook` (carnet de laboratoire), `avatar` (SVG déterministe, sans secret).
+- Console web du tuteur : identité, état, capacités, sens, outils,
+  permissions, mémoire, notebook, journal, sauvegardes.
+- **8 états** (BORN, AWAKE, LEARNING, THINKING, WAITING, SLEEPING, PAUSED,
+  STOPPED) avec transition sécurisée et journalisation.
+- **Conversation** : moteur honnête (`src/talk.js`), onglet Conversation,
+  cycle d'apprentissage « apprends que X → est-ce correct ? → oui/non »
+  enregistré comme demande au tuteur.
 - **Besoins / Demandes** : registre `core/needs.json`, onglet Demandes,
-  bouton Â« Demander au tuteur Â» sur les outils bloquÃ©s.
-- **Apparence** : `core/appearance.json`, flux PROPOSÃ‰E â†’ VALIDÃ‰E â†’ APPLIQUÃ‰E
-  â†’ JOURNALISÃ‰E, onglet Apparence, le HTML utilise des variables CSS pilotÃ©es
+  bouton « Demander au tuteur » sur les outils bloqués.
+- **Apparence** : `core/appearance.json`, flux PROPOSÉE → VALIDÉE → APPLIQUÉE
+  → JOURNALISÉE, onglet Apparence, le HTML utilise des variables CSS pilotées
   (le HTML est le corps visible d'AIgg).
-- **Migration** : `AIgg.cmd migrate <dest>` avec vÃ©rification de continuitÃ©
+- **Migration** : `AIgg.cmd migrate <dest>` avec vérification de continuité
   AIgg_ID (copie portable, `backups/` exclu).
-- Gestion d'erreurs CLI lisible : PROBLÃˆME / CAUSE / SOLUTION / Ã‰TAT.
+- Gestion d'erreurs CLI lisible : PROBLÈME / CAUSE / SOLUTION / ÉTAT.
 
 ### Corrections
-- `state.wake()` ne renvoyait plus `age` aprÃ¨s refonte des Ã©tats (rÃ©gression)
-  â†’ rÃ©tabli et testÃ©.
-- Sens `RÃ‰SEAU` : dÃ©tection rÃ©elle des interfaces rÃ©seau (au lieu d'un `true`
+- `state.wake()` ne renvoyait plus `age` après refonte des états (régression)
+  → rétabli et testé.
+- Sens `RÉSEAU` : détection réelle des interfaces réseau (au lieu d'un `true`
   approximatif).
-- Apostrophe franÃ§aise dans une chaÃ®ne (`'Demande d'aide'`) â†’ Ã©chappÃ©e.
-- Erreur de dÃ©monstration : `AIgg.cmd tests` passe de 37 Ã  68 vÃ©rifications
-  aprÃ¨s ajout des tests COMMUNICATION / INTERFACE / BESOINS / APPARENCE /
-  MIGRATION / RECHERCHE (avec statut BLOCKED honnÃªte hors-ligne).
+- Apostrophe française dans une chaîne (`'Demande d'aide'`) → échappée.
+- Erreur de démonstration : `AIgg.cmd tests` passe de 37 à 68 vérifications
+  après ajout des tests COMMUNICATION / INTERFACE / BESOINS / APPARENCE /
+  MIGRATION / RECHERCHE (avec statut BLOCKED honnête hors-ligne).
 
-### SÃ©curitÃ©
-- Aucun secret / mail rÃ©el dans le dÃ©pÃ´t (vÃ©rifiÃ©) ; fichiers privÃ©s exclus
+### Sécurité
+- Aucun secret / mail réel dans le dépôt (vérifié) ; fichiers privés exclus
   (`AIgg/core/`, `memory/`, `journal/`, `inbox/`, `outbox/`, `backups/`,
   `notebook/`, `senses/`, `providers.json`, `avatar.svg`).
-- Licence MIT ajoutÃ©e (racine + package.json : `"license": "MIT"`).
+- Licence MIT ajoutée (racine + package.json : `"license": "MIT"`).
 
 ### Documentation
-- `docs/AUDIT.md` (audit honnÃªte de l'existant), `docs/STATE.md`,
+- `docs/AUDIT.md` (audit honnête de l'existant), `docs/STATE.md`,
   `docs/TOOLS.md`, `docs/CAPABILITIES.md`, `docs/SECURITY.md`,
   `docs/MIGRATION.md`, `docs/DEVELOPMENT.md`, `docs/CHANGELOG.md` (ce fichier) ;
-  `ARCHITECTURE.md` et README mis Ã  jour.
+  `ARCHITECTURE.md` et README mis à jour.
 
-## v0.0.1 â€” 2026-09-05 â€” embryon (avant audit)
-- Structure du socle, modules de base, tests 37 PASS. Historique remplacÃ©
+## v0.0.1 — 2026-09-05 — embryon (avant audit)
+- Structure du socle, modules de base, tests 37 PASS. Historique remplacé
   par cet audit propre (aucune valeur perdue).
