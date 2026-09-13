@@ -6,6 +6,7 @@ const state = require('./state');
 const memory = require('./memory');
 const needs = require('./needs');
 const conversation = require('./conversation');
+const cognition = require('./cognition');
 
 /**
  * Moteur de conversation minimal et HONNÊTE.
@@ -248,54 +249,58 @@ function respond(rawText, identity) {
   if (asksHelp) return respondWith(ident, helpText(), ['HELP']);
 
   const firstWords = text.split(' ').slice(0, 6).join(' ');
-  const recalled = recallAnswer(text);
-  if (recalled) return respondWith(ident, recalled.reply, ['KNOWLEDGE_RECALL']);
-  return respondWith(ident,
-    `Je ne sais pas encore bien répondre à cela (« ${firstWords}… »). Tu peux m'apprendre en disant « apprends que … », ` +
-    'ou consulter mon interface pour découvrir mes capacités réelles.', ['UNKNOWN']);
-}
+  const cog = cognition.orchestrate(rawText, ident);
 
-const STOP_WORDS_FR = new Set([
-  'les', 'des', 'que', 'qui', 'quoi', 'avec', 'dans', 'pour', 'cela', 'cette',
-  'ces', 'aux', 'fait', 'faire', 'sont', 'être', 'comme', 'plus', 'tout',
-  'tous', 'toute', 'peut', 'comment', 'pourquoi', 'quand', 'et', 'ou', 'en',
-  'sur', 'par', 'de', 'la', 'le', 'je', 'tu', 'il', 'elle', 'on', 'un', 'une',
-  'est', 'son', 'sa', 'ses', 'pas', 'ne', 'du', 'au', 'aux', 'où',
-  'quel', 'quelle', 'quels', 'quelles', 'combien', 'ce',
-]);
-
-// Relecture honnête de la mémoire : si la question du tuteur ressemble à une
-// question déjà mémorisée, AIgg répond depuis sa mémoire (INTENT KNOWLEDGE_RECALL),
-// sinon il avoue ignorer. Aucune invention.
-function recallAnswer(text) {
-  const asked = normalize(text).split(/\s+/)
-    .map((w) => w.replace(/[^a-zâàçéèêëîïôöûüù0-9]/g, '').replace(/s$/, ''))
-    .filter((w) => w.length >= 3 && !STOP_WORDS_FR.has(w));
-  if (asked.length < 2) return null;
-
-  const entries = memory.allFamilies()
-    .filter((r) => r.family === 'knowledge')
-    .map((r) => r.entry);
-
-  let best = null;
-  let bestScore = 0;
-  for (const entry of entries) {
-    const cq = entry.CONTENT && entry.CONTENT.question;
-    if (!cq) continue;
-    const qWords = normalize(cq).split(/\s+/)
-      .map((w) => w.replace(/[^a-zâàçéèêëîïôöûüù0-9]/g, '').replace(/s$/, ''))
-      .filter((w) => w.length >= 3 && !STOP_WORDS_FR.has(w));
-    if (!qWords.length) continue;
-    const hits = qWords.filter((w) => asked.includes(w)).length;
-    const score = hits / qWords.length;
-    if (score >= 0.6 && hits >= 2 && score > bestScore) {
-      best = entry;
-      bestScore = score;
-    }
+  // JE SAIS (mémoire) / J'AI TROUVÉ (bibliothèque) : répondre depuis l'interne.
+  if (cog.status === cognition.STATES.JE_SAIS || cog.status === cognition.STATES.J_AI_TROUVE) {
+    const out = respondWith(ident, cog.reply, [cog.intent, 'COGNITION']);
+    out.cognition = cognitiveResult(cog);
+    return out;
   }
-  if (!best) return null;
-  return { reply: best.CONTENT.answer, id: best.ID, score: bestScore };
+
+  // Demande d'apprentissage ouverte (ambiguë) : besoin QUESTION au tuteur.
+  if (cog.status === cognition.STATES.J_AI_BESOIN_DE_PRECISION) {
+    const out = respondWith(ident, cog.reply, ['COGNITION', 'QUESTION_OPEN']);
+    out.cognition = cognitiveResult(cog);
+    return out;
+  }
+
+  // Inconnu → état cognitif honnête + stratégie réelle (socle : préparation,
+  // aucune exécution d'outil). L'honnêteté reste : « Je ne sais pas encore ».
+  const strat = cog.strategy || {};
+  let suite;
+  if (strat.canSearch && strat.bestTool) {
+    suite = ` ${strat.explanation} Tu peux aussi m'apprendre en disant « apprends que … », ou consulter mes capacités réelles.`;
+  } else {
+    suite = ` ${strat.explanation || 'Je ne peux pas encore chercher.'} Je peux te poser une question ciblée, ou tu peux m'apprendre la réponse (« apprends que … »).`;
+  }
+  const reply = `Je ne sais pas encore répondre à cela (« ${firstWords}… »). État cognitif : ${cog.status}.${suite}`;
+  const out = respondWith(ident, reply, ['UNKNOWN', 'COGNITION']);
+  out.cognition = cognitiveResult(cog);
+  return out;
 }
+
+function cognitiveResult(cog) {
+  return {
+    workId: cog.id,
+    status: cog.status,
+    intent: cog.intent,
+    confidence: cog.confidence !== undefined ? cog.confidence : null,
+    activities: (cog.activities || []).map((a) => a.step),
+    sources: (cog.sources || []).map((s) => s.source),
+    plan: cog.plan || [],
+    missing: cog.missing || [],
+    need: cog.need ? { ID: cog.need.ID, QUESTION_FOR_TUTOR: cog.need.QUESTION_FOR_TUTOR } : null,
+    strategy: cog.strategy ? {
+      canSearch: cog.strategy.canSearch,
+      bestTool: cog.strategy.bestTool ? cog.strategy.bestTool.name : null,
+    } : null,
+    candidate_tools: (cog.candidate_tools || []).filter((t) => t.usable).map((t) => t.name),
+  };
+}
+
+// Le rappel mémoire (KNOWLEDGE_RECALL) et le rappel bibliothèque vivent dans
+// src/cognition.js (orchestrateur cognitif v0.5.0) : on ne duplique pas.
 
 function respondWith(ident, reply, intents) {
   try {

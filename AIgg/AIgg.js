@@ -1136,6 +1136,64 @@ function runBerceau(ident, args) {
   }
 }
 
+const COGNITION_HELP_FR = [
+  'AIgg — orchestrateur cognitif (SOCLE v0.5.0) — aide (français)',
+  '',
+  'But : analyser un message selon le cycle cognitif réel (mémoire →',
+  'bibliothèque → diagnostic du manque → plan + outils candidats) sans jamais',
+  'exécuter d\'outil à ce stade. Aucune activité fictive : chaque entrée',
+  'correspond à une opération réelle (rappel mémoire, recherche bibliothèque).',
+  'Les états cognitifs sont ceux du Prompt Maître Cognition : JE_SAIS,',
+  'J\'AI_TROUVE, JE_PEUX_CHERCHER, JE_N_AI_PAS_OUTIL_PERMISSION,',
+  'J_AI_BESOIN_DE_PRECISION…',
+  '',
+  'COMMANDES',
+  '  AIgg.cmd cognition "pourquoi les feuilles sont-elles vertes ?"',
+  '                     Analyse un message : statut cognitif, activités réelles,',
+  '                     sources, plan, outils candidats (capacité ≠ permission).',
+  '  AIgg.cmd cognition help',
+  '',
+  'Limites honnêtes du SOCLE : rien n\'est exécuté — la recherche OUTIL réelle',
+  '(Web, IA externe) arrive à l\'étage suivant (v0.5.1).',
+].join('\n');
+
+function runCognition(ident, args) {
+  const cognition = require('./src/cognition');
+  const sub = args[0];
+  if (!sub || sub === 'help') {
+    console.log(COGNITION_HELP_FR);
+    return;
+  }
+  const res = cognition.orchestrate(args.join(' '), ident);
+  console.log('--- CYCLE COGNITIF (SOCLE v0.5.0) ---');
+  console.log('Question           : ' + res.question);
+  console.log('Intention          : ' + res.intent);
+  console.log('État cognitif      : ' + res.status);
+  if (res.confidence !== undefined) console.log('Confiance          : ' + res.confidence);
+  console.log('Activités réelles  :');
+  for (const a of res.activities) console.log('  - ' + a.step + ' (' + a.label + ')');
+  console.log('Sources            :');
+  for (const s of res.sources) {
+    console.log('  - ' + s.source + (s.libraryId ? ' (' + s.libraryName + ' / ' + s.libraryId + ')' : s.id ? ' (' + s.id + ')' : ''));
+  }
+  if (!res.sources.length) console.log('  (aucune — rien de probant dans l\'interne)');
+  console.log('Manque             : ' + res.missing.join(' ; '));
+  console.log('Plan               :');
+  for (const p of res.plan) console.log('  - ' + p);
+  console.log('Stratégie outil    :');
+  if (res.strategy && res.strategy.bestTool) {
+    console.log('  - recherche possible : ' + res.strategy.bestTool.name + ' (« ' + res.strategy.bestTool.title + ' »)');
+    console.log('  - ' + res.strategy.explanation);
+  } else {
+    console.log('  - aucun outil installé ET autorisé pour cette recherche');
+  }
+  console.log('Outils candidats (' + res.candidate_tools.length + ') :');
+  for (const t of res.candidate_tools) {
+    console.log('  - ' + t.name + ' [' + t.status + '] autorisé=' + t.authorized + ' utilisable=' + t.usable + ' — capacité ' + t.capability);
+  }
+  if (res.need) console.log('Besoin QUESTION    : ' + res.need.QUESTION_FOR_TUTOR + ' (' + res.need.ID + ')');
+}
+
 const CONSCIENCE_HELP_FR = [
   'AIgg — aide de `conscience` (français)',
   '',
@@ -1797,6 +1855,10 @@ async function main() {
       runVault(args.slice(1));
       break;
 
+    case 'cognition':
+      runCognition(ident, args.slice(1));
+      break;
+
     case 'conscience':
       runConscience(ident, args.slice(1));
       break;
@@ -1835,6 +1897,7 @@ async function main() {
         '  interests [list | add | intensify | log | rm | restore | priorities] — priorités internes et centres d\'intérêt natifs (jamais de contournement des permissions)\n' +
         '  competences [tree | branches | levels | check | propose | honor | log | status] — arbre des compétences/badges (niveaux 0→6, prérequis, badge jamais automatique : capacité ≠ permission)\n' +
         '  descendance [list | propose | consent | authorize | refuse | check | compat | log | rm | restore | status] — socle de filiation (nouvelle identité jamais une copie, accord des deux AIgg + autorisation des deux tuteurs, héritage jamais automatique, aucune création réelle en socle)\n' +
+        '  cognition "message" — orchestrateur cognitif socle (états JE_SAIS / J_AI_TROUVE / JE_PEUX_CHERCHER / JE_N_AI_PAS_OUTIL_PERMISSION…, activités réelles, aucun outil exécuté)\n' +
         '  health — vue santé consolidée du système (espace, bibliothèques, outils, compétences, permissions, sens, état, tâches, erreurs récentes, sauvegardes)'
       );
   }

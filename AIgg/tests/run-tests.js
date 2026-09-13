@@ -1924,6 +1924,133 @@ async function run() {
     }
   }
 
+  console.log('\n36) ORCHESTRATION COGNITIVE (SOCLE) — rappel mémoire/bibliothèque, états cognitifs honnêtes, besoin QUESTION, AUCUN outil exécuté (v0.5.0)');
+  if (ident) {
+    const cognition = require('../src/cognition');
+    const talk = require('../src/talk');
+    const library = require('../src/library');
+    const needs = require('../src/needs');
+    const pathX = require('path');
+
+    const journalFile = config.PATHS.journalFile;
+    const journalLinesBefore = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+    const memDir = config.PATHS.memoryFamilies.knowledge;
+    const memBefore = fs.existsSync(memDir) ? new Set(fs.readdirSync(memDir)) : new Set();
+    const needsBefore = fs.existsSync(config.PATHS.needs) ? fs.readFileSync(config.PATHS.needs, 'utf8') : null;
+    const convBefore = fs.existsSync(config.PATHS.conversation) ? fs.readFileSync(config.PATHS.conversation, 'utf8') : null;
+    const stateBefore = fs.existsSync(config.PATHS.state) ? fs.readFileSync(config.PATHS.state, 'utf8') : null;
+    const realLibs = new Set(fs.readdirSync(config.PATHS.libraries));
+
+    let qNeedID = null;
+    let libId = null;
+
+    try {
+      // 1) Rappel MÉMOIRE : une question connue répond depuis l'interne (JE_SAIS)
+      const memEntry = memory.memorize('knowledge', {
+        question: 'Quelle est la capitale du Népal ?', answer: 'Katmandou',
+      }, ident, { source: 'TEST', confidence: 0.9, status: 'validated' });
+      const memRes = talk.respond('quelle est la capitale du Népal ?', ident);
+      const cogMem = cognition.orchestrate('quelle est la capitale du Népal ?', ident);
+      report('cognit_memoire_je_sais',
+        memRes.reply.includes('Katmandou') && memRes.intents.includes('KNOWLEDGE_RECALL')
+          && cogMem.status === cognition.STATES.JE_SAIS && cogMem.sources[0] && cogMem.sources[0].source === 'MEMORY');
+
+      // 2) Rappel BIBLIOTHÈQUE : absent de mémoire, présent en bibliothèque → J'AI TROUVÉ
+      libId = `cogn-lib-${util.uuid().slice(0, 6)}`;
+      const libResCreate = library.create(ident, { id: libId, name: 'Cognition test', domains: ['cognition'] });
+      const qLib = 'Qui a inventé le premier ordinateur électromécanique ?';
+      library.addKnowledge(libId, ident, {
+        title: qLib,
+        content: 'Le Z3 de Konrad Zuse (1941) est souvent cité comme le premier ordinateur électromécanique programmable.',
+        tags: ['cognition', 'informatique'], language: 'fr', status: 'DISCOVERED', confidence: 0.7,
+      });
+      const cogLib = cognition.orchestrate(qLib, ident);
+      report('cognit_biblio_j_ai_trouve',
+        !!libResCreate && cogLib.status === cognition.STATES.J_AI_TROUVE
+          && cogLib.sources[0] && cogLib.sources[0].source === 'LIBRARY' && cogLib.sources[0].libraryId === libId
+          && cogLib.reply.includes('Zuse'), `${libId} → Zuse cité`);
+
+      // 3) INCONNU → état cognitif honnête + stratégie (socle), AUCUNE exécution
+      const cogU = cognition.orchestrate('pourquoi les feuilles sont-elles vertes ?', ident);
+      const uRes = talk.respond('pourquoi les feuilles sont-elles vertes ?', ident);
+      const okUStatus = cogU.status === cognition.STATES.JE_PEUX_CHERCHER
+        || cogU.status === cognition.STATES.JE_N_AI_PAS_OUTIL_PERMISSION;
+      report('cognit_inconnu_strategie',
+        okUStatus && cogU.plan.length >= 2 && Array.isArray(cogU.candidate_tools)
+          && uRes.intents.includes('UNKNOWN') && uRes.intents.includes('COGNITION')
+          && uRes.reply.includes('Je ne sais pas encore'), `${cogU.status}, plan (${cogU.plan.length})`);
+      const appendedAll = journal.allEvents().slice(journalLinesBefore);
+      report('cognit_aucun_outil_execute',
+        cogU.sources.length === 0 && !appendedAll.some((e) => String(e.EVENT || '').startsWith('TOOL_') && String(e.EVENT).includes('EXEC')),
+        'aucun TOOL_*_EXEC dans le journal, sources vides');
+      report('cognit_activite_reelle',
+        cogU.activities.some((a) => a.step === 'RAPPEL_MEMOIRE')
+          && cogU.activities.some((a) => a.step === 'RAPPEL_BIBLIOTHEQUE')
+          && !cogU.activities.some((a) => /web|execute|outil/i.test(a.step)),
+        'activités = opérations réellement effectuées (mémoire, bibliothèque)');
+
+      // 4) Ambiguïté (« apprends-moi X ») → besoin QUESTION au tuteur
+      const amb = talk.respond('apprends-moi Java', ident);
+      const qNeed = needs.listNeeds().find((n) => n.TYPE === 'QUESTION' && n.STATUS === 'ACTIVE' && n.DESCRIPTION.includes('Java'));
+      qNeedID = qNeed ? qNeed.ID : null;
+      report('cognit_tuteur_question',
+        amb.intents.includes('QUESTION_OPEN') && amb.intents.includes('COGNITION') && !!qNeed
+          && amb.reply.includes('bases'), 'besoin QUESTION créé, question ciblée posée');
+
+      // 5) Réponse du tuteur → mémorisation + besoin résolu
+      const ans = talk.respond('Commence par la syntaxe', ident);
+      const learned = memory.recollect('knowledge', 'Apprendre : Java').length >= 1;
+      const resolved = qNeedID ? needs.listNeeds().find((n) => n.ID === qNeedID) : null;
+      report('cognit_tuteur_reponse',
+        ans.intents.includes('QUESTION_ANSWERED') && learned && resolved && resolved.STATUS === 'FULFILLED',
+        'réponse mémorisée, besoin QUESTION résolu');
+
+      // 6) Journalisation légère du travail cognitif (recalcul APRÈS l'étape question)
+      const appendedAllAfterQ = journal.allEvents().slice(journalLinesBefore);
+      report('cognit_journal_trace',
+        appendedAllAfterQ.some((e) => e.EVENT === 'COGNITION_UNKNOWN' && e.WORK_ID === cogU.id)
+          && appendedAllAfterQ.some((e) => e.EVENT === 'COGNITION_MEMORY_HIT' && e.WORK_ID === cogMem.id)
+          && appendedAllAfterQ.some((e) => e.EVENT === 'COGNITION_AMBIGUOUS'),
+        'COGNITION_UNKNOWN / _MEMORY_HIT / _AMBIGUOUS journalisés');
+    } finally {
+      // Nettoyage : bibliothèque temp, mémoire, besoins, conversation, état, journal
+      if (libId && fs.existsSync(pathX.join(config.PATHS.libraries, libId))) {
+        try { library.remove(libId, ident); } catch {}
+      }
+      try {
+        if (fs.existsSync(memDir)) {
+          for (const f of fs.readdirSync(memDir)) {
+            if (!memBefore.has(f)) { try { fs.unlinkSync(pathX.join(memDir, f)); } catch {} }
+          }
+        }
+      } catch {}
+      try {
+        if (needsBefore !== null) fs.writeFileSync(config.PATHS.needs, needsBefore, 'utf8');
+        else if (fs.existsSync(config.PATHS.needs)) fs.unlinkSync(config.PATHS.needs);
+      } catch {}
+      try {
+        if (convBefore !== null) fs.writeFileSync(config.PATHS.conversation, convBefore, 'utf8');
+        else if (fs.existsSync(config.PATHS.conversation)) fs.unlinkSync(config.PATHS.conversation);
+      } catch {}
+      try {
+        if (stateBefore !== null) fs.writeFileSync(config.PATHS.state, stateBefore, 'utf8');
+        else if (fs.existsSync(config.PATHS.state)) fs.unlinkSync(config.PATHS.state);
+      } catch {}
+      for (const entry of fs.readdirSync(config.PATHS.libraries)) {
+        if (!realLibs.has(entry)) { try { fs.rmSync(pathX.join(config.PATHS.libraries, entry), { recursive: true, force: true }); } catch {} }
+      }
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journalLinesBefore) {
+            fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
+              + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
   // Summary
   const passed = results.filter((r) => r.status === 'PASS').length;
   const failed = results.filter((r) => r.status === 'FAIL').length;
