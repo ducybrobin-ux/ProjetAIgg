@@ -260,7 +260,7 @@ function start() {
         const body = await readBody(req);
         const text = String(body.text || '');
         conversation.append('tutor', text, null, ident);
-        const out = talk.respond(text, ident);
+        const out = await talk.respond(text, ident);
         sendJson(res, out);
         return;
       }

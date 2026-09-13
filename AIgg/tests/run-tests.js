@@ -312,19 +312,19 @@ async function run() {
     const convSaved = fs.existsSync(config.PATHS.conversation) ? fs.readFileSync(config.PATHS.conversation, 'utf8') : null;
     try {
       const talk = require('../src/talk');
-      const who = talk.respond('Qui es-tu ?', ident);
+      const who = await talk.respond('Qui es-tu ?', ident);
       report('conversation_identite', who.reply.includes(ident.AIgg_NAME) && who.reply.includes(ident.TUTOR_NAME));
-      const age = talk.respond('Quel âge as-tu ?', ident);
+      const age = await talk.respond('Quel âge as-tu ?', ident);
       report('conversation_age', /jour/.test(age.reply));
-      const unknown = talk.respond('récite moi l\'intégrale de Proust', ident);
+      const unknown = await talk.respond('récite moi l\'intégrale de Proust', ident, { autoPerceive: false });
       report('conversation_honnete', unknown.reply.includes('Je ne sais pas encore'));
-      const silent = talk.respond('   ', ident);
+      const silent = await talk.respond('   ', ident);
       report('conversation_silence', silent.reply.length > 0);
 
-      const learn = talk.respond('apprends que le ciel est bleu', ident);
+      const learn = await talk.respond('apprends que le ciel est bleu', ident);
       report('apprentissage_propose', learn.reply.includes('Est-ce correct ?'));
       const pendingExists = fs.existsSync(config.PATHS.pendingLearning);
-      const confirm = talk.respond('oui', ident);
+      const confirm = await talk.respond('oui', ident);
       report('apprentissage_confirme', confirm.reply.includes('Mémorisé'));
       const found = memory.recollect('knowledge', 'le ciel est bleu').length >= 1
         || memory.recollect('knowledge', 'ciel est bleu').length >= 1;
@@ -336,8 +336,8 @@ async function run() {
       });
       toClean.forEach((r) => memory.deleteEntry(r.family, r.entry.ID));
 
-      const learn2 = talk.respond('apprends que 2+2=5', ident);
-      const reject = talk.respond('non', ident);
+      const learn2 = await talk.respond('apprends que 2+2=5', ident);
+      const reject = await talk.respond('non', ident);
       report('apprentissage_infirme', reject.reply.includes('ne mémorise pas'));
       if (pendingExists) { try { fs.unlinkSync(config.PATHS.pendingLearning); } catch {} }
     } finally {
@@ -641,14 +641,14 @@ async function run() {
       const entry = conversation.append('tutor', 'bonjour test', null, ident);
       report('conversation_persiste', !!entry.ID && !!entry.TIMESTAMP && entry.ROLE === 'tutor' && entry.TEXT === 'bonjour test');
       report('conversation_histoire', conversation.history().length >= 1 && conversation.history().at(-1).TEXT === 'bonjour test');
-      const out = talk.respond('qui es-tu ?', ident);
+      const out = await talk.respond('qui es-tu ?', ident);
       report('conversation_reponse_persistee', conversation.history().some((e) => e.ROLE === 'ai' && e.INTENTS.includes('IDENTITY')));
       report('conversation_fichier', fsX.existsSync(config.PATHS.conversation) && fsX.readFileSync(config.PATHS.conversation, 'utf8').split('\n').filter(Boolean).length >= 2);
 
       // 22b. État WAITING réel : une question ouverte passe AIgg en WAITING
       conversation.clear();
       needs.deleteAllForTest && needs.deleteAllForTest();
-      const q = talk.respond('je me demande si le ciel est bleu', ident);
+      const q = await talk.respond('je me demande si le ciel est bleu', ident);
       const stateNow = require('../src/state').status(ident).state;
       report('etat_waiting_question', stateNow === 'WAITING' && q.intents.includes('QUESTION_OPEN'));
       report('question_need_creee', needs.listActiveNeeds().some((n) => n.TYPE === 'QUESTION'));
@@ -667,7 +667,7 @@ async function run() {
       needs.deleteAllForTest && needs.deleteAllForTest();
       const silent = talk.proactiveDigest(ident);
       report('proactif_silence_sans_attente', silent === null);
-      talk.respond('je me demande quelle couleur tu aimes', ident);
+      await talk.respond('je me demande quelle couleur tu aimes', ident);
       const digest = talk.proactiveDigest(ident);
       report('proactif_digest_attente', !!digest && digest.reply.includes('Bonjour') && digest.needs.length >= 1);
       report('proactif_digest_persiste', conversation.history().some((e) => e.INTENTS.includes('PROACTIVE_DIGEST')));
@@ -677,13 +677,13 @@ async function run() {
       needs.deleteAllForTest();
       state.wake(ident); // réinitialise à AWAKE
       const stateBeforeLearn = require('../src/state').status(ident).state;
-      const learnReply = talk.respond('apprends que 2+2 fait 4', ident);
+      const learnReply = await talk.respond('apprends que 2+2 fait 4', ident);
       const stateAfterLearn = require('../src/state').status(ident).state;
       const learnJournal = journal.recentJournal(200);
       report('etat_learning_prop', (stateAfterLearn === 'WAITING' || stateAfterLearn === 'LEARNING')
         && learnJournal.some((e) => e.EVENT === 'STATE_CHANGE' && e.TO === 'LEARNING'));
       report('etat_waiting_confirmation', stateAfterLearn === 'WAITING');
-      const stateAfterConfirm = talk.respond('oui', ident);
+      const stateAfterConfirm = await talk.respond('oui', ident);
       report('apprentissage_valide_etat_awake', require('../src/state').status(ident).state === 'AWAKE' && stateAfterConfirm.intents.includes('LEARN_CONFIRM'));
       report('apprentissage_memorise', memory.recollect('knowledge', '2+2 fait 4').length >= 1);
     } finally {
@@ -872,17 +872,18 @@ async function run() {
       report('culture_preset_load', result.ok === true && result.domain === 'culture' && result.total >= 10,
         `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
 
-      report('culture_recall_arte', talk.respond('qu\'est-ce qu\'ARTE ?', ident).intents.includes('KNOWLEDGE_RECALL'),
+      report('culture_recall_arte', (await talk.respond('qu\'est-ce qu\'ARTE ?', ident)).intents.includes('KNOWLEDGE_RECALL'),
         'KNOWLEDGE_RECALL sur définition ARTE');
-      report('culture_recall_oeuvre', (() => {
-        const r = talk.respond('qui a peint la Joconde ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard');
-      })(), 'réponse depuis la mémoire (Joconde)');
+      {
+        const r = await talk.respond('qui a peint la Joconde ?', ident);
+        report('culture_recall_oeuvre', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard'),
+          'réponse depuis la mémoire (Joconde)');
+      }
 
       const idem = presets.loadPreset('culture', ident);
       report('culture_idempotent', idem.loaded === 0, 'double charge = 0 ajout');
 
-      const honn = talk.respond('quelle est la recette du cassoulet ?', ident);
+      const honn = await talk.respond('quelle est la recette du cassoulet ?', ident, { autoPerceive: false });
       report('culture_honnete', honn.intents.includes('UNKNOWN'), 'question hors culture → honnête UNKNOWN');
     } finally {
       try {
@@ -928,19 +929,20 @@ async function run() {
       report('art_preset_load', result.ok === true && result.domain === 'art' && result.total >= 10,
         `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
 
-      report('art_recall_oeuvre', (() => {
-        const r = talk.respond('qui a peint la Nuit étoilée ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('van Gogh');
-      })(), 'réponse depuis la mémoire (Nuit étoilée)');
-
-      report('art_recall_lieu', (() => {
-        const r = talk.respond('où se trouve la Joconde ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Louvre');
-      })(), 'réponse depuis la mémoire (Louvre)');
+      {
+        const r = await talk.respond('qui a peint la Nuit étoilée ?', ident);
+        report('art_recall_oeuvre', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('van Gogh'),
+          'réponse depuis la mémoire (Nuit étoilée)');
+      }
+      {
+        const r = await talk.respond('où se trouve la Joconde ?', ident);
+        report('art_recall_lieu', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Louvre'),
+          'réponse depuis la mémoire (Louvre)');
+      }
 
       report('art_idempotent', presets.loadPreset('art', ident).loaded === 0, 'double charge = 0 ajout');
 
-      const honn = talk.respond('combien de marches a la tour Eiffel ?', ident);
+      const honn = await talk.respond('combien de marches a la tour Eiffel ?', ident, { autoPerceive: false });
       report('art_honnete', honn.intents.includes('UNKNOWN'), 'hors art → honnête UNKNOWN');
     } finally {
       try {
@@ -985,23 +987,25 @@ async function run() {
       report('geo_preset_load', result.ok === true && result.domain === 'geo' && result.total >= 10,
         `${result.loaded} ajoutées, ${result.skipped} déjà connues, ${result.total} total`);
 
-      report('geo_recall_capitale', (() => {
-        const r = talk.respond('quelle est la capitale de l\'Australie ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Canberra');
-      })(), 'réponse depuis la mémoire (Canberra)');
+      {
+        const r = await talk.respond('quelle est la capitale de l\'Australie ?', ident);
+        report('geo_recall_capitale', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Canberra'),
+          'réponse depuis la mémoire (Canberra)');
+      }
+      {
+        const r = await talk.respond('qu\'est-ce que le détroit de Malacca ?', ident);
+        report('geo_recall_detroit', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Malaisie'),
+          'réponse depuis la mémoire (détroit de Malacca)');
+      }
 
-      report('geo_recall_detroit', (() => {
-        const r = talk.respond('qu\'est-ce que le détroit de Malacca ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Malaisie');
-      })(), 'réponse depuis la mémoire (détroit de Malacca)');
-
-      const honn = talk.respond('combien de marches a la tour Eiffel ?', ident);
+      const honn = await talk.respond('combien de marches a la tour Eiffel ?', ident, { autoPerceive: false });
       report('geo_honnete', honn.intents.includes('UNKNOWN'), 'hors géo → honnête UNKNOWN');
 
-      report('geo_aucune_derive_art', (() => {
-        const r = talk.respond('qui a peint la Joconde ?', ident);
-        return r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard de Vinci');
-      })(), 'relectures croisées intactes (art/culture)');
+      {
+        const r = await talk.respond('qui a peint la Joconde ?', ident);
+        report('geo_aucune_derive_art', r.intents.includes('KNOWLEDGE_RECALL') && r.reply.includes('Léonard de Vinci'),
+          'relectures croisées intactes (art/culture)');
+      }
     } finally {
       try {
         if (savedJournal !== null) fsX.writeFileSync(config.PATHS.journalFile, savedJournal, 'utf8');
@@ -1081,7 +1085,7 @@ async function run() {
       berceau.setAllocation(before.allocationBytes || 1, ident, { note: 'restauration test' });
 
       // Conversation : « quelle est ta taille ? » → TAILLE réel
-      const c = talk.respond('quelle est ta taille ?', ident);
+      const c = await talk.respond('quelle est ta taille ?', ident);
       report('berceau_conversation', c.intents.includes('TAILLE')
         && /pèse/.test(c.reply) && /(Mo|Ko|Go|octets)/.test(c.reply), c.intents.join(','));
 
@@ -1156,7 +1160,7 @@ async function run() {
 
       // Conversation : « dans quelle habitation habites-tu ? » → LEVEL réel
       const talk = require('../src/talk');
-      const c = talk.respond('dans quelle habitation es-tu ?', ident);
+      const c = await talk.respond('dans quelle habitation es-tu ?', ident);
       report('habitation_conversation', c.intents.includes('LEVEL')
         && /habite|niveau/.test(c.reply), c.intents.join(','));
 
@@ -1174,7 +1178,7 @@ async function run() {
       report('habitation_predictif_non_obligatoire', predictifOK,
         `${stPre.levelName}, ${berceau.humanBytes(usedPre)} utilisés / ${berceau.humanBytes(allocationPre)} alloués`);
 
-      const cTight = talk.respond('où habites-tu ?', ident);
+      const cTight = await talk.respond('où habites-tu ?', ident);
       report('habitation_predictif_message', cTight.intents.includes('LEVEL')
         && /prédictifs|prédictif/.test(cTight.reply)
         && !/je me déménage|je déménage tout seul|il me faut déménager/.test(cTight.reply)
@@ -1949,7 +1953,7 @@ async function run() {
       const memEntry = memory.memorize('knowledge', {
         question: 'Quelle est la capitale du Népal ?', answer: 'Katmandou',
       }, ident, { source: 'TEST', confidence: 0.9, status: 'validated' });
-      const memRes = talk.respond('quelle est la capitale du Népal ?', ident);
+      const memRes = await talk.respond('quelle est la capitale du Népal ?', ident);
       const cogMem = cognition.orchestrate('quelle est la capitale du Népal ?', ident);
       report('cognit_memoire_je_sais',
         memRes.reply.includes('Katmandou') && memRes.intents.includes('KNOWLEDGE_RECALL')
@@ -1972,7 +1976,7 @@ async function run() {
 
       // 3) INCONNU → état cognitif honnête + stratégie (socle), AUCUNE exécution
       const cogU = cognition.orchestrate('pourquoi les feuilles sont-elles vertes ?', ident);
-      const uRes = talk.respond('pourquoi les feuilles sont-elles vertes ?', ident);
+      const uRes = await talk.respond('pourquoi les feuilles sont-elles vertes ?', ident, { autoPerceive: false });
       const okUStatus = cogU.status === cognition.STATES.JE_PEUX_CHERCHER
         || cogU.status === cognition.STATES.JE_N_AI_PAS_OUTIL_PERMISSION;
       report('cognit_inconnu_strategie',
@@ -1990,7 +1994,7 @@ async function run() {
         'activités = opérations réellement effectuées (mémoire, bibliothèque)');
 
       // 4) Ambiguïté (« apprends-moi X ») → besoin QUESTION au tuteur
-      const amb = talk.respond('apprends-moi Java', ident);
+      const amb = await talk.respond('apprends-moi Java', ident);
       const qNeed = needs.listNeeds().find((n) => n.TYPE === 'QUESTION' && n.STATUS === 'ACTIVE' && n.DESCRIPTION.includes('Java'));
       qNeedID = qNeed ? qNeed.ID : null;
       report('cognit_tuteur_question',
@@ -1998,7 +2002,7 @@ async function run() {
           && amb.reply.includes('bases'), 'besoin QUESTION créé, question ciblée posée');
 
       // 5) Réponse du tuteur → mémorisation + besoin résolu
-      const ans = talk.respond('Commence par la syntaxe', ident);
+      const ans = await talk.respond('Commence par la syntaxe', ident);
       const learned = memory.recollect('knowledge', 'Apprendre : Java').length >= 1;
       const resolved = qNeedID ? needs.listNeeds().find((n) => n.ID === qNeedID) : null;
       report('cognit_tuteur_reponse',
@@ -2045,6 +2049,121 @@ async function run() {
           if (all.length >= journalLinesBefore) {
             fs.writeFileSync(journalFile, all.slice(0, journalLinesBefore).join('\n')
               + (journalLinesBefore ? '\n' : ''), 'utf8');
+          }
+        }
+      } catch {}
+    }
+  }
+
+  console.log('\n37) PERCEPTION OUTILS (v0.5.1) — perceive() Web multi-sources injecté (aucun réseau réel), concordance, PAS_DE_REPONSE_FIABLE honnête, jamais IA externe automatique');
+  if (ident) {
+    const cognition = require('../src/cognition');
+    const talk37 = require('../src/talk');
+    const journalFile = config.PATHS.journalFile;
+    const journal37Before = fs.existsSync(journalFile) ? fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean).length : 0;
+
+    const fakeCatalogWeb = [
+      { name: 'web', title: 'Web', status: 'installed', authorized: true, usable: true },
+    ];
+    const fakeCatalogVide = [];
+    const fakeToolsWeb = {
+      web: {
+        search: async () => ({
+          ok: true,
+          results: [
+            { title: 'Tour Eiffel — site officiel', url: 'https://www.toureiffel.paris/hauteur', snippet: 'La Tour Eiffel culmine à 330 mètres antenne comprise.' },
+            { title: 'Wikipedia — Tour Eiffel', url: 'https://fr.wikipedia.org/wiki/Tour_Eiffel', snippet: 'La tour Eiffel est une tour de fer située à Paris.' },
+          ],
+        }),
+        read: async (url) => ({
+          ok: true, url,
+          snippet: url.includes('fr.wikipedia')
+            ? 'La tour Eiffel est une tour de fer située à Paris ; sa hauteur atteint 330 mètres.'
+            : 'La Tour Eiffel culmine à 330 mètres antenne comprise.',
+          fetched_at: new Date().toISOString(),
+        }),
+      },
+    };
+    const fakeToolsVides = {
+      web: {
+        search: async () => ({ ok: true, results: [] }),
+        read: async () => ({ ok: false, error: 'NO_READ' }),
+      },
+    };
+    const mkWork = (id, question) => ({
+      id, question, timestamp: new Date().toISOString(), intent: 'UNKNOWN', concepts: [], known: [],
+      missing: [], ambiguities: [], candidate_tools: [], plan: [], status: cognition.STATES.JE_PEUX_CHERCHER,
+      activities: [], sources: [], confidence: 0,
+    });
+
+    try {
+      // 1) Question transformée en requête (ponctuation retirée)
+      report('percep_query_neutre',
+        cognition.perceptionQuery('quelle est la hauteur exacte de la Tour Eiffel ?') === 'quelle est la hauteur exacte de la Tour Eiffel',
+        'ponctuation retirée');
+
+      // 2) Concordance : ≥2 mots de contenu partagés → haute (0.8)
+      const corrHaute = cognition.concordance([
+        { snippet: 'La tour Eiffel culmine à 330 mètres.' },
+        { snippet: 'La hauteur de la tour Eiffel est de 330 mètres.' },
+      ]);
+      report('percep_concordance_haute',
+        corrHaute.level === 'haute' && corrHaute.agreeing === 2 && corrHaute.confidence === 0.8,
+        `agreeing=${corrHaute.agreeing} conf=${corrHaute.confidence}`);
+
+      // 3) Concordance : sujets éloignés → faible (0.3)
+      const corrFaible = cognition.concordance([
+        { snippet: 'Le chat dort sur le canapé.' },
+        { snippet: 'Les étoiles brillent au-dessus de la mer.' },
+      ]);
+      report('percep_concordance_faible',
+        corrFaible.level === 'faible' && corrFaible.agreeing === 0 && corrFaible.confidence === 0.3,
+        `agreeing=${corrFaible.agreeing} conf=${corrFaible.confidence}`);
+
+      // 4) perceive réussite (tout injecté, aucun réseau) → J'AI TROUVE, sources WEB, provenance, jamais IA externe
+      const pOk = await cognition.perceive(mkWork('cogn-percep-ok', 'quelle est la hauteur de la tour Eiffel ?'), ident,
+        { catalog: fakeCatalogWeb, tools: fakeToolsWeb });
+      report('percep_reussite',
+        pOk.status === cognition.STATES.J_AI_TROUVE
+          && pOk.perception && pOk.perception.executed === true && pOk.perception.found === true
+          && pOk.perception.agreeing >= 2
+          && pOk.sources.length === 2 && pOk.sources[0].source === 'WEB'
+          && /Provenance/.test(pOk.reply) && /jamais une vérité automatique/.test(pOk.reply)
+          && !/EXTERNAL_IA/.test(pOk.reply),
+        `sources=${pOk.sources.length} conf=${pOk.confidence} (${cognition.STATES.J_AI_TROUVE})`);
+
+      // 5) aucun résultat → PAS_DE_REPONSE_FIABLE honnête, rien inventé
+      const pNone = await cognition.perceive(mkWork('cogn-percep-none', 'combien de marches possède la cathédrale de Chartres ?'), ident,
+        { catalog: fakeCatalogWeb, tools: fakeToolsVides });
+      report('percep_pas_de_source',
+        pNone.status === cognition.STATES.PAS_DE_REPONSE_FIABLE
+          && pNone.perception && pNone.perception.executed === true && pNone.perception.found === false
+          && /je ne sais pas encore/i.test(pNone.reply),
+        pNone.status);
+
+      // 6) pas d'outil web utilisable → travail cognitif inchangé, AUCUNE exécution
+      const pSans = await cognition.perceive(mkWork('cogn-percep-sans', 'une question quelconque ici ?'), ident,
+        { catalog: fakeCatalogVide, tools: fakeToolsWeb });
+      report('percep_sans_outil',
+        pSans.status === cognition.STATES.JE_PEUX_CHERCHER && !pSans.perception
+          && pSans.activities.length === 0 && pSans.sources.length === 0,
+        'reste JE_PEUX_CHERCHER, aucune trace');
+
+      // 7) Intégration conversationnelle hermétique : auto-perception injectée → intent PERCEPTION,
+      //    réponse avec provenance, aucune IA externe automatique
+      const integ = await talk37.respond('quelle est la hauteur exacte de la Tour Eiffel aujourd\'hui ?', ident,
+        { catalog: fakeCatalogWeb, tools: fakeToolsWeb });
+      report('percep_talk_integree',
+        integ.intents.includes('PERCEPTION') && /Provenance/.test(integ.reply)
+          && !integ.intents.includes('EXTERNAL_IA') && !/EXTERNAL_IA/.test(integ.reply),
+        integ.intents.join('+'));
+    } finally {
+      try {
+        if (fs.existsSync(journalFile)) {
+          const all = fs.readFileSync(journalFile, 'utf8').split('\n').filter(Boolean);
+          if (all.length >= journal37Before) {
+            fs.writeFileSync(journalFile, all.slice(0, journal37Before).join('\n')
+              + (journal37Before ? '\n' : ''), 'utf8');
           }
         }
       } catch {}

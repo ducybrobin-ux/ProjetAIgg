@@ -1137,35 +1137,41 @@ function runBerceau(ident, args) {
 }
 
 const COGNITION_HELP_FR = [
-  'AIgg — orchestrateur cognitif (SOCLE v0.5.0) — aide (français)',
+  'AIgg — orchestrateur cognitif (SOCLE v0.5.0 + perception v0.5.1) — aide (français)',
   '',
-  'But : analyser un message selon le cycle cognitif réel (mémoire →',
-  'bibliothèque → diagnostic du manque → plan + outils candidats) sans jamais',
-  'exécuter d\'outil à ce stade. Aucune activité fictive : chaque entrée',
-  'correspond à une opération réelle (rappel mémoire, recherche bibliothèque).',
-  'Les états cognitifs sont ceux du Prompt Maître Cognition : JE_SAIS,',
-  'J\'AI_TROUVE, JE_PEUX_CHERCHER, JE_N_AI_PAS_OUTIL_PERMISSION,',
-  'J_AI_BESOIN_DE_PRECISION…',
+  'But : analyser un message selon le cycle cognitif réel — rappel mémoire →',
+  'bibliothèque → diagnostic du manque → plan + outils candidats. Sans --perceive',
+  'le diagnostic reste préparatoire (aucun outil exécuté). Avec --perceive et si',
+  'l\'outil Web est utilisable (installé ET autorisé), le Web multi-sources est',
+  'réellement lu et comparé via le Contrat Commun — provenance + concordance.',
+  'L\'IA externe n\'est JAMAIS exécutée automatiquement.',
+  'Les états cognitifs : JE_SAIS, J_AI_TROUVE, JE_PEUX_CHERCHER,',
+  'JE_N_AI_PAS_OUTIL_PERMISSION, J_AI_BESOIN_DE_PRECISION,',
+  'PAS_DE_REPONSE_FIABLE…',
   '',
   'COMMANDES',
   '  AIgg.cmd cognition "pourquoi les feuilles sont-elles vertes ?"',
   '                     Analyse un message : statut cognitif, activités réelles,',
   '                     sources, plan, outils candidats (capacité ≠ permission).',
+  '  AIgg.cmd cognition --perceive "pourquoi les feuilles sont-elles vertes ?"',
+  '                     Exécute réellement le Web multi-sources (si autorisé)',
+  '                     puis affiche provenance + confiance obtenues.',
   '  AIgg.cmd cognition help',
-  '',
-  'Limites honnêtes du SOCLE : rien n\'est exécuté — la recherche OUTIL réelle',
-  '(Web, IA externe) arrive à l\'étage suivant (v0.5.1).',
 ].join('\n');
 
-function runCognition(ident, args) {
+async function runCognition(ident, args) {
   const cognition = require('./src/cognition');
-  const sub = args[0];
+  const perceiveIdx = args.indexOf('--perceive');
+  const wantPerceive = perceiveIdx !== -1;
+  const words = wantPerceive ? args.filter((a) => a !== '--perceive') : args;
+  const sub = words[0];
   if (!sub || sub === 'help') {
     console.log(COGNITION_HELP_FR);
     return;
   }
-  const res = cognition.orchestrate(args.join(' '), ident);
-  console.log('--- CYCLE COGNITIF (SOCLE v0.5.0) ---');
+  const question = words.join(' ');
+  const res = cognition.orchestrate(question, ident);
+  console.log('--- CYCLE COGNITIF (v0.5.1) ---');
   console.log('Question           : ' + res.question);
   console.log('Intention          : ' + res.intent);
   console.log('État cognitif      : ' + res.status);
@@ -1192,6 +1198,32 @@ function runCognition(ident, args) {
     console.log('  - ' + t.name + ' [' + t.status + '] autorisé=' + t.authorized + ' utilisable=' + t.usable + ' — capacité ' + t.capability);
   }
   if (res.need) console.log('Besoin QUESTION    : ' + res.need.QUESTION_FOR_TUTOR + ' (' + res.need.ID + ')');
+
+  if (wantPerceive) {
+    console.log('\n--- PERCEPTION (exécution réelle) ---');
+    if (res.status !== cognition.STATES.JE_PEUX_CHERCHER) {
+      console.log('(non applicable : la réponse est venu de l\'interne — rien à percevoir.)');
+      return;
+    }
+    if (res.strategy && res.strategy.bestTool && res.strategy.bestTool.name !== 'web') {
+      console.log('(meilleur outil ≠ web : je n\'exécute jamais l\'IA externe automatiquement.)');
+      return;
+    }
+    const p = await cognition.perceive(res, ident, {});
+    if (p.perception && p.perception.executed) {
+      console.log('État cognitif après perception : ' + p.status + ' (confiance ' + (p.confidence !== undefined ? p.confidence : '—') + ')');
+      console.log('Activités :');
+      for (const a of p.activities) console.log('  - ' + a.step + ' (' + a.label + ')');
+      console.log('Sources Web lues (' + p.sources.filter((s) => s.source === 'WEB').length + ') :');
+      for (const s of p.sources) {
+        if (s.source === 'WEB') console.log('  - ' + s.url + (s.title ? ' « ' + s.title + ' »' : '') + (s.fetched_at ? ' (' + s.fetched_at + ')' : ''));
+      }
+      if (p.perception.agreeing !== undefined) console.log('Concordance : ' + p.perception.agreeing + ' / ' + p.perception.sources + ' source(s) d\'accord (confiance ' + p.perception.confidenceLevel + ')');
+      console.log('\nRéponse synthétisée :\n' + p.reply);
+    } else {
+      console.log('(perception inapplicable : outil Web absent ou non autorisé.)');
+    }
+  }
 }
 
 const CONSCIENCE_HELP_FR = [
@@ -1687,7 +1719,7 @@ async function runTalk(ident, text) {
   const talk = require('./src/talk');
   const conversation = require('./src/conversation');
   conversation.append('tutor', text, null, ident);
-  const out = talk.respond(text, ident);
+  const out = await talk.respond(text, ident);
   console.log(`AIgg : ${out.reply}`);
 }
 
@@ -1856,7 +1888,7 @@ async function main() {
       break;
 
     case 'cognition':
-      runCognition(ident, args.slice(1));
+      await runCognition(ident, args.slice(1));
       break;
 
     case 'conscience':

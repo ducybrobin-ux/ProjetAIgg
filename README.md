@@ -87,6 +87,21 @@ contient uniquement code et documentation publique. Les documents de conception
 hors dépôt. Aucun secret ne doit y
 figurer (test automatisé inclus).
 
+## Contenu de la release v0.5.1
+
+- **Perception outils — auto-perception Web multi-sources** : quand une question
+  factuelle aboutit à l'état `JE_PEUX_CHERCHER` et que l'outil `web` est utilisable
+  (installé ET autorisé), la conversation **exécute réellement** la recherche et la
+  lecture de plusieurs sources via le **Contrat Commun** (jamais contourné), compare
+  les extraits (`concordance` : haute 0.8 / moyenne 0.5 / faible 0.3), annonce
+  `J_AI_TROUVE` avec **provenance**, ou admet honnêtement `PAS_DE_REPONSE_FIABLE`.
+- **Jamais une vérité automatique** : chaque réponse rappelle que le Web n'est pas
+  une vérité ; **l'IA externe n'est jamais déclenchée automatiquement** (outil `ia`
+  toujours à sollicitation explicite) — la perception est native.
+- **Conversation enrichie** : `/api/talk` et `talk` CLI auto-perçoivent (intent
+  `PERCEPTION`, `cognition.perception` exposé) ; CLI `AIgg.cmd cognition "…" --perceive`.
+- Suite de tests : **297 PASS / 0 FAIL**.
+
 ## Contenu de la release v0.5.0
 
 - **Cognition — orchestration cognitive (socle)** : la fin du « je ne sais pas » sec —

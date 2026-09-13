@@ -35,7 +35,7 @@ cd AIgg
 .\AIgg.cmd birth        # créé l'AIgg + acte de naissance (nom, tuteur)
 .\AIgg.cmd status       # identité, état, capacités, permissions, sens
 .\AIgg.cmd server       # console du tuteur → http://127.0.0.1:8070/
-.\AIgg.cmd tests        # auto-diagnostics (290 vérifications, PASS/FAIL réels)
+.\AIgg.cmd tests        # auto-diagnostics (297 vérifications, PASS/FAIL réels)
 .\AIgg.cmd docs-check   # audit des docs (versions, compteurs) — lecture seule
 ```
 
@@ -43,7 +43,7 @@ Commandes CLI : `birth status wake sleep pause backup learn server tests
 needs discover propose <outil> authorize <outil> install <outil> test
 <outil> revoke <outil> web-read <url> web-search <requête> notebook-add
 <question> [hypothèse] notebook-del <id> avatar migrate <destination>
-library <sous-commande> email <sous-commande> gmail <sous-commande> vault <sous-commande> appearance <sous-commande> conscience <sous-commande> relations <sous-commande> interests <sous-commande> competences <sous-commande> descendance <sous-commande> docs-check`.
+library <sous-commande> email <sous-commande> gmail <sous-commande> vault <sous-commande> appearance <sous-commande> conscience <sous-commande> relations <sous-commande> interests <sous-commande> competences <sous-commande> descendance <sous-commande> cognition "<question>" [--perceive] docs-check`.
 (Moteur de bibliothèque : voir `LIBRARIES.md`.)
 
 ## Architecture (résumé)
@@ -52,6 +52,10 @@ library <sous-commande> email <sous-commande> gmail <sous-commande> vault <sous-
   `identity`, `state` (8 états), `memory` (4 familles), `journal`, `senses`,
   `capabilities`, `permissions`, `needs`, `appearance`, `talk`, `contract`,
   `toolkit`, `backup`, `migrate`, `library` (bibliothèques de spécialisation),
+  `cognition` (orchestrateur cognitif : rappel mémoire/bibliothèque, états honnêtes,
+  stratégie — v0.5.0 ; `perceive()` auto-perception Web multi-sources via le Contrat
+  Commun, concordance, jamais IA externe automatique — v0.5.1), `conscience`,
+  `relations`, `interests`, `badges`, `descendance`, `vault`,
   `server` (API + console web).
 - `tools/<nom>/` : `manifest.json` + implémentation native.
 - `libraries/<id>/` : bibliothèques de spécialisation (privées par défaut ;
@@ -115,6 +119,10 @@ correct.
   en anglais ; messages destinés à l'utilisateur en français.
 - JSON jolifié en écriture atomique (`util.writeJson` : `.tmp` + rename).
 - Journal : NDJSON, une clé par événement, pas de doublon.
+- `src/talk.js` : `respond()` reste une enveloppe **synchrone** (promesse + catch →
+  réponse honnête `ERROR`) ; le vrai moteur est `_respond` **async** (auto-perception
+  Web possible en v0.5.1). Tout appel aux tests/CLI/API doit donc **`await`**
+  `talk.respond(...)`.
 - Ajouts de fonctionnalités : documenter dans `CHANGELOG.md` et `STATE.md`
   AVANT de considérer le travail terminé.
 - Tout fichier privé par défaut ; tout ce qui part dans Git est du public

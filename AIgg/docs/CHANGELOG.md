@@ -3,6 +3,41 @@
 Format : `[version] date — type : description`. Types : ajout, correction,
 amélioration, sécurité, documentation.
 
+## v0.5.1 — 2026-09-13 — ajout : la PERCEPTION outils (auto-perception Web multi-sources réellement exécutée et comparée, concordance, jamais IA externe automatique)
+
+### Ajout (Cognition — perception outils v0.5.1)
+- **`perceive()` (async)** dans `src/cognition.js` : l'orchestrateur **exécute** l'outil Web
+  multi-sources via le **Contrat Commun** (`contract.executeTool`, jamais contourné) uniquement
+  quand la stratégie a choisi `web` (question factuelle) et que `web` est utilisable
+  (installé ET autorisé).
+- **`perceptionQuery()`** : la question devient une requête de recherche (ponctuation retirée).
+- **Recherche + lecture de plusieurs sources** (`search` / `read`, `maxSources`=3,
+  `readTimeout`=10 s), tracées par le contrat (`TOOL_WEB_EXEC`) et le journal
+  (`COGNITION_PERCEPTION_START / _NONE / _FOUND` : WORK_ID, requête, sources, concordance, confiance).
+- **`concordance()`** : deux sources s'accordent si ≥ 2 mots de contenu partagés → niveaux
+  haute (0.8) / moyenne (0.5) / faible (0.3) ; la confiance vient de la concordance,
+  **jamais d'une invention** (`recall()` et `perceive()` ne fabriquent jamais de contenu).
+- **Échec honnête** `PAS_DE_REPONSE_FIABLE` (recherche vide ou lectures infructueuses) :
+  « je ne sais pas encore » — rien d'inventé.
+- **Rappel constant** : « une information trouvée sur le Web n'est jamais une vérité automatique ».
+- **IA externe JAMAIS automatique** : aucun chemin `EXTERNAL_IA` ; l'outil `ia` reste à
+  sollicitation explicite (la perception est native, jamais une délégation à une IA externe).
+- **Conversation** : `_respond` devient async ; `/api/talk` et `talk` CLI auto-perçoivent quand
+  web est le meilleur outil (intent `PERCEPTION`, `cognition.perception` exposé) ; sinon le socle
+  honnête « Je ne sais pas encore » + état cognitif + stratégie.
+- **CLI** : `AIgg.cmd cognition "…" --perceive` (perception réelle affichée, ou « meilleur outil
+  ≠ web : IA externe jamais automatique »).
+
+### Techniques
+- `talk.respond` garde son enveloppe sync : promesse + catch → réponse honnête `ERROR`
+  (aucune exception brute face à l'utilisateur) ; les tests attendent la promesse (`await`).
+- Tests §36 rendus `async` (les `talk.respond` sont désormais attendus) ; la section §37 est
+  hermétique : catalogue et outils web **injectés**, aucun réseau réel, journal restauré.
+
+### Tests
+- Suite complète : **297 PASS / 0 FAIL** (7 nouveaux autonettoyants §37 — perception et
+  concordance couvertes, dépôt jamais modifié).
+
 ## v0.5.0 — 2026-09-13 — ajout : le SOCLE de la Cognition (orchestration cognitive : états honnêtes, rappel mémoire/bibliothèque, stratégie, besoin QUESTION, AUCUN outil exécuté)
 
 ### Ajout (Prompt Maître « Cognition / orchestration cognitive » — socle d'abord)

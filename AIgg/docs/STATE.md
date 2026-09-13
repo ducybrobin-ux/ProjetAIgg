@@ -5,7 +5,7 @@
 > fait) / `BLOCKED` (bloqué). Une fonction n'est jamais déclarée terminée sans
 > test réel (PASS).
 
-Dernière mise à jour : 2026-09-13 · CORE_VERSION 0.5.0 · Suite de tests : 290 PASS / 0 FAIL.
+Dernière mise à jour : 2026-09-13 · CORE_VERSION 0.5.1 · Suite de tests : 297 PASS / 0 FAIL.
 
 ## Socle N0 — grande suite (testé réellement)
 
@@ -205,7 +205,7 @@ Dernière mise à jour : 2026-09-13 · CORE_VERSION 0.5.0 · Suite de tests : 29
 | Rappel **bibliothèque** L2 (correspondance exacte ou score ≥ `MIN_LIBRARY_SCORE=12`) → `J_AI_TROUVE` + provenance `LIBRARY` (titre, bibliothèque, extrait) | IMPLEMENTED | `cognit_biblio_j_ai_trouve` |
 | **Manque diagnostiqué** et journalisé (objet `missing`, `plan`) → `JE_PEUX_CHERCHER` (outil utilisable) ou `JE_N_AI_PAS_OUTIL_PERMISSION` ; stratégie réelle (`canSearch`, `bestTool`, `explanation`) | IMPLEMENTED | `cognit_inconnu_strategie` |
 | **Outils candidats** catalogués via `toolkit.discoverAll` : interactions du manifeste + `utilisable = installé ET autorisé` — **CAPACITÉ ≠ PERMISSION, jamais contourné** | IMPLEMENTED | `cognit_aucun_outil_execute` |
-| **AUCUNE exécution d'outil** en socle (plan préparé) ; la recherche Web/IA externe réelle arrive en **v0.5.1** (perception outils) puis v0.5.2 (apprentissage & IA) | IMPLEMENTED | `cognit_aucun_outil_execute`, `cognit_activite_reelle` |
+| **AUCUNE exécution d'outil** en socle (plan préparé) ; la recherche Web réelle est **faite en v0.5.1** (perception outils multi-sources) ; l'IA externe reste à **sollicitation explicite** (jamais automatique) — apprentissage & IA en v0.5.2 | IMPLEMENTED | `cognit_aucun_outil_execute`, `cognit_activite_reelle` |
 | Activités **réelles** uniquement (opérations effectivement réalisées) : `RAPPEL_MEMOIRE`, `RAPPEL_BIBLIOTHEQUE` | IMPLEMENTED | `cognit_activite_reelle` |
 | Besoin de **précision** via `needs.js` (type `QUESTION`, jamais un devin) pour les apprentissages ouverts (« apprends-moi X ») | IMPLEMENTED | `cognit_tuteur_question` |
 | Réponse du tuteur → **mémorisation** + besoin `FULFILLED` (cycle APPRENDRE) | IMPLEMENTED | `cognit_tuteur_reponse` |
@@ -213,6 +213,23 @@ Dernière mise à jour : 2026-09-13 · CORE_VERSION 0.5.0 · Suite de tests : 29
 | Conversation honnête : « Je ne sais pas encore répondre à cela (…) — État cognitif : … » + stratégie ; `/api/talk` et `talk` CLI exposent le résultat cognitif (`cognition.*`) | IMPLEMENTED | `cognit_inconnu_strategie` + `conversation_honnete` |
 | CLI `AIgg.cmd cognition "question"` + aide FR (état, activités réelles, sources, plan, outils candidats) | IMPLEMENTED | CLI testé réellement |
 | Tests autonettoyants (bibliothèque temp, mémoire, besoins, conversation, état et journal restaurés, dépôt jamais modifié) | IMPLEMENTED | `cognit_*` (§36) |
+
+## Perception outils — auto-perception Web multi-sources (v0.5.1, testée réellement)
+
+| Composant | Statut | Preuve |
+|---|---|---|
+| `perceive()` (async) : exécution **réelle** de l'outil Web multi-sources via le Contrat Commun (`contract.executeTool`, jamais contourné) — uniquement quand la stratégie a choisi `web` (question factuelle) et que web est utilisable | IMPLEMENTED | `percep_reussite`, `percep_talk_integree` |
+| `perceptionQuery()` : question transformée en requête (ponctuation retirée) | IMPLEMENTED | `percep_query_neutre` |
+| Recherche + lecture multi-sources (`search` / `read`, `maxSources`=3, `readTimeout`=10 s) | IMPLEMENTED | `percep_reussite` |
+| `concordance()` : deux sources s'accordent si ≥ 2 mots de contenu partagés → niveaux haute (0.8) / moyenne (0.5) / faible (0.3), jamais d'invention | IMPLEMENTED | `percep_concordance_haute`, `percep_concordance_faible` |
+| Échec honnête `PAS_DE_REPONSE_FIABLE` (recherche vide ou lectures infructueuses) — « je ne sais pas encore » | IMPLEMENTED | `percep_pas_de_source` |
+| Sans outil web utilisable : travail cognitif inchangé, **aucune exécution** | IMPLEMENTED | `percep_sans_outil` |
+| Rappel systématique : « une information trouvée sur le Web n'est jamais une vérité automatique » | IMPLEMENTED | `percep_reussite` |
+| **IA externe JAMAIS automatique** : aucune réponse `EXTERNAL_IA` ; l'outil `ia` reste à sollicitation explicite | IMPLEMENTED | `percep_reussite`, `percep_talk_integree` |
+| Intégration conversationnelle : `/api/talk` et `talk` CLI auto-perçoivent quand web est le meilleur outil ; intent `PERCEPTION` ; `cognition.perception` exposé | IMPLEMENTED | `percep_talk_integree` |
+| Journalisation `COGNITION_PERCEPTION_START` / `_NONE` / `_FOUND` (WORK_ID, requête, sources, concordance, confiance) | IMPLEMENTED | perception réelle (journal) |
+| CLI `AIgg.cmd cognition "…" --perceive` (perception réelle, ou « meilleur outil ≠ web : IA externe jamais automatique ») | IMPLEMENTED | CLI testé réellement |
+| Tests hermetiques (catalogue et outils injectés, aucun réseau réel, journal restauré) | IMPLEMENTED | `percep_*` (§37) |
 
 ## Conscience — couche de synthèse fonctionnelle (v0.4.0, testé réellement)
 
@@ -268,7 +285,7 @@ Dernière mise à jour : 2026-09-13 · CORE_VERSION 0.5.0 · Suite de tests : 29
 
 - Réception e-mail (IMAP) : **non faite** (PHASE 4 en cours — l'envoi SMTP est fait).
 - Connecteurs Google restants : Drive / Docs / Sheets (PHASE 4-5) — identifiants OAuth à ranger dans le coffre-fort `vault`. Gmail : moteur fait, OAuth2 réel en attente.
-- IA externe comme OUTIL (porté par Connecteurs IA : outil, jamais le cerveau). L'orchestrateur cognitif peut la **préparer** (v0.5.0) puis l'**exécuter** en **v0.5.1** (perception outils : Web multi-sources lu et comparé) — jamais une vérité automatique.
+- IA externe comme OUTIL (porté par Connecteurs IA : outil, jamais le cerveau). La **perception Web multi-sources** est **faite en v0.5.1** (comparée, concordance, jamais une vérité automatique) ; l'IA externe (outil `ia`) reste **jamais automatique** — sollicitation explicite uniquement.
 - Apprentissage borné de l'orchestrateur (v0.5.2 — apprentissage & IA : apprendre des échecs et des succès, jamais de badge ni de permission automatique).
 - Voix (synthèse + reconnaissance), vision (caméra) : sens/outils futurs.
 - Hébergement Web et publication contrôlée (PHASE 6-7).

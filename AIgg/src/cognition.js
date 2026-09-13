@@ -5,27 +5,27 @@ const memory = require('./memory');
 const library = require('./library');
 const needs = require('./needs');
 const toolkit = require('./toolkit');
+const contract = require('./contract');
 
 /**
- * Orchestrateur cognitif (SOCLE, v0.5.0).
+ * Orchestrateur cognitif (SOCLE v0.5.0 + perception v0.5.1).
  *
- * Reçoit un message et produit un résultat structuré :
- *   question, intention, concepts, connaissances trouvées, informations
- *   manquantes, ambiguïtés, outils candidats, plan, activités réalisées,
- *   sources, confiance, statut cognitif, apprentissages réalisés.
+ * Deux étages :
+ *   1. orchestrate()  (sync) — rappel mémoire, bibliothèque, diagnostic
+ *      du manque + plan + outils candidats vérifiés capacité/permission.
+ *   2. perceive()     (async) — exécute l'outil Web multi-sources via le
+ *      Contrat Commun (IDENTIFIER→CAPACITÉ→PERMISSION→EXECUTER→JOURNALISER).
+ *      Jamais d'IA externe en exécution automatique.
  *
- * Règles du socle :
- *   - chercher D'ABORD dans ce que Bob possède (mémoire, puis bibliothèques) ;
- *   - ne JAMAIS aller sur Internet "inutilement" ni exécuter d'outil ;
- *   - ne JAMAIS prétendre savoir : UNKNOWN devient un état cognitif honnête
- *     accompagné d'une stratégie réelle ;
- *   - les besoins de précision passent par needs.js (type QUESTION) ;
- *   - aucune activité fictive : chaque entrée d'activité correspond à une
- *     opération réellement effectuée.
- *
- * La recherche OUTIL réel (Web, IA externe) arrive à l'étage suivant (v0.5.1) ;
- * ici l'orchestrateur PREPARE (plan + candidats vérifiés capacité/permission)
- * sans jamais exécuter.
+ * Règles :
+ *   - chercher D'ABORD en interne (mémoire, puis bibliothèques) ;
+ *   - UNKNOWN → exécution réelle du Web (v0.5.1) uniquement quand web est
+ *     utilisable (installé ET autorisé) ; les outils passent par le Contrat.
+ *   - IA externe = outil facultatif, JAMAIS exécuté automatiquement ;
+ *   - confiance issue de la concordance entre sources, provenance tracée,
+ *     aucun automatisme, jamais de contournement de contract.js ;
+ *   - aucune activité fictive : chaque entrée correspond à une opération
+ *     réellement effectuée.
  */
 
 const STATES = {
@@ -325,6 +325,157 @@ function orchestrate(rawText, identity, opts) {
   };
 }
 
+/**
+ * Perception (v0.5.1) : exécution RÉELLE de l'outil Web multi-sources via le
+ * Contrat Commun (jamais d'IA externe automatique). Ne s'applique qu'à un
+ * résultat orchestrate() au statut JE_PEUX_CHERCHER ; sinon renvoie le résultat
+ * inchangé (fonction sans effet).
+ *
+ * options :
+ *   catalog        — liste d'outils (défaut : catalogTools()) ; permet de
+ *                    tester la décision sans polluer le dépôt réel.
+ *   tools          — { web: { search, read } } (défaut : outils web réels ;
+ *                    injectable pour isoler les tests du réseau).
+ *   maxSources     — nombre de sources à lire (défaut 3).
+ *   readTimeout    — délai de lecture (ms, défaut 10000).
+ */
+async function perceive(work, identity, opts) {
+  if (!work || work.status !== STATES.JE_PEUX_CHERCHER) return work;
+  const o = opts || {};
+  const catalog = o.catalog || catalogTools();
+  const web = catalog.find((t) => t.name === 'web');
+  if (!web || web.usable !== true) return work;
+
+  const webMod = (o.tools && o.tools.web) || (() => {
+    try { return require('../tools/web/web'); } catch { return null; }
+  })();
+  if (!webMod || typeof webMod.search !== 'function' || typeof webMod.read !== 'function') return work;
+
+  const query = perceptionQuery(work.question);
+  const workId = work.id;
+  const activities = Array.isArray(work.activities) ? work.activities.slice() : [];
+  const sources = Array.isArray(work.sources) ? work.sources.slice() : [];
+
+  journal(identity, 'COGNITION_PERCEPTION_START', {
+    WORK_ID: workId, QUESTION: work.question, QUERY: query, TOOL: 'web',
+  });
+  activities.push({ step: 'PERCEPTION_WEB', label: '🌐 Je lis le Web (multi-sources)…', detail: `recherche : ${query}` });
+
+  const manifest = toolkit.findManifest('web').manifest;
+  const search = await contract.executeTool(identity, manifest, 'web.search', {
+    execute: () => webMod.search(query, { limit: (o.maxSources || PERCEPTION.maxSources) * 3 }),
+    source: 'COGNITION', confidence: 0.3, action: 'search',
+  });
+
+  if (!search.ok || !search.result || search.result.ok !== true || !Array.isArray(search.result.results) || !search.result.results.length) {
+    const reason = (!search.ok && search.reason) || (search.result && search.result.error) || 'aucun résultat';
+    activities.push({ step: 'PERCEPTION_ECHEC', label: '⚠️ Le Web n\'apporte rien pour le moment.', detail: reason });
+    journal(identity, 'COGNITION_PERCEPTION_NONE', { WORK_ID: workId, REASON: 'search_empty', TOOL: 'web' });
+    return {
+      ...work, status: STATES.PAS_DE_REPONSE_FIABLE, confidence: PERCEPTION_CONFIDENCE.faible,
+      activities, sources,
+      perception: { executed: true, query, tool: 'web', found: false, steps: ['search'] },
+      reply: 'J\'ai consulté le Web mais je n\'ai rien trouvé de fiable pour le moment. ' +
+        'Je te le dis honnêtement : je ne sais pas encore. Tu peux m\'apprendre la réponse (« apprends que … »).',
+    };
+  }
+
+  const results = search.result.results.slice(0, o.maxSources || PERCEPTION.maxSources);
+  const reads = [];
+  for (const r of results) {
+    const read = await contract.executeTool(identity, manifest, 'web.read', {
+      execute: () => webMod.read(r.url, o.readTimeout || PERCEPTION.readTimeoutMs),
+      source: 'COGNITION', confidence: 0.5, action: 'read',
+    });
+    if (read.ok && read.result && read.result.ok === true && read.result.snippet) {
+      reads.push({
+        title: r.title, url: r.url,
+        snippet: String(read.result.snippet), fetched_at: read.result.fetched_at,
+      });
+    }
+  }
+
+  if (!reads.length) {
+    activities.push({ step: 'PERCEPTION_ECHEC', label: '⚠️ Le Web n\'apporte rien pour le moment.', detail: 'lectures infructueuses' });
+    journal(identity, 'COGNITION_PERCEPTION_NONE', { WORK_ID: workId, REASON: 'read_failed', TOOL: 'web' });
+    return {
+      ...work, status: STATES.PAS_DE_REPONSE_FIABLE, confidence: PERCEPTION_CONFIDENCE.faible,
+      activities, sources,
+      perception: { executed: true, query, tool: 'web', found: false, steps: ['search', 'read'] },
+      reply: 'J\'ai trouvé des résultats Web mais je n\'ai rien pu lire de fiable. ' +
+        'Honêtement : je ne sais pas encore la réponse.',
+    };
+  }
+
+  activities.push({ step: 'COMPARAISON', label: '🔀 Je compare les sources entre elles…', detail: `${reads.length} source(s) lue(s)` });
+  const corr = concordance(reads);
+  for (const r of reads) {
+    sources.push({ source: 'WEB', url: r.url, title: r.title, snippet: r.snippet, fetched_at: r.fetched_at, agreeing: corr.agreeing });
+  }
+  journal(identity, 'COGNITION_PERCEPTION_FOUND', {
+    WORK_ID: workId, SOURCES: reads.length, AGREEING: corr.agreeing, CONFIDENCE: corr.level, TOOL: 'web',
+  });
+
+  const concordancePhrase = corr.level === 'haute'
+    ? `${corr.agreeing} de ces sources concordent entre elles`
+    : corr.level === 'moyenne'
+      ? 'une source seule a répondu clairement'
+      : 'les sources ne concordent pas clairement';
+  const reply =
+    `D'après le Web (${reads.length} source(s) consultée(s)) : ${reads[0].snippet.slice(0, 260)}…\n` +
+    `Concordance : ${concordancePhrase} (confiance ${corr.level}). Provenance :\n` +
+    reads.slice(0, 3).map((r) => `  • ${r.title ? r.title + ' — ' : ''}${r.url}`).join('\n') +
+    `\n(Rappel : une information trouvée sur le Web n'est jamais une vérité automatique.)`;
+
+  return {
+    ...work,
+    status: STATES.J_AI_TROUVE,
+    confidence: corr.confidence,
+    activities,
+    sources,
+    known: reads.map((r) => r.snippet.slice(0, 200)),
+    plan: Array.isArray(work.plan) ? [...work.plan, 'lire et comparer le Web multi-sources (réellement fait)'] : work.plan,
+    perception: {
+      executed: true, query, tool: 'web', found: true,
+      sources: reads.length, agreeing: corr.agreeing, confidenceLevel: corr.level,
+    },
+    reply,
+  };
+}
+
+/**
+ * Question transformée en requête de recherche (ponctuation retirée, garde un
+ * maximum de mots pour rester naturel).
+ */
+function perceptionQuery(text) {
+  return String(text || '').trim()
+    .replace(/[!?.,;:]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Concordance entre extraits lus : deux sources « s'accordent » quand elles
+ * partagent au moins 2 mots de contenu significatifs. La confiance est
+ * dérivée du nombre de sources en accord (aucune invention).
+ */
+function concordance(reads) {
+  const entries = reads.map((r, idx) => ({ idx, tokens: new Set(tokensOf(r.snippet)) }));
+  const agreeing = new Set();
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      let shared = 0;
+      for (const w of entries[i].tokens) if (entries[j].tokens.has(w)) shared++;
+      if (shared >= 2) { agreeing.add(entries[i].idx); agreeing.add(entries[j].idx); }
+    }
+  }
+  const level = agreeing.size >= 2 ? 'haute' : agreeing.size === 1 ? 'moyenne' : 'faible';
+  return { agreeing: agreeing.size, total: reads.length, level, confidence: PERCEPTION_CONFIDENCE[level] };
+}
+
+const PERCEPTION = { maxSources: 3, readTimeoutMs: 10000 };
+const PERCEPTION_CONFIDENCE = { haute: 0.8, moyenne: 0.5, faible: 0.3 };
+
 module.exports = {
   STATES,
   MIN_LIBRARY_SCORE,
@@ -333,4 +484,7 @@ module.exports = {
   tokensOf,
   catalogTools,
   orchestrate,
+  perceive,
+  concordance,
+  perceptionQuery,
 };

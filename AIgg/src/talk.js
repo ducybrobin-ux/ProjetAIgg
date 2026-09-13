@@ -167,7 +167,16 @@ function listPendingMessages() {
   return needs.listActiveNeeds().filter((n) => n.TYPE === 'QUESTION' || n.TYPE === 'CONFIRMATION' || n.TYPE === 'AGRANDIR');
 }
 
-function respond(rawText, identity) {
+function respond(rawText, identity, opts) {
+  const o = opts || {};
+  return _respond(rawText, identity, o).catch((err) => ({
+    reply: `Je n'ai pas pu traiter cette demande (une erreur interne est survenue : ${err && err.message || 'inconnue'}). Je ne veux pas inventer une réponse.`,
+    intents: ['UNKNOWN', 'COGNITION', 'ERROR'],
+    state: state.status(identity).state,
+  }));
+}
+
+async function _respond(rawText, identity, o) {
   const ident = identity;
   const text = normalize(rawText);
   if (!text) return { reply: 'Tu ne m\'as rien dit. Je t\'écoute.', intents: [], state: null };
@@ -265,12 +274,31 @@ function respond(rawText, identity) {
     return out;
   }
 
-  // Inconnu → état cognitif honnête + stratégie réelle (socle : préparation,
-  // aucune exécution d'outil). L'honnêteté reste : « Je ne sais pas encore ».
+  // Perception réelle (v0.5.1) : quand web est utilisable et autorisé, la
+  // conversation exécute le Web multi-sources via le Contrat Commun (jamais
+  // l'IA externe de soi-même). Si la question n'est pas du ressort du Web
+  // (meilleur outil ≠ web), on reste dans l'honnêteté du socle.
   const strat = cog.strategy || {};
+  const canAutoPerceive = !!strat.canSearch && !!strat.bestTool && strat.bestTool.name === 'web';
+  if (canAutoPerceive && o.autoPerceive !== false) {
+    const p = await cognition.perceive(cog, ident, {
+      catalog: o.catalog, tools: o.tools, maxSources: o.maxSources, readTimeout: o.readTimeout,
+    });
+    if (p && p.perception && p.perception.executed) {
+      const out = respondWith(ident, p.reply, ['UNKNOWN', 'COGNITION', 'PERCEPTION']);
+      out.cognition = cognitiveResult(p);
+      return out;
+    }
+  }
+
+  // Inconnu → état cognitif honnête (socle). L'honnêteté reste : « Je ne sais
+  // pas encore ». L'IA externe n'est jamais déclenchée automatiquement.
   let suite;
-  if (strat.canSearch && strat.bestTool) {
+  if (canAutoPerceive) {
     suite = ` ${strat.explanation} Tu peux aussi m'apprendre en disant « apprends que … », ou consulter mes capacités réelles.`;
+  } else if (strat.canSearch && strat.bestTool) {
+    suite = ` Mon outil « ${strat.bestTool.title} » est autorisé, mais je ne déclenche jamais de moi-même l'IA externe : ` +
+      `je préfère te demander si tu veux que je m'en serve (« apprends que … » pour m'apprendre directement).`;
   } else {
     suite = ` ${strat.explanation || 'Je ne peux pas encore chercher.'} Je peux te poser une question ciblée, ou tu peux m'apprendre la réponse (« apprends que … »).`;
   }

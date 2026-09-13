@@ -110,6 +110,16 @@ IA externe obligatoire. Aucune dépendance npm : Node.js natif uniquement
   au tuteur (`needs.js`), réponse mémorisée et besoin `FULFILLED`. Journal `COGNITION_*` ;
   conversation « je ne sais pas encore » + état cognitif réel ; `/api/talk` expose le
   résultat cognitif.
+- **Perception outils (auto-perception Web multi-sources** — v0.5.1, `AIgg.cmd
+  cognition "…" --perceive`) : quand une question factuelle aboutit à `JE_PEUX_CHERCHER`
+  et que l'outil `web` est utilisable, la conversation **exécute réellement** la
+  recherche + la lecture multi-sources via le **Contrat Commun** (`contract.executeTool`,
+  jamais contourné), **compare** les extraits (`concordance` : ≥ 2 mots partagés → haute
+  0.8 / moyenne 0.5 / faible 0.3), puis répond `J_AI_TROUVE` avec **provenance** ou admet
+  honnêtement `PAS_DE_REPONSE_FIABLE`. Chaque réponse rappelle : « jamais une vérité
+  automatique ». **L'IA externe (outil `ia`) n'est jamais déclenchée automatiquement** —
+  sollicitation explicite uniquement. Journal `COGNITION_PERCEPTION_START/_NONE/_FOUND` ;
+  intent `PERCEPTION` dans `/api/talk` et `talk` CLI ; `cognition.perception` exposé.
 - **Compétences / badges (arbre natif** — `AIgg.cmd competences`, v0.4.3) :
   l'arbre est du code (`src/badges.js`) — 8 branches minimales du Prompt
   Maître (Socle, Informatique, Raisonnement, Développement, Recherche,
@@ -165,6 +175,7 @@ indépendant de la politique d'exécution Windows) :
 .\AIgg.cmd competences [tree|branches|levels|check|propose|honor|log|status]  # arbre compétences/badges (niveaux 0→6, prérequis, badge jamais automatique)
 .\AIgg.cmd descendance [list|propose|consent|authorize|refuse|check|compat|log|rm|restore|status]  # socle filiation (jamais une copie, accord des 2 AIgg + autorisation des 2 tuteurs, aucune création réelle)
 .\AIgg.cmd cognition "pourquoi les feuilles sont-elles vertes ?"  # orchestrateur cognitif socle (états honnêtes, activités réelles, aucun outil exécuté)
+.\AIgg.cmd cognition "quelle est la hauteur de la tour Eiffel ?" --perceive  # auto-perception Web multi-sources réelle (v0.5.1, jamais IA externe automatique)
 .\AIgg.cmd migrate <dest>    # copy portable (continuité AIgg_ID)
 .\AIgg.cmd library list      # bibliothèques de spécialisation
 .\AIgg.cmd library create Maths --domain=maths --private
